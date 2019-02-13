@@ -7,14 +7,13 @@ def print_json(json_obj):
     print(json.dumps(json_obj, indent=4))
 
 
-org_id = ''
-my_js_goof_project_id = ''
-my_js_testprojec_project_id = ''
+org_id = ''  # TODO: put in your org_id
+project_id = ''  # TODO: put in your project_id
 
 
 request_payload = {
     "projects": [
-        my_js_goof_project_id
+        project_id
     ]
 }
 
