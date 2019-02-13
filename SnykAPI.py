@@ -87,10 +87,8 @@ def snyk_projects_projects(org_id):
 # https://snyk.docs.apiary.io/#reference/projects/project-issues
 # org_id works either like 'demo-applications' or the big hash
 def snyk_projects_project_issues(org_id, project_id):
-    # raise Exception("not implemented")
-
     full_api_url = '%sorg/%s/project/%s/issues' % (snyk_api_base_url, org_id, project_id)
-    print(full_api_url)
+    # print(full_api_url)
 
     post_body = {
         'filters': {
@@ -116,10 +114,17 @@ def snyk_projects_project_issues(org_id, project_id):
 
     # resp = requests.get(full_api_url, headers=snyk_api_headers)
 
-    print_json(obj_json_response_content)
+    # print_json(obj_json_response_content)
     return obj_json_response_content
 
 
+def snyk_projects_project_jira_issues_list_all_jira_issues(org_id, project_id):
+    full_api_url = '%sorg/%s/project/%s/jira-issues' % (snyk_api_base_url, org_id, project_id)
+
+    resp = requests.get(full_api_url, headers=snyk_api_headers)
+    obj_json_response_content = resp.json()
+    # print_json(obj_json_response_content)
+    return obj_json_response_content
 
 
 # Dependencies
