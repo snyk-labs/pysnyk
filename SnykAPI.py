@@ -198,14 +198,9 @@ def snyk_licenses_list_all_licenses_by_org(org_id):
 # Tests -> test maven
 # https://snyk.docs.apiary.io/#reference/test/maven/test-for-issues-in-a-public-package-by-group-id,-artifact-id-and-version
 def snyk_test_maven(package_group_id, package_artifact_id, version, org_id):
-    # https://private-anon-e748e4d2dc-snyk.apiary-mock.com/api/v1/test/maven/groupId/artifactId/version?org=9695cbb1-3a87-4d6f-8ae1-61a1c37ee9f7&repository=https%3A%2F%2Frepo1.maven.org%2Fmaven2
-
     full_api_url = '%stest/maven/%s/%s/%s?org=%s' % (
     snyk_api_base_url, package_group_id, package_artifact_id, version, org_id)
-
-    print(full_api_url)
-
     resp = requests.get(full_api_url, headers=snyk_api_headers)
     obj_json_response_content = resp.json()
-    print_json(obj_json_response_content)
+    return obj_json_response_content
 
