@@ -1,4 +1,5 @@
 import json
+import argparse
 
 import SnykAPI
 
@@ -7,15 +8,21 @@ def print_json(json_obj):
     print(json.dumps(json_obj, indent=4))
 
 
-org_id = ''  # TODO: put in your org_id
-project_id = ''  # TODO: put in your project_id
+def parse_command_line_args():
+    parser = argparse.ArgumentParser(description="Snyk API Examples")
+    parser.add_argument('--orgId', type=str,
+                        help='The Snyk Organisation Id')
+
+    args = parser.parse_args()
+
+    if args.orgId is None:
+        parser.error('You must specify --orgId')
+
+    return args
 
 
-request_payload = {
-    "projects": [
-        project_id
-    ]
-}
+args = parse_command_line_args()
+org_id = args.orgId  # TODO: specify --orgId=<your-org-id>
 
 show_dependencies = True
 show_projects = True
@@ -26,7 +33,7 @@ json_res = SnykAPI.snyk_licenses_list_all_licenses_by_org(org_id)
 print('\n\nNumber of licenses: %s' % json_res['total'])
 print(json_res)
 for v in json_res['results']:
-    print('\n%s' % (v['id']))
+    print('\nLicense: %s' % (v['id']))
 
     if show_dependencies:
         dependencies = v['dependencies']
