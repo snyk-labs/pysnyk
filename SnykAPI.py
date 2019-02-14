@@ -166,31 +166,14 @@ def snyk_dependencies_list_all_dependencies_by_project(org_id, project_id):
 # https://snyk.docs.apiary.io/#reference/licenses/licenses-by-organisation
 def snyk_licenses_list_all_licenses_by_org(org_id):
     full_api_url = '%sorg/%s/licenses?sortBy=license&order=asc' % (snyk_api_base_url, org_id)
-    print(full_api_url)
 
     post_body = {
         'filters': {
         }
     }
 
-    # json_text = json.dumps(post_body, indent=4)
-    # print(json_text)
-
-    # raw_data = '{ "filters": { "severities": ["high","medium","low"], "types": ["vuln","license"], "ignored": false, "patched": false } }'
-
     obj_json_response_content = requests_do_post_api_return_json_object(full_api_url, post_body)
-    # print_json_object(obj_json_response_content)
-
-    json_text = json.dumps(obj_json_response_content, indent=4)
-
-    # with open("response.json", "w") as text_file:
-    #     text_file.write(json_text)
-
-    # resp = requests.get(full_api_url, headers=snyk_api_headers)
-
-    print_json(obj_json_response_content)
     return obj_json_response_content
-
 
 
 # Tests
