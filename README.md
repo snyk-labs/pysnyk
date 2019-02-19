@@ -1,1 +1,1 @@
-# snyk-py-sdk
+# snyk-api-examples-python
