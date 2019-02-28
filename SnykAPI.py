@@ -15,6 +15,14 @@ def requests_do_post_api_return_json_object(api_url, obj_json_post_body):
     return resp.json()
 
 
+def requests_do_post_api_return_http_response(api_url, obj_json_post_body):
+    snyk_post_api_headers = snyk_api_headers
+    snyk_post_api_headers['Content-type'] = 'application/json'
+
+    resp = requests.post(api_url, json=obj_json_post_body, headers=snyk_api_headers)
+    return resp
+
+
 def get_token(token_name):
     home = str(Path.home())
 
@@ -83,6 +91,17 @@ def snyk_projects_projects(org_id):
     return obj_json_response_content
 
 
+# Projects -> Delete a Project
+# https://snyk.docs.apiary.io/#reference/projects/individual-project/delete-a-project
+def snyk_projects_delete(org_id, project_id):
+    full_api_url = '%sorg/%s/project/%s' % (snyk_api_base_url, org_id, project_id)
+    resp = requests.delete(full_api_url, headers=snyk_api_headers)
+    return resp
+    # obj_json_response_content = resp.json()
+    # print_json(obj_json_response_content)
+    # return obj_json_response_content
+
+
 # Projects -> List All Issues
 # https://snyk.docs.apiary.io/#reference/projects/project-issues
 # org_id works either like 'demo-applications' or the big hash
@@ -125,6 +144,32 @@ def snyk_projects_project_jira_issues_list_all_jira_issues(org_id, project_id):
     obj_json_response_content = resp.json()
     # print_json(obj_json_response_content)
     return obj_json_response_content
+
+
+# Integrations
+def snyk_integrations_import(org_id, integration_id, github_org, repo_name, manifest_files):
+    full_api_url = '%sorg/%s/integrations/%s/import' % (snyk_api_base_url, org_id, integration_id)
+
+    post_body = {
+        'target': {
+            'owner': github_org,
+            'name': repo_name,
+            'branch': 'master'
+        }
+    }
+
+    if manifest_files is not None and len(manifest_files) > 0:
+        files = []
+        for f in manifest_files:
+            f_obj = {
+                'path': f
+            }
+            files.append(f_obj)
+
+        post_body['files'] = files
+
+    http_response = requests_do_post_api_return_http_response(full_api_url, post_body)
+    return http_response
 
 
 # Dependencies
