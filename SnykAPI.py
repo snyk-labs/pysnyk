@@ -47,6 +47,13 @@ snyk_api_headers = {
 ###########
 
 # Groups
+# https://snyk.docs.apiary.io/#reference/0/list-members-in-a-group/list-all-members-in-a-group
+def snyk_groups_members(group_id):
+    full_api_url = '%sorg/%s/members' % (snyk_api_base_url, group_id)
+    resp = requests.get(full_api_url, headers=snyk_api_headers)
+    obj_json_response_content = resp.json()
+    return obj_json_response_content
+
 
 # Organizations
 
@@ -84,10 +91,8 @@ def snyk_organizations_list_members(org_id):
 # https://snyk.docs.apiary.io/#reference/projects/all-projects/list-all-projects
 def snyk_projects_projects(org_id):
     full_api_url = '%sorg/%s/projects' % (snyk_api_base_url, org_id)
-
     resp = requests.get(full_api_url, headers=snyk_api_headers)
     obj_json_response_content = resp.json()
-    print_json(obj_json_response_content)
     return obj_json_response_content
 
 
@@ -137,6 +142,15 @@ def snyk_projects_project_issues(org_id, project_id):
     return obj_json_response_content
 
 
+# https://snyk.docs.apiary.io/#reference/projects/project-ignores/list-all-ignores
+def snyk_projects_list_all_ignores(org_id, project_id):
+    full_api_url = '%sorg/%s/project/%s/ignores' % (snyk_api_base_url, org_id, project_id)
+    resp = requests.get(full_api_url, headers=snyk_api_headers)
+    obj_json_response_content = resp.json()
+    return obj_json_response_content
+
+
+
 def snyk_projects_project_jira_issues_list_all_jira_issues(org_id, project_id):
     full_api_url = '%sorg/%s/project/%s/jira-issues' % (snyk_api_base_url, org_id, project_id)
 
@@ -182,7 +196,7 @@ def snyk_dependencies_list_all_dependencies_by_project(org_id, project_id):
 
     post_body = {
         'filters': {
-            'projects': [ project_id]
+            'projects': [project_id]
         }
     }
 
