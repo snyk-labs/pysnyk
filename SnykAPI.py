@@ -153,10 +153,16 @@ def snyk_projects_list_all_ignores(org_id, project_id):
 
 def snyk_projects_project_jira_issues_list_all_jira_issues(org_id, project_id):
     full_api_url = '%sorg/%s/project/%s/jira-issues' % (snyk_api_base_url, org_id, project_id)
-
     resp = requests.get(full_api_url, headers=snyk_api_headers)
     obj_json_response_content = resp.json()
     # print_json(obj_json_response_content)
+    return obj_json_response_content
+
+
+def snyk_projects_get_product_dependency_graph(org_id, project_id):
+    full_api_url = '%sorg/%s/project/%s/dep-graph' % (snyk_api_base_url, org_id, project_id)
+    resp = requests.get(full_api_url, headers=snyk_api_headers)
+    obj_json_response_content = resp.json()
     return obj_json_response_content
 
 
@@ -190,8 +196,9 @@ def snyk_integrations_import(org_id, integration_id, github_org, repo_name, mani
 
 # Dependencies -> List All Dependencies
 # https://snyk.docs.apiary.io/#reference/dependencies/dependencies-by-organisation
-def snyk_dependencies_list_all_dependencies_by_project(org_id, project_id):
-    full_api_url = '%sorg/%s/dependencies?sortBy=dependency&order=asc&page=1&perPage=50' % (snyk_api_base_url, org_id)
+def snyk_dependencies_list_all_dependencies_by_project(org_id, project_id, page = 1):
+    results_per_page = 50
+    full_api_url = '%sorg/%s/dependencies?sortBy=dependency&order=asc&page=%s&perPage=%s' % (snyk_api_base_url, org_id, page, results_per_page)
     print(full_api_url)
 
     post_body = {
@@ -200,36 +207,30 @@ def snyk_dependencies_list_all_dependencies_by_project(org_id, project_id):
         }
     }
 
-    # json_text = json.dumps(post_body, indent=4)
-    # print(json_text)
-
-    # raw_data = '{ "filters": { "severities": ["high","medium","low"], "types": ["vuln","license"], "ignored": false, "patched": false } }'
-
     obj_json_response_content = requests_do_post_api_return_json_object(full_api_url, post_body)
-    # print_json_object(obj_json_response_content)
+    total = obj_json_response_content['total']  # contains the total number of results (for pagination use)
+    results = obj_json_response_content['results']
 
-    json_text = json.dumps(obj_json_response_content, indent=4)
-
-    # with open("response.json", "w") as text_file:
-    #     text_file.write(json_text)
-
-    # resp = requests.get(full_api_url, headers=snyk_api_headers)
-
-    print_json(obj_json_response_content)
-    return obj_json_response_content
-
+    if total > (page * results_per_page):
+        next_results = snyk_dependencies_list_all_dependencies_by_project(org_id, project_id, page + 1)
+        results.extend(next_results)
+        return results
+    return results
 
 
 # Licenses
 # List all licenses (in an org)
 # https://snyk.docs.apiary.io/#reference/licenses/licenses-by-organisation
-def snyk_licenses_list_all_licenses_by_org(org_id):
+def snyk_licenses_list_all_licenses_by_org(org_id, project_id):
     full_api_url = '%sorg/%s/licenses?sortBy=license&order=asc' % (snyk_api_base_url, org_id)
 
     post_body = {
         'filters': {
         }
     }
+
+    if project_id:
+        post_body['filters']['projects'] = [project_id]
 
     obj_json_response_content = requests_do_post_api_return_json_object(full_api_url, post_body)
     return obj_json_response_content
