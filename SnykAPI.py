@@ -23,6 +23,14 @@ def requests_do_post_api_return_http_response(api_url, obj_json_post_body):
     return resp
 
 
+def requests_do_put_api_return_http_response(api_url, obj_json_post_body):
+    snyk_post_api_headers = snyk_api_headers
+    snyk_post_api_headers['Content-type'] = 'application/json'
+
+    resp = requests.put(api_url, json=obj_json_post_body, headers=snyk_api_headers)
+    return resp
+
+
 def get_token(token_name):
     home = str(Path.home())
 
@@ -164,6 +172,29 @@ def snyk_projects_get_product_dependency_graph(org_id, project_id):
     resp = requests.get(full_api_url, headers=snyk_api_headers)
     obj_json_response_content = resp.json()
     return obj_json_response_content
+
+
+def snyk_projects_update_project_settings(org_id, project_id, **kwargs):
+
+    pullRequestTestEnabled = False
+
+    full_api_url = '%sorg/%s/project/%s/settings' % (snyk_api_base_url, org_id, project_id)
+
+    post_body = {}
+
+    if 'pullRequestTestEnabled' in kwargs:
+        post_body['pullRequestTestEnabled'] = kwargs['pullRequestTestEnabled']
+
+    if 'pullRequestFailOnAnyVulns' in kwargs:
+        post_body['pullRequestFailOnAnyVulns'] = kwargs['pullRequestFailOnAnyVulns']
+
+    if 'pullRequestFailOnlyForHighSeverity' in kwargs:
+        post_body['pullRequestFailOnlyForHighSeverity'] = kwargs['pullRequestFailOnlyForHighSeverity']
+
+
+
+    http_response = requests_do_put_api_return_http_response(full_api_url, post_body)
+    return http_response
 
 
 # Integrations
