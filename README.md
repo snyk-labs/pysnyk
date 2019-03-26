@@ -18,6 +18,12 @@ In general the form is:
 python <script-name.py> --orgId=<your-org_id> ...
 ```
 
+## Update GitHub Checks Settings
+Use this to update the GitHub checks settings for a particular projectId or all GitHub projects in your Snyk org. 
+```
+python api-demo-11-update-github-checks.py --orgId=<your-snyk-org> --projectId=<snyk-project-id>|all --pullRequestTestEnabled=[true|false]
+```
+
 ## Project Dependencies and Licenses Report
 This report generates a list of all dependencies (including transitive dependencies) and all associated licenses either for a specific project within your Snyk org, or across all of them.
 
