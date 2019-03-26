@@ -175,9 +175,6 @@ def snyk_projects_get_product_dependency_graph(org_id, project_id):
 
 
 def snyk_projects_update_project_settings(org_id, project_id, **kwargs):
-
-    pullRequestTestEnabled = False
-
     full_api_url = '%sorg/%s/project/%s/settings' % (snyk_api_base_url, org_id, project_id)
 
     post_body = {}
@@ -190,8 +187,6 @@ def snyk_projects_update_project_settings(org_id, project_id, **kwargs):
 
     if 'pullRequestFailOnlyForHighSeverity' in kwargs:
         post_body['pullRequestFailOnlyForHighSeverity'] = kwargs['pullRequestFailOnlyForHighSeverity']
-
-
 
     http_response = requests_do_put_api_return_http_response(full_api_url, post_body)
     return http_response
