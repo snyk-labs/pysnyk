@@ -273,3 +273,12 @@ def snyk_test_maven(package_group_id, package_artifact_id, version, org_id):
     obj_json_response_content = resp.json()
     return obj_json_response_content
 
+
+# https://snyk.docs.apiary.io/#reference/test/rubygems/test-for-issues-in-a-public-gem-by-name-and-version
+def snyk_test_rubygem(gem_name, gem_version, org_id):
+    full_api_url = '%stest/rubygems/%s/%s?org=%s' % (
+    snyk_api_base_url, gem_name, gem_version, org_id)
+    resp = requests.get(full_api_url, headers=snyk_api_headers)
+    obj_json_response_content = resp.json()
+    return obj_json_response_content
+
