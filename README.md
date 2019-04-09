@@ -10,6 +10,8 @@ pipenv install
 pipenv shell
 ```
 
+You will also need to create a file with path `~/.ssh/tokens/snyk-api-token` which contains a valid Snyk API token - either your [personal token](https://app.snyk.io/account) or a [service account](https://snyk.io/docs/service-accounts/) token. This file should contain the token alone with no formatting.
+
 ## Running a Script
 The sample scripts are all a bit different, so you should try them each out or look at the code.
 
@@ -41,3 +43,9 @@ python api-demo-10-project-deps-licenses-report.py --orgId=<your-org_id> --outpu
 ```
 
 The `--outputPathNestedJson` is a good one if you want a fully nested Json representation of all project dependencies as opposed to all the other output options in which the dependencies are flattened to be more readable in a tabular format (but still show the complete path of each dependency).
+
+## Testing packages
+To test a RubyGem package, use:
+```
+python api-demo-5b-test-rubygem-package.py --orgId=<your-org_id> --packageName=<ruby-gem-package-name> --packageVersion=<package-version>
+```
