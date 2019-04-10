@@ -14,10 +14,10 @@ def print_json(json_obj):
                         help='The Snyk Organisation Id')
 
 ***REMOVED***'--packageName', type=str,
-                        help='The RubyGem package name')
+                        help='The Python package name')
 
 ***REMOVED***'--packageVersion', type=str,
-                        help='The RubyGem package version')
+                        help='The Python package version')
 
     args_list = parser.parse_args()
 
@@ -40,7 +40,7 @@ package_version = args.packageVersion
 
 print('Testing package %s@%s\n' % (package_name, package_version))
 
-json_res = SnykAPI.snyk_test_rubygem(package_name, package_version, org_id)
+json_res = SnykAPI.snyk_test_python_package(package_name, package_version, org_id)
 
 all_vulnerability_issues = json_res['issues']['vulnerabilities']
 all_license_issues = json_res['issues']['licenses']
