@@ -45,6 +45,12 @@ python api-demo-10-project-deps-licenses-report.py --orgId=<your-org_id> --outpu
 The `--outputPathNestedJson` is a good one if you want a fully nested Json representation of all project dependencies as opposed to all the other output options in which the dependencies are flattened to be more readable in a tabular format (but still show the complete path of each dependency).
 
 ## Testing packages
+
+To test a Java package, use:
+```
+python api-demo-5-test-java-package.py --orgId=<your-org_id> --groupId=<groupId> --artifactId=<artifactId> --packageVersion=<packageVersion>
+```
+
 To test a RubyGem package, use:
 ```
 python api-demo-5b-test-rubygem-package.py --orgId=<your-org_id> --packageName=<ruby-gem-package-name> --packageVersion=<package-version>
