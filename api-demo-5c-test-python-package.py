@@ -14,10 +14,10 @@ def parse_command_line_args():
                         help='The Snyk Organisation Id')
 
     parser.add_argument('--packageName', type=str,
-                        help='The RubyGem package name')
+                        help='The Python package name')
 
     parser.add_argument('--packageVersion', type=str,
-                        help='The RubyGem package version')
+                        help='The Python package version')
 
     args_list = parser.parse_args()
 
@@ -40,7 +40,7 @@ package_version = args.packageVersion
 
 print('Testing package %s@%s\n' % (package_name, package_version))
 
-json_res = SnykAPI.snyk_test_rubygem(package_name, package_version, org_id)
+json_res = SnykAPI.snyk_test_python_package(package_name, package_version, org_id)
 
 all_vulnerability_issues = json_res['issues']['vulnerabilities']
 all_license_issues = json_res['issues']['licenses']
