@@ -53,5 +53,15 @@ python api-demo-5-test-java-package.py --orgId=<your-org_id> --groupId=<groupId>
 
 To test a RubyGem package, use:
 ```
-python api-demo-5b-test-rubygem-package.py --orgId=<your-org_id> --packageName=<ruby-gem-package-name> --packageVersion=<package-version>
+python api-demo-5b-test-rubygem-package.py --orgId=<your-org_id> --packageName=<package-name> --packageVersion=<package-version>
+```
+
+To test a Python (pip) package, use:
+```
+python api-demo-5c-test-python-package.py --orgId=<your-org_id> --packageName=<package-name> --packageVersion=<package-version>
+```
+
+To test an npm package, use:
+```
+python api-demo-5d-test-npm-package.py --orgId=<your-org_id> --packageName=<package-name> --packageVersion=<package-version>
 ```

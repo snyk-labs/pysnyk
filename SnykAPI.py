@@ -282,3 +282,20 @@ def snyk_test_rubygem(gem_name, gem_version, org_id):
     obj_json_response_content = resp.json()
     return obj_json_response_content
 
+
+# https://snyk.docs.apiary.io/#reference/test/pip/test-for-issues-in-a-public-package-by-name-and-version
+def snyk_test_python_package(package_name, package_version, org_id):
+    full_api_url = '%stest/pip/%s/%s?org=%s' % (
+    snyk_api_base_url, package_name, package_version, org_id)
+    resp = requests.get(full_api_url, headers=snyk_api_headers)
+    obj_json_response_content = resp.json()
+    return obj_json_response_content
+
+
+# https://snyk.docs.apiary.io/#reference/test/npm/test-for-issues-in-a-public-package-by-name-and-version
+def snyk_test_npm_package(package_name, package_version, org_id):
+    full_api_url = '%stest/npm/%s/%s?org=%s' % (
+    snyk_api_base_url, package_name, package_version, org_id)
+    resp = requests.get(full_api_url, headers=snyk_api_headers)
+    obj_json_response_content = resp.json()
+    return obj_json_response_content
