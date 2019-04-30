@@ -27,8 +27,6 @@ def parse_command_line_args():
     return args
 
 
-# TODO: specify --orgId=<your-org-id> as a command line parameter or just manually set it here in the code
-# TODO: specify --projectId=<your-org-id> as a command line parameter or just manually set it here in the code
 args = parse_command_line_args()
 org_id = args.orgId
 project_id = args.projectId
