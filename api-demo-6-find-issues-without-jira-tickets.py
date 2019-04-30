@@ -1,7 +1,30 @@
+***REMOVED***
+
 import SnykAPI
 
-org_id = ''  # TODO: put in your org_id
-project_id = ''  # TODO: put in your project_id
+
+***REMOVED***
+***REMOVED***
+***REMOVED***'--orgId', type=str,
+                        help='The Snyk Organisation Id')
+
+***REMOVED***'--projectId', type=str,
+                        help='The project ID in Snyk')
+
+    args = parser.parse_args()
+
+    if args.orgId is None:
+        parser.error('You must specify --orgId')
+
+    if args.projectId is None:
+        parser.error('You must specify --projectId')
+
+    return args
+
+
+***REMOVED***
+***REMOVED***
+project_id = args.projectId
 
 # Get issues in a project
 json_res_project_issues = SnykAPI.snyk_projects_project_issues(org_id, project_id)

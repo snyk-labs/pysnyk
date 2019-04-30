@@ -27,8 +27,6 @@ def print_json(json_obj):
     return args
 
 
-# TODO: specify --orgId=<your-org-id> as a command line parameter or just manually set it here in the code
-# TODO: specify --projectId=<your-org-id> as a command line parameter or just manually set it here in the code
 ***REMOVED***
 ***REMOVED***
 project_id = args.projectId
