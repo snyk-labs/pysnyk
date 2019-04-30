@@ -1,5 +1,5 @@
 import json
-
+***REMOVED***
 
 import SnykAPI
 
@@ -8,7 +8,21 @@ def print_json(json_obj):
     print(json.dumps(json_obj, indent=4))
 
 
-org_id = ''  # TODO: put in your org_id
+***REMOVED***
+***REMOVED***
+***REMOVED***'--orgId', type=str,
+                        help='The Snyk Organisation Id')
+
+    args = parser.parse_args()
+
+    if args.orgId is None:
+        parser.error('You must specify --orgId')
+
+    return args
+
+
+***REMOVED***
+***REMOVED***
 
 
 # List projects in org
