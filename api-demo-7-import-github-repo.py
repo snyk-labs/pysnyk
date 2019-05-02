@@ -11,7 +11,7 @@ org_id = ''  # TODO: put in your org_id
 
 github_org = ''  # TODO: put in your github org name
 
-# TODO: Put in your repo name. For example, for GitHub projects it is `[org]/[repo-name]`
+# TODO: Put in your repo name. For example, for GitHub projects it is `[repo-name]`
 project_name = ''
 
 # TODO - Put in your GitHub integration ID - get this from Settings->Integrations
@@ -24,7 +24,6 @@ manifest_files = [
 
 project_ids = []
 
-# List projects in org
 http_resp = SnykAPI.snyk_integrations_import(org_id, github_integration_id, github_org, project_name, manifest_files)
 if http_resp.status_code == 201:
     print('Project imported or already exists')
