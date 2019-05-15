@@ -65,8 +65,15 @@ for v in all_vulnerability_issues:
     print('  isUpgradable: %s' % v['isUpgradable'])
     print('  isPatchable: %s' % v['isPatchable'])
 
+high_vulns_list = [v for v in all_vulnerability_issues if v['severity'] == 'high']
+medium_vulns_list = [v for v in all_vulnerability_issues if v['severity'] == 'medium']
+low_vulns_list = [v for v in all_vulnerability_issues if v['severity'] == 'low']
+
+print('\n%s vulnerabilities found:' % len(all_vulnerability_issues))
+print('  %s high severity' % len(high_vulns_list))
+print('  %s medium severity' % len(medium_vulns_list))
+print('  %s low severity' % len(low_vulns_list))
+
 print('\nLicense Issues:')
 for l in all_license_issues:
     print(l)
-
-
