@@ -1,5 +1,7 @@
-import json
 import argparse
+from distutils import util
+import json
+
 
 import SnykAPI
 
@@ -16,7 +18,7 @@ def parse_command_line_args():
     parser.add_argument('--projectId', type=str,
                         help='The project ID in Snyk')
 
-    parser.add_argument('--pullRequestTestEnabled', type=bool,
+    parser.add_argument('--pullRequestTestEnabled', type=lambda x:bool(util.strtobool(x)),
                         help='Whether or not you want to enable PR checks')
 
     args = parser.parse_args()
@@ -37,6 +39,7 @@ args = parse_command_line_args()
 org_id = args.orgId
 project_id = args.projectId
 pullRequestTestEnabled = args.pullRequestTestEnabled
+
 
 project_settings = {
     'pullRequestTestEnabled': pullRequestTestEnabled
@@ -60,7 +63,7 @@ for proj in github_projects:
         resp = SnykAPI.snyk_projects_update_project_settings(org_id, proj['id'], **project_settings)
 
         if resp.status_code == 200:
-            print('  - success')
+            print('  - success: %s' % (resp.json()))
         else:
             print('  - failed: %s %s' % (resp.status_code, resp.reason))
 
