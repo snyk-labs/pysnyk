@@ -1,5 +1,7 @@
-import json
 ***REMOVED***
+from distutils import util
+import json
+
 
 import SnykAPI
 
@@ -16,7 +18,7 @@ def print_json(json_obj):
 ***REMOVED***'--projectId', type=str,
                         help='The project ID in Snyk')
 
-***REMOVED***'--pullRequestTestEnabled', type=bool,
+***REMOVED***'--pullRequestTestEnabled', type=lambda x:bool(util.strtobool(x)),
                         help='Whether or not you want to enable PR checks')
 
     args = parser.parse_args()
@@ -37,6 +39,7 @@ def print_json(json_obj):
 ***REMOVED***
 project_id = args.projectId
 pullRequestTestEnabled = args.pullRequestTestEnabled
+
 
 project_settings = {
     'pullRequestTestEnabled': pullRequestTestEnabled
@@ -60,7 +63,7 @@ for proj in github_projects:
         resp = SnykAPI.snyk_projects_update_project_settings(org_id, proj['id'], **project_settings)
 
         if resp.status_code == 200:
-            print('  - success')
+            print('  - success: %s' % (resp.json()))
         else:
             print('  - failed: %s %s' % (resp.status_code, resp.reason))
 
