@@ -22,19 +22,36 @@ def parse_command_line_args():
     parser.add_argument('--packageVersion', type=str,
                         help='The maven package name')
 
+    parser.add_argument('full_package_descriptor', nargs='?', metavar='groupId:artifactId@version', type=str, help='Full package to test.')
+
     args_list = parser.parse_args()
 
     if args_list.orgId is None:
         parser.error('You must specify --orgId')
 
-    if args_list.groupId is None:
-        parser.error('You must specify --groupId')
+    if args_list.full_package_descriptor:
+        try:
+            args_list.groupId = args_list.full_package_descriptor.split(':')[0]
 
-    if args_list.artifactId is None:
-        parser.error('You must specify --artifactId')
+            args_list.artifactId = args_list.full_package_descriptor.split(':')[1]
+            if '@' in args_list.artifactId:
+                args_list.artifactId = args_list.artifactId.split('@')[0]
 
-    if args_list.packageVersion is None:
-        parser.error('You must specify --packageVersion')
+            args_list.packageVersion = args_list.full_package_descriptor.split('@')[1]
+        except:
+            parser.error('Invalid full package description. Should be <groupId>:<packageId>@<version>')
+
+        if not args_list.packageVersion:
+            parser.error('Invalid full package description. Should be <groupId>:<packageId>@<version>')
+    else:
+        if args_list.groupId is None:
+            parser.error('You must specify --groupId')
+
+        if args_list.artifactId is None:
+            parser.error('You must specify --artifactId')
+
+        if args_list.packageVersion is None:
+            parser.error('You must specify --packageVersion')
 
     return args_list
 
@@ -53,7 +70,6 @@ all_license_issues = json_res['issues']['licenses']
 
 print('Security Vulnerabilities:')
 for v in all_vulnerability_issues:
-    # print(v)
     print(v['id'])
     print('  %s' % v['title'])
     print('  %s' % v['url'])
