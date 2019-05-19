@@ -50,6 +50,10 @@ To test a Java package, use:
 ```
 python api-demo-5-test-java-package.py --orgId=<your-org_id> --groupId=<groupId> --artifactId=<artifactId> --packageVersion=<packageVersion>
 ```
+or
+```
+python api-demo-5-test-java-package.py --orgId=<your-org_id> <groupId>:<artifactId>@<packageVersion>
+```
 
 To test a RubyGem package, use:
 ```
