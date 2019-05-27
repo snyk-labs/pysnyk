@@ -15,11 +15,6 @@ my_js_goof_project_id = 'goof'
 
 # List issues in a project
 json_res = SnykAPI.snyk_projects_project_issues(org_id, my_js_goof_project_id)
-#print(json_res)
-#for v in json_res['issues']['vulnerabilities']:
-#    print('\n %s' %v['title'])
-#    print('  %s@%s' % (v['package'], v['version']))
-#    print('  Severity: %s' % v['severity'])
 
 def manageDict(dict, key): 
     if keyExists(dict, key): 
@@ -71,7 +66,7 @@ manageDictLicenseHigh={}
 manageDictLicenseMedium={}
 manageDictLicenseLow={}
 
-cveWatchlist = {'CVE-2018-1000851'}
+cveWatchlist = {'CVE-2018-1000851'} #currently just eventstream
 cveWatchlistFound={}
 ###Goal 1 - get counts
 for v in json_res['issues']['vulnerabilities']:
