@@ -9,8 +9,8 @@ def print_json(json_obj):
     print(json.dumps(json_obj, indent=4))
 
 
-org_id = 'shawn-0lj'
-my_js_goof_project_id = 'goof'
+org_id = ''
+my_js_goof_project_id = ''
 
 
 # List issues in a project
