@@ -2,41 +2,32 @@ import json
 import argparse
 import xlsxwriter
 
-import SnykAPI
+from snyk import SnykClient
+from utils import get_token
 import ProjectDependenciesReport
-
-
-def print_json(json_obj):
-    print(json.dumps(json_obj, indent=4))
 
 
 def parse_command_line_args():
     parser = argparse.ArgumentParser(description="Snyk API Examples")
     parser.add_argument('--orgId', type=str,
-                        help='The Snyk Organisation Id')
+                        help='The Snyk Organisation Id', required=True)
 
     parser.add_argument('--projectId', type=str,
-                        help='The project ID in Snyk. Use --projectId=all for all projects.')
+                        help='The project ID in Snyk. Use --projectId=all for all projects.', required=True)
 
     parser.add_argument('--outputPathExcel', type=str,
-                        help='The the desired output if you want Excel output (use .xlsx).')
+                        help='The desired output if you want Excel output (use .xlsx).')
 
     parser.add_argument('--outputPathCSV', type=str,
-                        help='The the desired output if you want CSV output.')
+                        help='The desired output if you want CSV output.')
 
     parser.add_argument('--outputPathNestedJson', type=str,
-                        help='The the desired output if you want a nested JSON output.')
+                        help='The desired output if you want a nested JSON output.')
 
     parser.add_argument('--outputPathFlatJson', type=str,
-                        help='The the desired output if you want a flattened JSON output.')
+                        help='The desired output if you want a flattened JSON output.')
 
     args = parser.parse_args()
-
-    if args.orgId is None:
-        parser.error('You must specify --orgId')
-
-    if args.projectId is None:
-        parser.error('You must specify --projectId')
 
     if args.outputPathExcel is None and \
             args.outputPathCSV is None and \
@@ -47,30 +38,14 @@ def parse_command_line_args():
 
     return args
 
-
+snyk_token = get_token('snyk-api-token')
 args = parse_command_line_args()
 org_id = args.orgId
 
-output_excel = False
-output_csv = False
-output_nested_json = False
-output_flat_json = False
-
-if args.outputPathExcel:
-    output_excel = True
-    output_excel_path = args.outputPathExcel
-
-if args.outputPathCSV:
-    output_csv = True
-    output_csv_path = args.outputPathCSV
-
-if args.outputPathNestedJson:
-    output_nested_json = True
-    output_nested_json_path = args.outputPathNestedJson
-
-if args.outputPathFlatJson:
-    output_flat_json = True
-    output_flat_json_path = args.outputPathFlatJson
+output_excel_path = args.outputPathExcel
+output_csv_path = args.outputPathCSV
+output_nested_json_path = args.outputPathNestedJson
+output_flat_json_path = args.outputPathFlatJson
 
 
 def get_flat_dependencies(dep_list):
@@ -109,7 +84,8 @@ allowed_origins = [
 ]
 
 all_projects_list = []
-get_projects_response = SnykAPI.snyk_projects_projects(org_id)
+client = SnykClient(token=snyk_token)
+get_projects_response = client.snyk_projects_projects(org_id)
 for proj in get_projects_response['projects']:
     if proj['origin'] in allowed_origins:
         all_projects_list.append({
@@ -126,7 +102,7 @@ for next_project in all_projects_list:
     next_project_id = next_project['project_id']
 
     if args.projectId == 'all' or next_project_id == args.projectId:
-        next_project_tree = ProjectDependenciesReport.get_project_tree(org_id, next_project_id)
+        next_project_tree = ProjectDependenciesReport.get_project_tree(snyk_token, org_id, next_project_id)
         project_trees.append(next_project_tree['project']['dependencies'])
 
         next_project_flat_deps_list = get_flat_dependencies(next_project_tree['project']['dependencies'])
@@ -217,15 +193,15 @@ def write_all_project_output_excel(all_project_info, output_path):
     excel_workbook.close()
 
 
-if output_excel:
+if output_excel_path:
     write_all_project_output_excel(all_project_info, output_excel_path)
 
-if output_csv:
+if output_csv_path:
     write_all_project_output_csv(all_project_info, output_csv_path)
 
-if output_nested_json:
+if output_nested_json_path:
     write_all_projects_nested_json(all_project_info, output_nested_json_path)
 
-if output_flat_json:
+if output_flat_json_path:
     write_all_projects_flat_json(all_project_info, output_flat_json_path)
 

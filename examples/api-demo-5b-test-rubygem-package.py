@@ -1,38 +1,24 @@
-import json
 import argparse
 
-import SnykAPI
-
-
-def print_json(json_obj):
-    print(json.dumps(json_obj, indent=4))
-
+from snyk import SnykClient
+from utils import get_token
 
 def parse_command_line_args():
     parser = argparse.ArgumentParser(description="Snyk API Examples")
     parser.add_argument('--orgId', type=str,
-                        help='The Snyk Organisation Id')
+                        help='The Snyk Organisation Id', required=True)
 
     parser.add_argument('--packageName', type=str,
-                        help='The RubyGem package name')
+                        help='The RubyGem package name', required=True)
 
     parser.add_argument('--packageVersion', type=str,
-                        help='The RubyGem package version')
+                        help='The RubyGem package version', required=True)
 
     args_list = parser.parse_args()
-
-    if args_list.orgId is None:
-        parser.error('You must specify --orgId')
-
-    if args_list.packageName is None:
-        parser.error('You must specify --packageName')
-
-    if args_list.packageVersion is None:
-        parser.error('You must specify --packageVersion')
-
     return args_list
 
 
+snyk_token = get_token('snyk-api-token')
 args = parse_command_line_args()
 org_id = args.orgId
 package_name = args.packageName
@@ -40,7 +26,8 @@ package_version = args.packageVersion
 
 print('Testing package %s@%s\n' % (package_name, package_version))
 
-json_res = SnykAPI.snyk_test_rubygem(package_name, package_version, org_id)
+client = SnykClient(token=snyk_token)
+json_res = client.snyk_test_rubygem(package_name, package_version, org_id)
 
 all_vulnerability_issues = json_res['issues']['vulnerabilities']
 all_license_issues = json_res['issues']['licenses']
