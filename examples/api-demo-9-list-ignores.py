@@ -1,27 +1,20 @@
-import json
 ***REMOVED***
 
-import SnykAPI
-
-
-def print_json(json_obj):
-    print(json.dumps(json_obj, indent=4))
+***REMOVED***
+from utils import get_token
 
 
 ***REMOVED***
 ***REMOVED***
 ***REMOVED***'--orgId', type=str,
-                        help='The Snyk Organisation Id')
+                        help='The Snyk Organisation Id', required=True)
 
     args = parser.parse_args()
-
-    if args.orgId is None:
-        parser.error('You must specify --orgId')
 
     return args
 
 
-# TODO: specify --orgId=<your-org-id> as a command line parameter or just manually set it here in the code
+snyk_token = get_token('snyk-api-token')
 ***REMOVED***
 ***REMOVED***
 
@@ -29,13 +22,13 @@ def print_json(json_obj):
 show_dependencies = True
 show_projects = True
 
-
-json_res_projects = SnykAPI.snyk_projects_projects(org_id)
+***REMOVED***
+json_res_projects = client.snyk_projects_projects(org_id)
 for proj in json_res_projects['projects']:
     project_id = proj['id']
     project_name = proj['name']
 
-    json_res_ignores = SnykAPI.snyk_projects_list_all_ignores(org_id, project_id)
+    json_res_ignores = client.snyk_projects_list_all_ignores(org_id, project_id)
 
     if len(json_res_ignores.keys()) > 0:
         # issues exist for this project

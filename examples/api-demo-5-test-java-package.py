@@ -1,17 +1,13 @@
-import json
 ***REMOVED***
 
-import SnykAPI
-
-
-def print_json(json_obj):
-    print(json.dumps(json_obj, indent=4))
+***REMOVED***
+from utils import get_token
 
 
 ***REMOVED***
 ***REMOVED***
 ***REMOVED***'--orgId', type=str,
-                        help='The Snyk Organisation Id')
+                        help='The Snyk Organisation Id', required=True)
 
 ***REMOVED***'--groupId', type=str,
                         help='The maven package name')
@@ -25,9 +21,6 @@ def print_json(json_obj):
 ***REMOVED***'full_package_descriptor', nargs='?', metavar='groupId:artifactId@version', type=str, help='Full package to test.')
 
     args_list = parser.parse_args()
-
-    if args_list.orgId is None:
-        parser.error('You must specify --orgId')
 
     if args_list.full_package_descriptor:
         try:
@@ -55,7 +48,7 @@ def print_json(json_obj):
 
     return args_list
 
-
+snyk_token = get_token('snyk-api-token')
 ***REMOVED***
 
 ***REMOVED***
@@ -63,7 +56,8 @@ package_group_id = args.groupId
 package_artifact_id = args.artifactId
 package_version = args.packageVersion
 
-json_res = SnykAPI.snyk_test_maven(package_group_id, package_artifact_id, package_version, org_id)
+***REMOVED***
+json_res = client.snyk_test_maven(package_group_id, package_artifact_id, package_version, org_id)
 
 all_vulnerability_issues = json_res['issues']['vulnerabilities']
 all_license_issues = json_res['issues']['licenses']
