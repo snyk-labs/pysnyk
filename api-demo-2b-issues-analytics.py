@@ -126,6 +126,6 @@ printDict('\t', cveWatchlistFound,True)
 ###We should make the script output to a spreadsheet. From there to generate PDF
 ##NOTE THIS WILL GET LIST OF REPOS: https://api.github.com/users/$GHUSER/repos?per_page=100
 ##this way we can get list of repos from the github API, then run the CLI like: snyk test https://github.com/ghuser/reponame
-##assuming outbrain is given as a parameter
+##assuming reponame is given as a parameter
 
 ##ADDITIONAL TASK - when calculating severities, you have to match vulnerable module to vuln, maybe use  request:!:REDOS as format?
