@@ -15,6 +15,7 @@ my_js_goof_project_id = ''
 
 # List issues in a project
 json_res = SnykAPI.snyk_projects_project_issues(org_id, my_js_goof_project_id)
+print(json.dumps(json_res,indent=2))
 
 def manageDict(dict, key): 
     if keyExists(dict, key): 
@@ -34,11 +35,11 @@ def printDict(title, dict,isNumber):
         print(title)
     for key in dict: 
         if(isNumber == True):
-            print('Issue: ' + key + ' , Value:' + str(dict[key]))
+            print('\t\tIssue: ' + key + ' , Value:' + str(dict[key]))
         else:
-            print('Issue: ' + key + ' , Value:' + dict[key]) 
+            print('\t\tIssue: ' + key + ' , Value:' + dict[key]) 
     if(len(dict)==0):
-        print('None found')
+        print('\t\tNone found')
 
 ########
 # ANALYTIC GOAL 1
@@ -57,48 +58,48 @@ countLicenseHigh=0
 countLicenseMedium=0
 countLicenseLow=0
 
-manageDictVulnCritical={}
-manageDictVulnHigh={}
-manageDictVulnMedium={}
-manageDictVulnLow={}
+dictVulnCritical={}
+dictVulnHigh={}
+dictVulnMedium={}
+dictVulnLow={}
 
-manageDictLicenseHigh={}
-manageDictLicenseMedium={}
-manageDictLicenseLow={}
+dictLicenseHigh={}
+dictLicenseMedium={}
+dictLicenseLow={}
 
 cveWatchlist = {'CVE-2018-1000851'} #currently just eventstream
 cveWatchlistFound={}
 ###Goal 1 - get counts
 for v in json_res['issues']['vulnerabilities']:
     if(v['severity']=='high'):
-        manageDictVulnHigh=manageDict(manageDictVulnHigh, v['title'])
+        manageDict(dictVulnHigh, v['title'])
         countVulnHigh+=1
     elif(v['severity']=='medium'):
-        manageDictVulnMedium=manageDict(manageDictVulnMedium, v['title'])
+        manageDict(dictVulnMedium, v['title'])
         countVulnMedium+=1
     elif(v['severity']=='low'):
-        manageDictVulnLow=manageDict(manageDictVulnLow, v['title'])
+        manageDict(dictVulnLow, v['title'])
         countVulnLow+=1
 
     if(v['cvssScore'] >= 9.0):
-        manageDictVulnCritical=manageDict(manageDictVulnCritical, v['title'])
+        manageDict(dictVulnCritical, v['title'])
         countVulnCritical+=1
     
     curCVEList = v['identifiers']['CVE']
     for curCVE in curCVEList:
         if(keyExists(cveWatchlist,curCVE)):
-            print('CVE Watchlist item found: ' + curCVE)
-            cveWatchlistFound=manageDict(cveWatchlistFound, curCVE)
+            #print('CVE Watchlist item found: ' + curCVE)
+            manageDict(cveWatchlistFound, curCVE)
 
 for l in json_res['issues']['licenses']:
     if(l['severity']=='high'):
-        manageDictLicenseHigh=manageDict(manageDictLicenseHigh, l['title'])
+        manageDict(dictLicenseHigh, l['title'])
         countLicenseHigh+=1
     elif(l['severity']=='medium'):
-        manageDictLicenseMedium=manageDict(manageDictLicenseMedium, l['title'])
+        manageDict(dictLicenseMedium, l['title'])
         countLicenseMedium+=1
     elif(l['severity']=='low'):
-        manageDictLicenseLow=manageDict(manageDictLicenseLow, l['title'])
+        manageDict(dictLicenseLow, l['title'])
         countLicenseLow+=1
 
 
@@ -107,17 +108,24 @@ for l in json_res['issues']['licenses']:
 print('\n\n****Vulnerability Issues***')
 print('\nCritical Severity: ' + str(countVulnCritical) + ',High Severity: ' + str(countVulnHigh) + ', Medium Severity: ' + str(countVulnMedium) + ', Low Severity: ' + str(countVulnLow) )
 #print('Critical vulns counter:' + str(countVulnCritical))
-printDict('\n\nCritical Vulnerabilities: ' , manageDictVulnCritical,True)
-printDict('\nHigh Vulnerabilities: ' , manageDictVulnHigh,True)
-printDict('\nMedium Vulnerabilities: ' , manageDictVulnMedium,True)
-printDict('\nLow Vulnerabilities: ' , manageDictVulnLow,True)
+printDict('\n\n\tCritical Vulnerabilities: ' , dictVulnCritical,True)
+printDict('\n\tHigh Vulnerabilities: ' , dictVulnHigh,True)
+printDict('\n\tMedium Vulnerabilities: ' , dictVulnMedium,True)
+printDict('\n\tLow Vulnerabilities: ' , dictVulnLow,True)
 
 print('\n\n****License Issues***')
-print('\nHigh Severity: ' + str(countLicenseHigh) + ', Medium Severity: ' + str(countLicenseMedium) + ', Low Severity: ' + str(countLicenseLow))
-printDict('\nHigh Severity Licenses Issues: ' , manageDictLicenseHigh,True)
-printDict('\nMedium Severity Licenses Issues: ' , manageDictLicenseMedium,True)
-printDict('\nLow Severity Licenses Issues: ' , manageDictLicenseLow,True)
+print('\n\tHigh Severity: ' + str(countLicenseHigh) + ', Medium Severity: ' + str(countLicenseMedium) + ', Low Severity: ' + str(countLicenseLow))
+printDict('\n\tHigh Severity Licenses Issues: ' , dictLicenseHigh,True)
+printDict('\n\tMedium Severity Licenses Issues: ' , dictLicenseMedium,True)
+printDict('\n\tLow Severity Licenses Issues: ' , dictLicenseLow,True)
 
 print('\n\n****CVE Watchlist***')
 print('The following issues are currently critical vulnerabilities that have made the news and were found to be in your codebase')    
-printDict('', cveWatchlistFound,True)
+printDict('\t', cveWatchlistFound,True)
+
+###We should make the script output to a spreadsheet. From there to generate PDF
+##NOTE THIS WILL GET LIST OF REPOS: https://api.github.com/users/$GHUSER/repos?per_page=100
+##this way we can get list of repos from the github API, then run the CLI like: snyk test https://github.com/ghuser/reponame
+##assuming outbrain is given as a parameter
+
+##ADDITIONAL TASK - when calculating severities, you have to match vulnerable module to vuln, maybe use  request:!:REDOS as format?
