@@ -1,38 +1,24 @@
-import json
 ***REMOVED***
 
-import SnykAPI
-
-
-def print_json(json_obj):
-    print(json.dumps(json_obj, indent=4))
+***REMOVED***
+from utils import get_token
 
 
 ***REMOVED***
 ***REMOVED***
 ***REMOVED***'--orgId', type=str,
-                        help='The Snyk Organisation Id')
+                        help='The Snyk Organisation Id', required=True)
 
 ***REMOVED***'--packageName', type=str,
-                        help='The Python package name')
+                        help='The Python package name', required=True)
 
 ***REMOVED***'--packageVersion', type=str,
-                        help='The Python package version')
+                        help='The Python package version', required=True)
 
     args_list = parser.parse_args()
-
-    if args_list.orgId is None:
-        parser.error('You must specify --orgId')
-
-    if args_list.packageName is None:
-        parser.error('You must specify --packageName')
-
-    if args_list.packageVersion is None:
-        parser.error('You must specify --packageVersion')
-
     return args_list
 
-
+snyk_token = get_token('snyk-api-token')
 ***REMOVED***
 ***REMOVED***
 package_name = args.packageName
@@ -40,7 +26,8 @@ package_version = args.packageVersion
 
 print('Testing package %s@%s\n' % (package_name, package_version))
 
-json_res = SnykAPI.snyk_test_python_package(package_name, package_version, org_id)
+***REMOVED***
+json_res = client.snyk_test_python_package(package_name, package_version, org_id)
 
 all_vulnerability_issues = json_res['issues']['vulnerabilities']
 all_license_issues = json_res['issues']['licenses']

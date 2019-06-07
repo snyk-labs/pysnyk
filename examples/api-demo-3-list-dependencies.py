@@ -1,45 +1,31 @@
-import json
 ***REMOVED***
 
-import SnykAPI
-
-
-def print_json(json_obj):
-    print(json.dumps(json_obj, indent=4))
+***REMOVED***
+from utils import get_token
 
 
 ***REMOVED***
 ***REMOVED***
 ***REMOVED***'--orgId', type=str,
-                        help='The Snyk Organisation Id')
+                        help='The Snyk Organisation Id', required=True)
 
 ***REMOVED***'--projectId', type=str,
-                        help='The project ID in Snyk')
+                        help='The project ID in Snyk', required=True)
 
     args = parser.parse_args()
-
-    if args.orgId is None:
-        parser.error('You must specify --orgId')
-
-    if args.projectId is None:
-        parser.error('You must specify --projectId')
 
     return args
 
 
+snyk_token = get_token('snyk-api-token')
 ***REMOVED***
 ***REMOVED***
 project_id = args.projectId
 
 
-request_payload = {
-    "projects": [
-        project_id
-    ]
-}
-
 # List issues in a project
-lst_licenses = SnykAPI.snyk_dependencies_list_all_dependencies_by_project(org_id, project_id)
+***REMOVED***
+lst_licenses = client.snyk_dependencies_list_all_dependencies_by_project(org_id, project_id)
 
 for v in lst_licenses:
     print('\n%s: %s@%s' % (v['type'], v['name'], v['version']))

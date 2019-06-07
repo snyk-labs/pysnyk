@@ -1,26 +1,18 @@
-import json
 ***REMOVED***
 
-import SnykAPI
-
-
-def print_json(json_obj):
-    print(json.dumps(json_obj, indent=4))
-
+***REMOVED***
+from utils import get_token
 
 ***REMOVED***
 ***REMOVED***
 ***REMOVED***'--orgId', type=str,
-                        help='The Snyk Organisation Id')
+                        help='The Snyk Organisation Id', required=True)
 
     args = parser.parse_args()
 
-    if args.orgId is None:
-        parser.error('You must specify --orgId')
-
     return args
 
-
+snyk_token = get_token('snyk-api-token')
 ***REMOVED***
 ***REMOVED***  # TODO: specify --orgId=<your-org-id>
 
@@ -29,7 +21,8 @@ show_projects = True
 
 
 # List issues in a project
-json_res = SnykAPI.snyk_licenses_list_all_licenses_by_org(org_id)
+***REMOVED***
+json_res = client.snyk_licenses_list_all_licenses_by_org(org_id)
 print('\n\nNumber of licenses: %s' % json_res['total'])
 print(json_res)
 for v in json_res['results']:

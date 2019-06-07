@@ -1,6 +1,6 @@
 import json
 
-import SnykAPI
+***REMOVED***
 
 
 def print_json(json_obj):
@@ -26,8 +26,9 @@ def list_of_dictionaries_to_map(input_list, key_field, data_fields_list=None):
     return lookup_map
 
 
-def get_project_tree(org_id, project_id):
-    json_res_dep_graph = SnykAPI.snyk_projects_get_product_dependency_graph(org_id, project_id)
+def get_project_tree(snyk_token, org_id, project_id):
+    ***REMOVED***
+    json_res_dep_graph = client.snyk_projects_get_product_dependency_graph(org_id, project_id)
 
     print_json(json_res_dep_graph)
 
@@ -65,7 +66,7 @@ def get_project_tree(org_id, project_id):
 
 
     # Get licenses for all dependencies in the project
-    lst_res_license = SnykAPI.snyk_dependencies_list_all_dependencies_by_project(org_id, project_id)
+    lst_res_license = client.snyk_dependencies_list_all_dependencies_by_project(org_id, project_id)
 
     # make into a lookup table by package_id
     package_id_to_license_info_map = {}  # package_id -> { license info }
@@ -80,7 +81,7 @@ def get_project_tree(org_id, project_id):
 
 
     # Get the license issues and then enhance package_id_to_license_info_map with the license classification or none
-    get_project_issues_response = SnykAPI.snyk_projects_project_issues(org_id, project_id)
+    get_project_issues_response = client.snyk_projects_project_issues(org_id, project_id)
     license_issues_list = get_project_issues_response['issues']['licenses']
 
     # map to lookup table
