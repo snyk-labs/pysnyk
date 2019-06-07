@@ -1,5 +1,7 @@
 # snyk-api-examples-python
 
+[![Build Status](https://travis-ci.org/snyk-samples/pysnyk.svg?branch=master)](https://travis-ci.org/snyk-samples/pysnyk)
+
 ## Get Started
 You'll need Python 3.7 and [pipenv](https://pipenv.readthedocs.io/en/latest/).
 
