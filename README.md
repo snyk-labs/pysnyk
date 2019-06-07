@@ -1,4 +1,4 @@
-# snyk-api-examples-python
+# pysnyk
 
 [![Build Status](https://travis-ci.org/snyk-samples/pysnyk.svg?branch=master)](https://travis-ci.org/snyk-samples/pysnyk)
 
