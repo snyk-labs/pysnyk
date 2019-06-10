@@ -1,12 +1,14 @@
 import json
-
+import collections
 import SnykAPI
+import operator
+from collections import OrderedDict
 ###SAMPLE RUN COMMAND: python3 api-demo-2b-issues-analytics.py
 ## make sure to install pathlib, requests, json
 ##Update org_id and my_js_goof_project_id
 
-def print_json(json_obj):
-    print(json.dumps(json_obj, indent=4))
+#def print_json(json_obj):
+    #print(json.dumps(json_obj, indent=4))
 
 
 org_id = ''
@@ -15,7 +17,7 @@ my_js_goof_project_id = ''
 
 # List issues in a project
 json_res = SnykAPI.snyk_projects_project_issues(org_id, my_js_goof_project_id)
-print(json.dumps(json_res,indent=2))
+#print(json.dumps(json_res,indent=2))
 
 def manageDict(dict, key): 
     if keyExists(dict, key): 
@@ -41,6 +43,10 @@ def printDict(title, dict,isNumber):
     if(len(dict)==0):
         print('\t\tNone found')
 
+def sortDict(dict):
+    #sDict = sorted(dict.items(), key=operator.itemgetter(1))
+    sDictOrdered = OrderedDict(sorted(dict.items(), key=lambda x: x[1],reverse=True))
+    return sDictOrdered
 ########
 # ANALYTIC GOAL 1
 # 1) MOST PREVALENT ISSUES by severity
@@ -102,22 +108,21 @@ for l in json_res['issues']['licenses']:
         manageDict(dictLicenseLow, l['title'])
         countLicenseLow+=1
 
-
 ####OUTPUT
 
 print('\n\n****Vulnerability Issues***')
 print('\nCritical Severity: ' + str(countVulnCritical) + ',High Severity: ' + str(countVulnHigh) + ', Medium Severity: ' + str(countVulnMedium) + ', Low Severity: ' + str(countVulnLow) )
 #print('Critical vulns counter:' + str(countVulnCritical))
-printDict('\n\n\tCritical Vulnerabilities: ' , dictVulnCritical,True)
-printDict('\n\tHigh Vulnerabilities: ' , dictVulnHigh,True)
-printDict('\n\tMedium Vulnerabilities: ' , dictVulnMedium,True)
-printDict('\n\tLow Vulnerabilities: ' , dictVulnLow,True)
+printDict('\n\n\tCritical Vulnerabilities: ' , sortDict(dictVulnCritical),True)
+printDict('\n\tHigh Vulnerabilities: ' , sortDict(dictVulnHigh),True)
+printDict('\n\tMedium Vulnerabilities: ' , sortDict(dictVulnMedium),True)
+printDict('\n\tLow Vulnerabilities: ' , sortDict(dictVulnLow),True)
 
 print('\n\n****License Issues***')
 print('\n\tHigh Severity: ' + str(countLicenseHigh) + ', Medium Severity: ' + str(countLicenseMedium) + ', Low Severity: ' + str(countLicenseLow))
-printDict('\n\tHigh Severity Licenses Issues: ' , dictLicenseHigh,True)
-printDict('\n\tMedium Severity Licenses Issues: ' , dictLicenseMedium,True)
-printDict('\n\tLow Severity Licenses Issues: ' , dictLicenseLow,True)
+printDict('\n\tHigh Severity Licenses Issues: ' , sortDict(dictLicenseHigh),True)
+printDict('\n\tMedium Severity Licenses Issues: ' , sortDict(dictLicenseMedium),True)
+printDict('\n\tLow Severity Licenses Issues: ' , sortDict(dictLicenseLow),True)
 
 print('\n\n****CVE Watchlist***')
 print('The following issues are currently critical vulnerabilities that have made the news and were found to be in your codebase')    
