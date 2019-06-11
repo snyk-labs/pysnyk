@@ -11,6 +11,7 @@ from collections import OrderedDict
     #print(json.dumps(json_obj, indent=4))
 
 
+
 org_id = ''
 my_js_goof_project_id = ''
 
@@ -37,9 +38,24 @@ def printDict(title, dict,isNumber):
         print(title)
     for key in dict: 
         if(isNumber == True):
-            print('\t\tIssue: ' + key + ' , Value:' + str(dict[key]))
+            print('\t\tIssue: ' + key + ' , Count:' + str(dict[key]))
         else:
-            print('\t\tIssue: ' + key + ' , Value:' + dict[key]) 
+            print('\t\tIssue: ' + key + ' , Count:' + dict[key]) 
+    if(len(dict)==0):
+        print('\t\tNone found')
+
+def printTopDict(title, dict,isNumber,limiter):
+    counter=0
+    if(title != ''):
+        print(title)
+    for key in dict: 
+        counter+=1
+        if(counter>limiter):
+            break
+        if(isNumber == True):
+            print('\t\tIssue: ' + key + ' , Count:' + str(dict[key]))
+        else:
+            print('\t\tIssue: ' + key + ' , Count:' + dict[key]) 
     if(len(dict)==0):
         print('\t\tNone found')
 
@@ -64,6 +80,10 @@ countLicenseHigh=0
 countLicenseMedium=0
 countLicenseLow=0
 
+dictDepCritical={}
+dictDepHigh={}
+dictDepIssueCount={}
+
 dictVulnCritical={}
 dictVulnHigh={}
 dictVulnMedium={}
@@ -77,8 +97,10 @@ cveWatchlist = {'CVE-2018-1000851'} #currently just eventstream
 cveWatchlistFound={}
 ###Goal 1 - get counts
 for v in json_res['issues']['vulnerabilities']:
+    manageDict(dictDepIssueCount, v['package'] + ':' + v['version'])
     if(v['severity']=='high'):
         manageDict(dictVulnHigh, v['title'])
+        manageDict(dictDepHigh, v['package'] + ':' + v['version'])
         countVulnHigh+=1
     elif(v['severity']=='medium'):
         manageDict(dictVulnMedium, v['title'])
@@ -89,6 +111,7 @@ for v in json_res['issues']['vulnerabilities']:
 
     if(v['cvssScore'] >= 9.0):
         manageDict(dictVulnCritical, v['title'])
+        manageDict(dictDepCritical, v['package'] + ':' + v['version'])
         countVulnCritical+=1
     
     curCVEList = v['identifiers']['CVE']
@@ -110,6 +133,8 @@ for l in json_res['issues']['licenses']:
 
 ####OUTPUT
 
+print('\n****Overview****')
+print('\n\nThe following analysis lists top 5 items in each area of analysis. Calculation was performed without grouping of vulnerabilities, highlighting every path to each vulnerability')
 print('\n\n****Vulnerability Issues***')
 print('\nCritical Severity: ' + str(countVulnCritical) + ',High Severity: ' + str(countVulnHigh) + ', Medium Severity: ' + str(countVulnMedium) + ', Low Severity: ' + str(countVulnLow) )
 #print('Critical vulns counter:' + str(countVulnCritical))
@@ -123,6 +148,11 @@ print('\n\tHigh Severity: ' + str(countLicenseHigh) + ', Medium Severity: ' + st
 printDict('\n\tHigh Severity Licenses Issues: ' , sortDict(dictLicenseHigh),True)
 printDict('\n\tMedium Severity Licenses Issues: ' , sortDict(dictLicenseMedium),True)
 printDict('\n\tLow Severity Licenses Issues: ' , sortDict(dictLicenseLow),True)
+
+print('\n\n****Dependency Issues***')
+printTopDict('\n\tDependency by Critical Severity Issues: ' , sortDict(dictDepCritical),True,5)
+printTopDict('\n\tDependency by High Severity Issues: ' , sortDict(dictDepHigh),True,5)
+printTopDict('\n\tDependency by Total Issue Count: ' , sortDict(dictDepIssueCount),True,5)
 
 print('\n\n****CVE Watchlist***')
 print('The following issues are currently critical vulnerabilities that have made the news and were found to be in your codebase')    
