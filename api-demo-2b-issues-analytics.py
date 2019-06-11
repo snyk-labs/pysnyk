@@ -133,7 +133,11 @@ for l in json_res['issues']['licenses']:
 
 ####OUTPUT
 
-print('\n****Overview****')
+print('\n****Target****')
+print('Org ID: ' + org_id)
+print('Project ID: ' + my_js_goof_project_id)
+
+print('\n\n****Overview****')
 print('\n\nThe following analysis lists top 5 items in each area of analysis. Calculation was performed without grouping of vulnerabilities, highlighting every path to each vulnerability')
 print('\n\n****Vulnerability Issues***')
 print('\nCritical Severity: ' + str(countVulnCritical) + ',High Severity: ' + str(countVulnHigh) + ', Medium Severity: ' + str(countVulnMedium) + ', Low Severity: ' + str(countVulnLow) )
