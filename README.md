@@ -6,9 +6,9 @@
 You'll need Python 3.7 and [pipenv](https://pipenv.readthedocs.io/en/latest/).
 
 ```
-git clone https://github.com/snyk-samples/snyk-api-examples-python.git
-cd snyk-api-examples-python
-export PYTHONPATH=`pwd`
+git clone https://github.com/snyk-samples/pysnyk.git
+cd pysnyk
+pipenv install
 ```
 
 You will also need to create a file with path `~/.ssh/tokens/snyk-api-token` which contains a valid Snyk API token - either your [personal token](https://app.snyk.io/account) or a [service account](https://snyk.io/docs/service-accounts/) token. This file should contain the token alone with no formatting.
