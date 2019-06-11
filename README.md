@@ -21,6 +21,15 @@ In general the form is:
 python examples/<script-name.py> --orgId=<your-org_id> ...
 ```
 
+## List Project Issues
+```
+python examples/api-demo-2-list-issues.py --orgId=<your-snyk-org> --projectId=<snyk-project-id>
+```
+If you want to catpure the output in an excel spreadsheet:
+```
+python examples/api-demo-2-list-issues.py --orgId=<your-snyk-org> --projectId=<snyk-project-id> --outputPathExcel=/path/to/output.xlsx
+```
+
 ## Update GitHub Checks Settings
 Use this to update the GitHub checks settings for a particular projectId or all GitHub projects in your Snyk org. 
 ```
