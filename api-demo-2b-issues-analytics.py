@@ -2,13 +2,36 @@ import json
 import collections
 import SnykAPI
 import operator
+import argparse
 from collections import OrderedDict
 ###SAMPLE RUN COMMAND: python3 api-demo-2b-issues-analytics.py
 
 org_id = ''
-my_js_goof_project_id = ''
+project_id = ''
 json_rslts_repo = ''
-#print(json.dumps(json_res,indent=2))
+
+def parse_command_line_args():
+    parser = argparse.ArgumentParser(description="Snyk API Examples")
+    parser.add_argument('--orgId', type=str,
+                        help='The Snyk Organisation Id')
+
+    parser.add_argument('--projectId', type=str,
+                        help='The project ID in Snyk')
+
+    args = parser.parse_args()
+
+    if args.orgId is None:
+        parser.error('You must specify --orgId')
+
+    if args.projectId is None:
+        parser.error('You must specify --projectId')
+
+    return args
+
+
+args = parse_command_line_args()
+org_id = args.orgId
+project_id = args.projectId
 
 ###START CLASS
 class analysisLog:
@@ -174,10 +197,9 @@ class analysisLog:
 
 #####ANALYSIS
 ##GET NEXT TWO VALUES FROM COMMANDLINE
-org_id = ''
-my_js_goof_project_id = ''
-json_rslts_repo = SnykAPI.snyk_projects_project_issues(org_id, my_js_goof_project_id)
+json_rslts_repo = SnykAPI.snyk_projects_project_issues(org_id, project_id)
+#print(json.dumps(json_res,indent=2))
 
-masterlog = analysisLog('MASTER LOG', org_id + '/' + my_js_goof_project_id)
+masterlog = analysisLog('MASTER LOG', org_id + '/' + project_id)
 masterlog.analyzeRepo(json_rslts_repo)
 masterlog.printResults()
