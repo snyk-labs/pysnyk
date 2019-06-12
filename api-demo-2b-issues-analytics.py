@@ -4,7 +4,7 @@ import SnykAPI
 import operator
 import argparse
 from collections import OrderedDict
-###SAMPLE RUN COMMAND: python3 api-demo-2b-issues-analytics.py
+###SAMPLE RUN COMMAND: python3 api-demo-2b-issues-analytics.py --orgID=YOURORGIDHERE --projectID=YOURSNYKPROJECTID
 
 org_id = ''
 project_id = ''
