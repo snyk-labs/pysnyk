@@ -226,17 +226,18 @@ def snyk_dependencies_list_all_dependencies_by_project(org_id, project_id, page 
     results_per_page = 50
     full_api_url = '%sorg/%s/dependencies?sortBy=dependency&order=asc&page=%s&perPage=%s' % (snyk_api_base_url, org_id, page, results_per_page)
     print(full_api_url)
-
-    post_body = {
-        'filters': {
-            'projects': [project_id]
+    post_body={}
+    if((project_id is not None) and (project_id !='')):
+        post_body = {
+            'filters': {
+                'projects': [project_id]
+            }
         }
-    }
 
     obj_json_response_content = requests_do_post_api_return_json_object(full_api_url, post_body)
+    print('Dependencies Retrieved' + str(len(obj_json_response_content['results'])))
     total = obj_json_response_content['total']  # contains the total number of results (for pagination use)
     results = obj_json_response_content['results']
-
     if total > (page * results_per_page):
         next_results = snyk_dependencies_list_all_dependencies_by_project(org_id, project_id, page + 1)
         results.extend(next_results)

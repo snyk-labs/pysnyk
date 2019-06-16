@@ -29,6 +29,8 @@ class analysisLog:
 
     def __init__(self, neworgid, newprojectId):
         self.projectId=newprojectId
+        if((newprojectId is None) or (newprojectId=='')):
+            self.projectId = ''
         self.orgId = neworgid
         #####ISSUE LIST####
         self.lstDeprecatedViolationItems=[]
@@ -36,6 +38,8 @@ class analysisLog:
         self.lstMinorVersionViolationItems=[]
         self.lstBetaInUseAndFullVersionAvailable = []
         self.lstAgePolicyViolation=[]
+        self.iDepsAnalyzed=0
+        self.iDepsDetected=0
 
     ###PRINTERS
     def print_json(self,json_obj):
@@ -47,7 +51,11 @@ class analysisLog:
 
     def printIssues(self):
         print('\t----Outputting results----')
-        print('\t\t----ORG ID: ' + self.orgId + ' , PROJECT ID: ' + self.projectId + '----')
+        displayProjectId=self.projectId
+        if(self.projectId == ''):
+            displayProjectId = '(NOT SPECIFIED)'
+
+        print('\t\t----ORG ID: ' + self.orgId + ' , PROJECT ID: ' + displayProjectId + ' , Dependencies Detected: ' + str(self.iDepsDetected) + ' , Dependencies Analyzed: ' + str(self.iDepsAnalyzed) + '----')
         
         if(self.bCheckDeprecated):
             print('\t----Deprecated items (Current Package, Package Manager Status)----')
@@ -145,7 +153,11 @@ class analysisLog:
     
     def analyze(self,depResults):
         for curDep in depResults:
+            #if(curDep['name'] ==  'sntp' ):
+            #    print(curDep)
+            self.iDepsDetected +=1
             if(curDep['type'] in self.supportPackageManagers):
+                self.iDepsAnalyzed +=1
                 self.validatePolicy(curDep)
 ##END CLASS
 
@@ -162,8 +174,8 @@ def parse_command_line_args():
     if args.orgId is None:
         parser.error('You must specify --orgId')
 
-    if args.projectId is None: ##FUTURE: For compliance we want to allow checks across all projects
-        parser.error('You must specify --projectId')
+    #if args.projectId is None: ##FUTURE: For compliance we want to allow checks across all projects
+    #    parser.error('You must specify --projectId')
 
     return args
 
