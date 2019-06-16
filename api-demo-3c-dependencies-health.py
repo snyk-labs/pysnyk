@@ -8,14 +8,15 @@ import SnykAPI
 # python3 api-demo-3c-dependencies-health.py --orgId=SOMEORGID --projectId=PROJECTID
 
 class analysisLog:
-    #######################
-    ####RULE DEFINITIONS
-    #######################
+    ###Internal Configuration - do not modify
     supportPackageManagers = ['npm']
     supportPackageManagersDeprecated = ['npm']
     ###The intial version of this is focused on Major and dot version, long term rules could include multi level inspection when 
     ###Format of a rule is say 3.0 to 3.0.1 
 
+    ########################################################
+    ###USER MODIFIABLE RULES - MODIFY THIS TO MATCH YOUR POLICY
+    ########################################################
     bCheckMajor=True
     ruleMajorDifference=2 #x.. to z...
     bCheckMinor=True
@@ -23,7 +24,7 @@ class analysisLog:
     bCheckDeprecated=True
     bCheckBetaInUseAndFullVersionAvailable=True #Check if you are on a dot version if a full one is available
     bCheckAge=True
-    ruleDepYearsSinceLastUpdate=2
+    ruleDepYearsSinceLastUpdate=2 #Number of years since last update/release for package
     #####END RULES
 
     def __init__(self, neworgid, newprojectId):
@@ -67,7 +68,7 @@ class analysisLog:
     ###VERSION MANIPULATION FUNCTIONS
     def parseVersions(self,sVersion):
         arrResult = sVersion.split(".")
-        #do a bunch of normalization here (i.e make everything x.x.x.x format)
+        #Future: perform normalization operations here (i.e compare format, i.e. x.x and x.x.x of cur/latest versions for compare, this will facilitate potential patch checks)
         return arrResult
 
     ####POLICY LOGIC
@@ -82,7 +83,6 @@ class analysisLog:
         latestMinVersion=int(latestParsedVersions[1])
 
         if(self.bCheckMajor):
-            #if(curDep['name']=='boom'): #debug example
             majDiff = latestMajVersion - majVersion
             if(majDiff >= self.ruleMajorDifference):
                 newList= [curDep['name'] + '@' + curDep['version'], latestVersion]
@@ -96,8 +96,6 @@ class analysisLog:
 
     def checkDeprecated(self,curDep):
         if(curDep['type'] in self.supportPackageManagersDeprecated):
-            #if(curDep['name'] == 'cryptiles'): #Debug library example
-            #    print(curDep)
             if(curDep['isDeprecated']):
                 newList= [curDep['name'] + '@' + curDep['version'], curDep['type'] + ': DEPRECATED']
                 self.lstDeprecatedViolationItems.append(newList)
@@ -121,17 +119,11 @@ class analysisLog:
         today = date.today()
         arrDateTime = dateToCompare.split('T')
         sDateOnly = arrDateTime[0]
-        #inputDate = datetime.strptime(sDateOnly, '%Y-%m-%d')
         inputDate = datetime.datetime.strptime(sDateOnly, '%Y-%m-%d')
         age = today.year - inputDate.year - ((today.month, today.day) < (inputDate.month, inputDate.day))
-        #print('dLastPublished sDateOnly:' + dateToCompare)
-        #print('curYear:' + str(today.year))
-        #print('curMonth:' + str(today.month))
-        #print('age:' + str(age))
         return age
 
     def checkAgeViolation(self,curDep):
-        #lstAgePolicyViolation=[]
         if(self.bCheckAge):
             detectedAgeYearsOld = self.CalculateAgeInYears(curDep['latestVersionPublishedDate'])
             if(detectedAgeYearsOld >= self.ruleDepYearsSinceLastUpdate):
