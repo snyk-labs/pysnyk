@@ -61,7 +61,7 @@ class analysisLog:
             print('\t----An early version in use (aka 0.X is in use when a full version is available)----')
             self.printItemsinList(self.lstBetaInUseAndFullVersionAvailable)
         if(self.bCheckAge):
-            print('\t----Library not maintained: Checking ' + str(self.ruleDepYearsSinceLastUpdate) + ' Years Since Last Update to Library (Package/Age in Years)----')
+            print('\t----Library not maintained: Checking ' + str(self.ruleDepYearsSinceLastUpdate) + ' Years Since Last Update to this package (Package/Age in Years)----')
             self.printItemsinList(self.lstAgePolicyViolation)
 
     ###VERSION MANIPULATION FUNCTIONS
@@ -135,8 +135,9 @@ class analysisLog:
         if(self.bCheckAge):
             detectedAgeYearsOld = self.CalculateAgeInYears(curDep['latestVersionPublishedDate'])
             if(detectedAgeYearsOld >= self.ruleDepYearsSinceLastUpdate):
-                newList= [curDep['name'] + '@' + curDep['version'], str(detectedAgeYearsOld)]
-                self.lstAgePolicyViolation.append(newList)
+                newList = [curDep['name'] , str(detectedAgeYearsOld)]
+                if(newList not in self.lstAgePolicyViolation):
+                    self.lstAgePolicyViolation.append(newList)
         
 
     def validatePolicy(self,depToCheck):
