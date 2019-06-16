@@ -103,6 +103,7 @@ class analysisLog:
             print('Type: ' + curDep['type'])
 
     def checkBetaInUseAndFullVersionAvailable(self,curDep):
+        #Future - also look for 'release candidate' and 'beta' type tags and if there is a newer version released
         curVersion=curDep['version']
         parsedVersions=self.parseVersions(curVersion)
         majVersion=int(parsedVersions[0])
