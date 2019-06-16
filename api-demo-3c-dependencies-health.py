@@ -171,13 +171,6 @@ args = parse_command_line_args()
 org_id = args.orgId
 project_id = args.projectId
 
-
-request_payload = {
-    "projects": [
-        project_id
-    ]
-}
-
 # List issues in a project
 print('----FETCHING DATA----')
 lst_deps = SnykAPI.snyk_dependencies_list_all_dependencies_by_project(org_id, project_id)
