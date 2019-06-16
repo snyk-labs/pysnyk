@@ -235,12 +235,12 @@ def snyk_dependencies_list_all_dependencies_by_project(org_id, project_id, page 
         }
 
     obj_json_response_content = requests_do_post_api_return_json_object(full_api_url, post_body)
-    print('Dependencies Retrieved' + str(len(obj_json_response_content['results'])))
+    print('Dependencies Retrieved: ' + str(len(obj_json_response_content['results'])))
     total = obj_json_response_content['total']  # contains the total number of results (for pagination use)
     results = obj_json_response_content['results']
     iCountsofar = countsofar +  len(results)
     print('page: ' + str(page) + ', total expected: ' + str(total) + ', total retrieved items: ' + str(iCountsofar) )
-    if total > countsofar: #(page * countsofar):
+    if total > iCountsofar: #(page * countsofar):
         next_results = snyk_dependencies_list_all_dependencies_by_project(org_id, project_id, page + 1,iCountsofar)
         results.extend(next_results)
         return results
