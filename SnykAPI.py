@@ -222,7 +222,7 @@ def snyk_integrations_import(org_id, integration_id, github_org, repo_name, mani
 
 # Dependencies -> List All Dependencies
 # https://snyk.docs.apiary.io/#reference/dependencies/dependencies-by-organisation
-def snyk_dependencies_list_all_dependencies_by_project(org_id, project_id, page = 1):
+def snyk_dependencies_list_all_dependencies_by_project(org_id, project_id, page = 1,countsofar=0):
     results_per_page = 50
     full_api_url = '%sorg/%s/dependencies?sortBy=dependency&order=asc&page=%s&perPage=%s' % (snyk_api_base_url, org_id, page, results_per_page)
     print(full_api_url)
@@ -238,10 +238,13 @@ def snyk_dependencies_list_all_dependencies_by_project(org_id, project_id, page 
     print('Dependencies Retrieved' + str(len(obj_json_response_content['results'])))
     total = obj_json_response_content['total']  # contains the total number of results (for pagination use)
     results = obj_json_response_content['results']
-    if total > (page * results_per_page):
-        next_results = snyk_dependencies_list_all_dependencies_by_project(org_id, project_id, page + 1)
+    iCountsofar = countsofar +  len(results)
+    print('page: ' + str(page) + ', total expected: ' + str(total) + ', total retrieved items: ' + str(iCountsofar) )
+    if total > countsofar: #(page * countsofar):
+        next_results = snyk_dependencies_list_all_dependencies_by_project(org_id, project_id, page + 1,iCountsofar)
         results.extend(next_results)
         return results
+    
     return results
 
 

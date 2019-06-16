@@ -185,7 +185,7 @@ project_id = args.projectId
 
 # List issues in a project
 print('----FETCHING DATA----')
-lst_deps = SnykAPI.snyk_dependencies_list_all_dependencies_by_project(org_id, project_id)
+lst_deps = SnykAPI.snyk_dependencies_list_all_dependencies_by_project(org_id, project_id,1,0)
 print('----DATA FETCHED----')
 #print(lst_deps)
 print('----STARTING ANALYSIS----')
