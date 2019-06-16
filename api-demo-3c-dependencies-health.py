@@ -22,7 +22,7 @@ class analysisLog:
     bCheckMinor=True
     ruleMinorDifference=3 #1.x to 1.z
     bCheckDeprecated=True
-    bCheckBetaInUseAndFullVersionAvailable=True #Check if you are on a dot version if a full one is available
+    bCheckBetaInUseAndFullVersionAvailable=True #Check if you are on a 0.x version but a full one 1.x or greater is available
     bCheckAge=True
     ruleDepYearsSinceLastUpdate=2 #Number of years since last update/release for package
     #####END RULES
