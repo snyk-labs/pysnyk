@@ -39,7 +39,7 @@ class analysisLog:
     iHigh=1
     iMedium=2
     iLow=3
-    arrSevDescriptions=['Critical', 'High','Medium','Low']
+    arrSevDescriptions=['Critical (CVSS 9.0 and Above)', 'High','Medium','Low']
     #special convention for deps
     iDepByCriticalSev=0
     iDepByHighSev=1
@@ -62,7 +62,7 @@ class analysisLog:
         #Searchlist
         self.cveWatchlist = {}
         #Description for printing - (ToDo: Read from file later)
-        self.cveWatchlist['CVE-2018-1000851'] = 'Copay Bitcoing attack via Event-Stream'
+        self.cveWatchlist['CVE-2018-1000851'] = 'Copay Bitcoin attack via Event-Stream'
         self.cveWatchlist['CVE-2017-5638'] = 'Equifax vulnerability via Struts'
         self.cveWatchlist['CVE-2018-1002204'] = 'Zip Slip - Found by Snyk!'
         
@@ -125,7 +125,9 @@ class analysisLog:
     ##OUTPUT FUNCTIONS
     def printResultVulns(self):
         print('\nVULNERABILITY ANALYSIS')
-        print('\n\tCritical Severity: ' + str(self.vulnIssueCounts[self.iCritical]) + ', High Severity: ' + str(self.vulnIssueCounts[self.iHigh]) + ', Medium Severity: ' + str(self.vulnIssueCounts[self.iMedium]) + ', Low Severity: ' + str(self.vulnIssueCounts[self.iLow]))
+        totalCount = self.vulnIssueCounts[self.iHigh] + self.vulnIssueCounts[self.iMedium] + self.vulnIssueCounts[self.iLow]
+        print('\n\t\tTotal Count (High, Medium, Low): ' + str(totalCount) + ' , Calculated Critical Severity (CVSS 9.0 and above): ' + str(self.vulnIssueCounts[self.iCritical]) + ', High Severity: ' + str(self.vulnIssueCounts[self.iHigh]) + ', Medium Severity: ' + str(self.vulnIssueCounts[self.iMedium]) + ', Low Severity: ' + str(self.vulnIssueCounts[self.iLow]))
+        
         for iSev in range( 0 ,4) :            
             self.printTopDict('\n\t' + self.arrSevDescriptions[iSev] + ' Severity Issues: ' , self.sortDict(self.dictVulnIssues[iSev]),True,5)
         
