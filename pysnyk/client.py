@@ -8,33 +8,27 @@ class SnykClient(object):
         self.snyk_api_base_url = base_url
         self.snyk_api_headers = {"Authorization": "token %s" % token}
 
+        self.snyk_post_api_headers = self.snyk_api_headers
+        self.snyk_post_api_headers["Content-type"] = "application/json"
+
     def _print_json(self, json_obj):
         print(json.dumps(json_obj, indent=4))
 
     def _requests_do_post_api_return_json_object(self, api_url, obj_json_post_body):
-        snyk_post_api_headers = self.snyk_api_headers
-        snyk_post_api_headers["Content-type"] = "application/json"
-
         resp = requests.post(
-            api_url, json=obj_json_post_body, headers=self.snyk_api_headers
+            api_url, json=obj_json_post_body, headers=self.snyk_post_api_headers
         )
         return resp.json()
 
     def _requests_do_post_api_return_http_response(self, api_url, obj_json_post_body):
-        snyk_post_api_headers = self.snyk_api_headers
-        snyk_post_api_headers["Content-type"] = "application/json"
-
         resp = requests.post(
-            api_url, json=obj_json_post_body, headers=self.snyk_api_headers
+            api_url, json=obj_json_post_body, headers=self.snyk_post_api_headers
         )
         return resp
 
     def _requests_do_put_api_return_http_response(self, api_url, obj_json_post_body):
-        snyk_post_api_headers = self.snyk_api_headers
-        snyk_post_api_headers["Content-type"] = "application/json"
-
         resp = requests.put(
-            api_url, json=obj_json_post_body, headers=self.snyk_api_headers
+            api_url, json=obj_json_post_body, headers=self.snyk_post_api_headers
         )
         return resp
 
