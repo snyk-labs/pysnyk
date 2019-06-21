@@ -25,7 +25,7 @@ project_id = args.projectId
 
 # List issues in a project
 client = SnykClient(token=snyk_token)
-lst_licenses = client.snyk_dependencies_list_all_dependencies_by_project(org_id, project_id)
+lst_licenses = client.snyk_dependencies_list_all_dependencies_by_project(org_id, project_id,1,0)
 
 for v in lst_licenses:
     print('\n%s: %s@%s' % (v['type'], v['name'], v['version']))

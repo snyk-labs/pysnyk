@@ -210,23 +210,30 @@ class SnykClient(object):
 
     # Dependencies -> List All Dependencies
     # https://snyk.docs.apiary.io/#reference/dependencies/dependencies-by-organisation
-    def snyk_dependencies_list_all_dependencies_by_project(self, org_id, project_id, page = 1):
+    def snyk_dependencies_list_all_dependencies_by_project(self, org_id, project_id, page = 1,countsofar=0):
         results_per_page = 50
         full_api_url = '%sorg/%s/dependencies?sortBy=dependency&order=asc&page=%s&perPage=%s' % (self.snyk_api_base_url, org_id, page, results_per_page)
-        print(full_api_url)
+        print('Fetching: ' + full_api_url)
 
-        post_body = {
-            'filters': {
-                'projects': [project_id]
+        post_body={}
+        if((project_id is not None) and (project_id !='')):
+            post_body = {
+                'filters': {
+                    'projects': [project_id]
+                }
             }
-        }
 
         obj_json_response_content = self._requests_do_post_api_return_json_object(full_api_url, post_body)
         total = obj_json_response_content['total']  # contains the total number of results (for pagination use)
+        #    print('Retrieved: '+ str(len(obj_json_response_content['results'])))
+        #    print('Total Expected: '+ str(total))
+        
         results = obj_json_response_content['results']
+        iCountsofar = countsofar +  len(results)
+        #    print('Running Total: ' + str(iCountsofar))
 
-        if total > (page * results_per_page):
-            next_results = self.snyk_dependencies_list_all_dependencies_by_project(org_id, project_id, page + 1)
+        if total > iCountsofar: #total > (page * results_per_page):
+            next_results = self.snyk_dependencies_list_all_dependencies_by_project(org_id, project_id, page + 1,iCountsofar)
             results.extend(next_results)
             return results
         return results

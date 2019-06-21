@@ -66,7 +66,7 @@ def get_project_tree(snyk_token, org_id, project_id):
 
 
     # Get licenses for all dependencies in the project
-    lst_res_license = client.snyk_dependencies_list_all_dependencies_by_project(org_id, project_id)
+    lst_res_license = client.snyk_dependencies_list_all_dependencies_by_project(org_id, project_id,1,0)
 
     # make into a lookup table by package_id
     package_id_to_license_info_map = {}  # package_id -> { license info }
