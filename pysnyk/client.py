@@ -27,8 +27,9 @@ class SnykClient(object):
         return resp
 
     def _requests_do_put_api_return_http_response(
-        self, api_url: str, obj_json_post_body: Any
+        self, path: str, obj_json_post_body: Any
     ) -> requests.Response:
+        api_url = "%s/%s" % (self.api_base_url, path)
         resp = requests.put(
             api_url, json=obj_json_post_body, headers=self.post_api_headers
         )
@@ -72,67 +73,8 @@ class SnykClient(object):
                 orgs.append(Organization.from_dict(org_data))
         return orgs
 
-    # https://snyk.docs.apiary.io/#reference/projects/project-ignores/list-all-ignores
-    def projects_list_all_ignores(self, org_id: str, project_id: str) -> Any:
-        full_api_url = "%sorg/%s/project/%s/ignores" % (
-            self.api_base_url,
-            org_id,
-            project_id,
-        )
-        resp = requests.get(full_api_url, headers=self.api_headers)
-        obj_json_response_content = resp.json()
-        return obj_json_response_content
-
-    def projects_project_jira_issues_list_all_jira_issues(
-        self, org_id: str, project_id: str
-    ) -> Any:
-        full_api_url = "%sorg/%s/project/%s/jira-issues" % (
-            self.api_base_url,
-            org_id,
-            project_id,
-        )
-        resp = requests.get(full_api_url, headers=self.api_headers)
-        obj_json_response_content = resp.json()
-        # print_json(obj_json_response_content)
-        return obj_json_response_content
-
-    def projects_get_product_dependency_graph(
-        self, org_id: str, project_id: str
-    ) -> Any:
-        full_api_url = "%sorg/%s/project/%s/dep-graph" % (
-            self.api_base_url,
-            org_id,
-            project_id,
-        )
-        resp = requests.get(full_api_url, headers=self.api_headers)
-        obj_json_response_content = resp.json()
-        return obj_json_response_content
-
-    def projects_update_project_settings(
-        self, org_id: str, project_id: str, **kwargs: str
-    ) -> requests.Response:
-        full_api_url = "%sorg/%s/project/%s/settings" % (
-            self.api_base_url,
-            org_id,
-            project_id,
-        )
-
-        post_body = {}
-
-        if "pullRequestTestEnabled" in kwargs:
-            post_body["pullRequestTestEnabled"] = kwargs["pullRequestTestEnabled"]
-
-        if "pullRequestFailOnAnyVulns" in kwargs:
-            post_body["pullRequestFailOnAnyVulns"] = kwargs["pullRequestFailOnAnyVulns"]
-
-        if "pullRequestFailOnlyForHighSeverity" in kwargs:
-            post_body["pullRequestFailOnlyForHighSeverity"] = kwargs[
-                "pullRequestFailOnlyForHighSeverity"
-            ]
-
-        return self._requests_do_put_api_return_http_response(full_api_url, post_body)
-
     # Integrations
+
     def integrations_import(
         self,
         org_id: str,
@@ -163,59 +105,6 @@ class SnykClient(object):
             full_api_url, post_body
         )
         return http_response
-
-    # Dependencies
-
-    # Dependencies -> List All Dependencies
-    # https://snyk.docs.apiary.io/#reference/dependencies/dependencies-by-organisation
-    def dependencies_list_all_dependencies_by_project(
-        self, org_id: str, project_id: str, page: int = 1
-    ) -> Any:
-        results_per_page = 50
-        full_api_url = (
-            "%sorg/%s/dependencies?sortBy=dependency&order=asc&page=%s&perPage=%s"
-            % (self.api_base_url, org_id, page, results_per_page)
-        )
-        print(full_api_url)
-
-        post_body = {"filters": {"projects": [project_id]}}
-
-        obj_json_response_content = self._requests_do_post_api_return_json_object(
-            full_api_url, post_body
-        )
-        total = obj_json_response_content[
-            "total"
-        ]  # contains the total number of results (for pagination use)
-        results = obj_json_response_content["results"]
-
-        if total > (page * results_per_page):
-            next_results = self.dependencies_list_all_dependencies_by_project(
-                org_id, project_id, page + 1
-            )
-            results.extend(next_results)
-            return results
-        return results
-
-    # Licenses
-    # List all licenses (in an org)
-    # https://snyk.docs.apiary.io/#reference/licenses/licenses-by-organisation
-    def licenses_list_all_licenses_by_org(
-        self, org_id: str, project_id: Union[None, str] = None
-    ) -> Any:
-        full_api_url = "%sorg/%s/licenses?sortBy=license&order=asc" % (
-            self.api_base_url,
-            org_id,
-        )
-
-        post_body: Dict[str, Dict[str, List[str]]] = {"filters": {}}
-
-        if project_id:
-            post_body["filters"]["projects"] = [project_id]
-
-        obj_json_response_content = self._requests_do_post_api_return_json_object(
-            full_api_url, post_body
-        )
-        return obj_json_response_content
 
     # Tests
 
