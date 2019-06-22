@@ -59,6 +59,7 @@ class SnykClient(object):
         obj_json_response_content = resp.json()
         return obj_json_response_content
 
+    @property
     def organizations(self) -> List[Organization]:
         resp = self._requests_do_get_return_http_response("orgs")
         orgs = []
