@@ -20,6 +20,8 @@ class Organization(DataClassJSONMixin):
             for project_data in resp.json()["projects"]:
                 project_data["organization"] = self.to_dict()
                 projects.append(Project.from_dict(project_data))
+        for x in projects:
+            x.organization = self
         return projects
 
     # https://snyk.docs.apiary.io/#reference/organisations/members-in-organisation/list-members
@@ -89,6 +91,48 @@ class IssueCounts(DataClassJSONMixin):
 
 
 @dataclass
+class Vulnerability(DataClassJSONMixin):
+    id: str
+    url: str
+    title: str
+    type: str
+    description: str
+    # TODO decode reserved word
+    # from is a reserved word in Python, this will need a custom decoder written based on
+    # https://github.com/Fatal1ty/mashumaro/blob/master/examples/json_remapping.py
+    # from: List[str]
+    package: str
+    version: str
+    severity: str
+    language: str
+    packageManager: str
+    semver: Any
+    publicationTime: str
+    isUpgradable: bool
+    identifiers: Any
+    credit: List[str]
+    isPatch: Optional[bool] = False
+    CVSSv3: Optional[str] = None
+    cvssScore: Optional[str] = None
+    upgradePath: Optional[List[str]] = None
+    disclosureTime: Optional[str] = None
+
+
+@dataclass
+class Issue(DataClassJSONMixin):
+    vulnerabilities: List[Vulnerability]
+    licenses: List[Any]
+
+
+@dataclass
+class IssueSet(DataClassJSONMixin):
+    ok: bool
+    packageManager: str
+    dependencyCount: int
+    issues: Issue
+
+
+@dataclass
 class Project(DataClassJSONMixin):
     name: str
     organization: Organization
@@ -110,7 +154,7 @@ class Project(DataClassJSONMixin):
 
     # https://snyk.docs.apiary.io/#reference/projects/project-issues
     @property
-    def issues(self) -> requests.Response:
+    def issues(self) -> IssueSet:
         path = "org/%s/project/%s/issues" % (self.organization.id, self.id)
         post_body = {
             "filters": {
@@ -197,45 +241,3 @@ class Project(DataClassJSONMixin):
             ]
 
         return self.organization.client._put(path, post_body)
-
-
-@dataclass
-class Vulnerability(DataClassJSONMixin):
-    id: str
-    url: str
-    title: str
-    type: str
-    description: str
-    # TODO decode reserved word
-    # from is a reserved word in Python, this will need a custom decoder written based on
-    # https://github.com/Fatal1ty/mashumaro/blob/master/examples/json_remapping.py
-    # from: List[str]
-    package: str
-    version: str
-    severity: str
-    language: str
-    packageManager: str
-    semver: Any
-    publicationTime: str
-    isUpgradable: bool
-    identifiers: Any
-    credit: List[str]
-    isPatch: Optional[bool] = False
-    CVSSv3: Optional[str] = None
-    cvssScore: Optional[str] = None
-    upgradePath: Optional[List[str]] = None
-    disclosureTime: Optional[str] = None
-
-
-@dataclass
-class Issue(DataClassJSONMixin):
-    vulnerabilities: List[Vulnerability]
-    licenses: List[Any]
-
-
-@dataclass
-class IssueSet(DataClassJSONMixin):
-    ok: bool
-    packageManager: str
-    dependencyCount: int
-    issues: Issue
