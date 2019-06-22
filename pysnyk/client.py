@@ -1,7 +1,6 @@
-import json
-from pathlib import Path
-import requests
 from typing import Any, List, Dict, Optional
+
+import requests
 
 from .models import Organization
 from .errors import SnykError
@@ -109,61 +108,3 @@ class SnykClient(object):
             full_api_url, post_body
         )
         return http_response
-
-    # Tests
-
-    # Tests -> test maven
-    # https://snyk.docs.apiary.io/#reference/test/maven/test-for-issues-in-a-public-package-by-group-id,-artifact-id-and-version
-    def test_maven(
-        self, package_group_id: str, package_artifact_id: str, version: str, org_id: str
-    ) -> Any:
-        full_api_url = "%stest/maven/%s/%s/%s?org=%s" % (
-            self.api_url,
-            package_group_id,
-            package_artifact_id,
-            version,
-            org_id,
-        )
-        resp = requests.get(full_api_url, headers=self.api_headers)
-        obj_json_response_content = resp.json()
-        return obj_json_response_content
-
-    # https://snyk.docs.apiary.io/#reference/test/rubygems/test-for-issues-in-a-public-gem-by-name-and-version
-    def test_rubygem(self, gem_name: str, gem_version: str, org_id: str) -> Any:
-        full_api_url = "%stest/rubygems/%s/%s?org=%s" % (
-            self.api_url,
-            gem_name,
-            gem_version,
-            org_id,
-        )
-        resp = requests.get(full_api_url, headers=self.api_headers)
-        obj_json_response_content = resp.json()
-        return obj_json_response_content
-
-    # https://snyk.docs.apiary.io/#reference/test/pip/test-for-issues-in-a-public-package-by-name-and-version
-    def test_python_package(
-        self, package_name: str, package_version: str, org_id: str
-    ) -> Any:
-        full_api_url = "%stest/pip/%s/%s?org=%s" % (
-            self.api_url,
-            package_name,
-            package_version,
-            org_id,
-        )
-        resp = requests.get(full_api_url, headers=self.api_headers)
-        obj_json_response_content = resp.json()
-        return obj_json_response_content
-
-    # https://snyk.docs.apiary.io/#reference/test/npm/test-for-issues-in-a-public-package-by-name-and-version
-    def test_npm_package(
-        self, package_name: str, package_version: str, org_id: str
-    ) -> Any:
-        full_api_url = "%stest/npm/%s/%s?org=%s" % (
-            self.api_url,
-            package_name,
-            package_version,
-            org_id,
-        )
-        resp = requests.get(full_api_url, headers=self.api_headers)
-        obj_json_response_content = resp.json()
-        return obj_json_response_content

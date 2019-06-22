@@ -37,6 +37,37 @@ class Organization(DataClassJSONMixin):
         post_body: Dict[str, Dict[str, List[str]]] = {"filters": {}}
         return self.client._requests_do_post_api_return_http_response(path, post_body)
 
+    # TODO: convert to objects
+    # https://snyk.docs.apiary.io/#reference/test/maven/test-for-issues-in-a-public-package-by-group-id,-artifact-id-and-version
+    def test_maven(
+        self, package_group_id: str, package_artifact_id: str, version: str
+    ) -> requests.Response:
+        path = "test/maven/%s/%s/%s?org=%s" % (
+            package_group_id,
+            package_artifact_id,
+            version,
+            self.id,
+        )
+        return self.client._requests_do_get_return_http_response(path)
+
+    # TODO: convert to objects
+    # https://snyk.docs.apiary.io/#reference/test/rubygems/test-for-issues-in-a-public-gem-by-name-and-version
+    def test_rubygem(self, name: str, version: str) -> requests.Response:
+        path = "test/rubygems/%s/%s?org=%s" % (name, version, self.id)
+        return self.client._requests_do_get_return_http_response(path)
+
+    # TODO: convert to objects
+    # https://snyk.docs.apiary.io/#reference/test/pip/test-for-issues-in-a-public-package-by-name-and-version
+    def test_python(self, name: str, version: str) -> requests.Response:
+        path = "test/pip/%s/%s?org=%s" % (name, version, self.id)
+        return self.client._requests_do_get_return_http_response(path)
+
+    # TODO: convert to objects
+    # https://snyk.docs.apiary.io/#reference/test/npm/test-for-issues-in-a-public-package-by-name-and-version
+    def test_npm(self, name: str, version: str) -> requests.Response:
+        path = "test/npm/%s/%s?org=%s" % (name, version, self.id)
+        return self.client._requests_do_get_return_http_response(path)
+
 
 @dataclass
 class Member(DataClassJSONMixin):
