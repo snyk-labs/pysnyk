@@ -1,0 +1,2 @@
+class SnykError(Exception):
+    pass
