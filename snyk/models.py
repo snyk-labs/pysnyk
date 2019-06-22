@@ -34,13 +34,24 @@ class Organization(DataClassJSONMixin):
             members.append(Member.from_dict(member_data))
         return members
 
-    # TODO: convert to objects
+    @property
+    def entitlements(self) -> Dict[str, bool]:
+        path = "org/%s/entitlements" % self.id
+        resp = self.client._get(path)
+        return resp.json()
+
     # https://snyk.docs.apiary.io/#reference/licenses/licenses-by-organisation
     @property
-    def licenses(self) -> requests.Response:
+    def licenses(self) -> List["License"]:
         path = "org/%s/licenses?sortBy=license&order=asc" % self.id
         post_body: Dict[str, Dict[str, List[str]]] = {"filters": {}}
-        return self.client._post(path, post_body)
+        resp = self.client._post(path, post_body)
+        license_data = resp.json()
+        licenses = []
+        if "results" in license_data:
+            for license in license_data["results"]:
+                licenses.append(License.from_dict(license_data))
+        return licenses
 
     # TODO: convert to objects
     # https://snyk.docs.apiary.io/#reference/test/maven/test-for-issues-in-a-public-package-by-group-id,-artifact-id-and-version
@@ -72,6 +83,27 @@ class Organization(DataClassJSONMixin):
     def test_npm(self, name: str, version: str) -> requests.Response:
         path = "test/npm/%s/%s?org=%s" % (name, version, self.id)
         return self.client._get(path)
+
+
+@dataclass
+class LicenseDependency(DataClassJSONMixin):
+    id: str
+    name: str
+    version: str
+    packageManager: str
+
+
+@dataclass
+class LicenseProject(DataClassJSONMixin):
+    id: str
+    name: str
+
+
+@dataclass
+class License(DataClassJSONMixin):
+    id: str
+    dependencies: List[LicenseDependency]
+    projects: List[LicenseProject]
 
 
 @dataclass
@@ -166,6 +198,12 @@ class Project(DataClassJSONMixin):
         }
         resp = self.organization.client._post(path, post_body)
         return IssueSet.from_dict(resp.json())
+
+    @property
+    def settings(self) -> Dict[str, Any]:
+        path = "org/%s/project/%s/settings" % (self.organization.id, self.id)
+        resp = self.organization.client._get(path)
+        return resp.json()
 
     # TODO: convert to object
     # https://snyk.docs.apiary.io/#reference/projects/project-ignores/list-all-ignores
