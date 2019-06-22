@@ -14,7 +14,7 @@ class SnykClient(object):
         self.api_url = url or self.API_URL
         self.api_headers = {"Authorization": "token %s" % self.api_token}
         self.api_post_headers = self.api_headers
-        self.api_post_headers["Content-type"] = "application/json"
+        self.api_post_headers["Content-Type"] = "application/json"
 
     def _requests_do_post_api_return_http_response(
         self, path: str, obj_json_post_body: Any
@@ -52,19 +52,12 @@ class SnykClient(object):
             raise SnykError(resp.json())
         return resp
 
-    ###########
-    # API functions organized per Snyk API Structure
-    ###########
-
-    # Groups
     # https://snyk.docs.apiary.io/#reference/0/list-members-in-a-group/list-all-members-in-a-group
     def groups_members(self, group_id: str) -> Any:
         path = "org/%s/members" % group_id
         resp = self._requests_do_get_return_http_response(path)
         obj_json_response_content = resp.json()
         return obj_json_response_content
-
-    # Organizations
 
     def organizations(self) -> List[Organization]:
         resp = self._requests_do_get_return_http_response("orgs")
@@ -75,8 +68,6 @@ class SnykClient(object):
         for org in orgs:
             org.client = self
         return orgs
-
-    # Integrations
 
     def integrations_import(
         self,
