@@ -15,19 +15,10 @@ class SnykClient(object):
         self.post_api_headers = self.api_headers
         self.post_api_headers["Content-type"] = "application/json"
 
-    def _requests_do_post_api_return_json_object(
-        self, api_url: str, obj_json_post_body: Any
-    ) -> Any:
-        resp = requests.post(
-            api_url, json=obj_json_post_body, headers=self.post_api_headers
-        )
-        if resp.status_code != requests.codes.ok:
-            raise SnykError(resp.json())
-        return resp.json()
-
     def _requests_do_post_api_return_http_response(
-        self, api_url: str, obj_json_post_body: Any
+        self, path: str, obj_json_post_body: Any
     ) -> requests.Response:
+        api_url = "%s/%s" % (self.api_base_url, path)
         resp = requests.post(
             api_url, json=obj_json_post_body, headers=self.post_api_headers
         )
@@ -80,54 +71,6 @@ class SnykClient(object):
             for org_data in resp.json()["orgs"]:
                 orgs.append(Organization.from_dict(org_data))
         return orgs
-
-    # https://snyk.docs.apiary.io/#reference/organisations/members-in-organisation/list-members
-    def organization__members(self, org_id: str) -> List[Member]:
-        path = "org/%s/members" % org_id
-        resp = self._requests_do_get_return_http_response(path)
-        members = []
-        for member_data in resp.json():
-            members.append(Member.from_dict(member_data))
-        return members
-
-    # Projects
-
-    # https://snyk.docs.apiary.io/#reference/projects/all-projects/list-all-projects
-    def projects(self, org_id: str) -> List[Project]:
-        path = "org/%s/projects" % org_id
-        resp = self._requests_do_get_return_http_response(path)
-        projects = []
-        org_data = resp.json()["org"]
-        if "projects" in resp.json():
-            for project_data in resp.json()["projects"]:
-                project_data["organization"] = org_data
-                projects.append(Project.from_dict(project_data))
-        return projects
-
-    # Projects -> List All Issues
-    # https://snyk.docs.apiary.io/#reference/projects/project-issues
-    # org_id works either like 'demo-applications' or the big hash
-    def projects_project_issues(self, org_id: str, project_id: str) -> Any:
-        full_api_url = "%sorg/%s/project/%s/issues" % (
-            self.api_base_url,
-            org_id,
-            project_id,
-        )
-
-        post_body = {
-            "filters": {
-                "severities": ["high", "medium", "low"],
-                "types": ["vuln", "license"],
-                "ignored": False,
-                "patched": False,
-            }
-        }
-
-        obj_json_response_content = self._requests_do_post_api_return_json_object(
-            full_api_url, post_body
-        )
-
-        return obj_json_response_content
 
     # https://snyk.docs.apiary.io/#reference/projects/project-ignores/list-all-ignores
     def projects_list_all_ignores(self, org_id: str, project_id: str) -> Any:
