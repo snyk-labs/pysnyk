@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, InitVar
 from typing import Optional, List, Dict, Any
 
 import requests
@@ -9,23 +9,24 @@ from mashumaro import DataClassJSONMixin  # type: ignore
 class Organization(DataClassJSONMixin):
     name: str
     id: str
-    group: Optional[str] = None
+    # TODO: client should be marked as an InitVar but pending a fix for
+    # https://github.com/Fatal1ty/mashumaro/issues/8
+    client: Optional[Any] = None  # type: ignore
 
-    def projects(self, client) -> List["Project"]:
+    def projects(self) -> List["Project"]:
         path = "org/%s/projects" % self.id
-        resp = client._requests_do_get_return_http_response(path)
+        resp = self.client._requests_do_get_return_http_response(path)
         projects = []
-        org_data = resp.json()["org"]
         if "projects" in resp.json():
             for project_data in resp.json()["projects"]:
-                project_data["organization"] = org_data
+                project_data["organization"] = self.to_dict()
                 projects.append(Project.from_dict(project_data))
         return projects
 
     # https://snyk.docs.apiary.io/#reference/organisations/members-in-organisation/list-members
-    def members(self, client) -> List["Member"]:
+    def members(self) -> List["Member"]:
         path = "org/%s/members" % self.id
-        resp = client._requests_do_get_return_http_response(path)
+        resp = self.client._requests_do_get_return_http_response(path)
         members = []
         for member_data in resp.json():
             members.append(Member.from_dict(member_data))
@@ -33,12 +34,10 @@ class Organization(DataClassJSONMixin):
 
     # TODO: convert to objects
     # https://snyk.docs.apiary.io/#reference/licenses/licenses-by-organisation
-    def licenses(self, client) -> requests.Response:
+    def licenses(self) -> requests.Response:
         path = "org/%s/licenses?sortBy=license&order=asc" % self.id
-
         post_body: Dict[str, Dict[str, List[str]]] = {"filters": {}}
-
-        return self._requests_do_post_api_return_http_response(path, post_body)
+        return self.client._requests_do_post_api_return_http_response(path, post_body)
 
 
 @dataclass
@@ -73,14 +72,13 @@ class Project(DataClassJSONMixin):
     issueCountsBySeverity: IssueCounts
     imageId: Optional[str] = None
 
-    def delete(self, client) -> requests.Response:
+    def delete(self) -> requests.Response:
         path = "org/%s/project/%s" % (self.organization.id, self.id)
-        return client._requests_do_delete_return_http_response(path)
+        return self.organization.client._requests_do_delete_return_http_response(path)
 
     # https://snyk.docs.apiary.io/#reference/projects/project-issues
-    def issues(self, client) -> requests.Response:
+    def issues(self) -> requests.Response:
         path = "org/%s/project/%s/issues" % (self.organization.id, self.id)
-
         post_body = {
             "filters": {
                 "severities": ["high", "medium", "low"],
@@ -89,33 +87,34 @@ class Project(DataClassJSONMixin):
                 "patched": False,
             }
         }
-
-        resp = client._requests_do_post_api_return_http_response(path, post_body)
+        resp = self.organization.client._requests_do_post_api_return_http_response(
+            path, post_body
+        )
         return IssueSet.from_dict(resp.json())
 
     # TODO: convert to object
     # https://snyk.docs.apiary.io/#reference/projects/project-ignores/list-all-ignores
-    def ignores(self, client) -> Any:
+    def ignores(self) -> Any:
         path = "org/%s/project/%s/ignores" % (self.organization.id, self.id)
-        resp = client._requests_do_get_return_http_response(path)
+        resp = self.organization.client._requests_do_get_return_http_response(path)
         return resp.json()
 
     # TODO: convert to objects
-    def jira_issues(self, client) -> Any:
+    def jira_issues(self) -> Any:
         path = "org/%s/project/%s/jira-issues" % (self.organization.id, self.id)
-        resp = client._requests_do_get_return_http_response(path)
+        resp = self.organization.client._requests_do_get_return_http_response(path)
         return resp.json()
 
     # TODO: convert to objects
-    def dependency_graph(self, client) -> Any:
+    def dependency_graph(self) -> Any:
         path = "org/%s/project/%s/dep-graph" % (self.organization.id, self.id)
-        resp = client._requests_do_get_return_http_response(path)
+        resp = self.organization.client._requests_do_get_return_http_response(path)
         return resp.json()
 
     # TODO: move pagingation per page value to constant
     # TODO: convert to objects
     # https://snyk.docs.apiary.io/#reference/dependencies/dependencies-by-organisation
-    def dependencies(self, client, page: int = 1) -> Any:
+    def dependencies(self, page: int = 1) -> Any:
         results_per_page = 50
         path = "org/%s/dependencies?sortBy=dependency&order=asc&page=%s&perPage=%s" % (
             self.organization.id,
@@ -125,7 +124,9 @@ class Project(DataClassJSONMixin):
 
         post_body = {"filters": {"projects": [self.id]}}
 
-        resp = self._requests_do_post_api_return_http_response(path, post_body)
+        resp = self.organization.client._requests_do_post_api_return_http_response(
+            path, post_body
+        )
         obj_json_response_content = resp.json()
 
         total = obj_json_response_content[
@@ -134,27 +135,24 @@ class Project(DataClassJSONMixin):
         results = obj_json_response_content["results"]
 
         if total > (page * results_per_page):
-            next_results = self.dependencies(client, page + 1)
+            next_results = self.dependencies(page + 1)
             results.extend(next_results)
             return results
         return results
 
     # TODO: convert to objects
     # https://snyk.docs.apiary.io/#reference/licenses/licenses-by-organisation
-    def licenses(self, client) -> requests.Response:
+    def licenses(self) -> requests.Response:
         path = "org/%s/licenses?sortBy=license&order=asc" % self.organization.id
-
         post_body: Dict[str, Dict[str, List[str]]] = {
             "filters": {"projects": [self.id]}
         }
+        return self.organization.client._requests_do_post_api_return_http_response(
+            path, post_body
+        )
 
-        return self._requests_do_post_api_return_http_response(path, post_body)
-
-    def projects_update_project_settings(
-        self, client, **kwargs: str
-    ) -> requests.Response:
+    def update_settings(self, **kwargs: str) -> requests.Response:
         path = "org/%s/project/%s/settings" % (self.organization.id, self.id)
-
         post_body = {}
 
         if "pullRequestTestEnabled" in kwargs:
@@ -168,7 +166,9 @@ class Project(DataClassJSONMixin):
                 "pullRequestFailOnlyForHighSeverity"
             ]
 
-        return client._requests_do_put_api_return_http_response(path, post_body)
+        return self.organization.client._requests_do_put_api_return_http_response(
+            path, post_body
+        )
 
 
 @dataclass
