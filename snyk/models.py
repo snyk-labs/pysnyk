@@ -11,6 +11,7 @@ class Organization(DataClassJSONMixin):
     id: str
     client: InitVar[Optional[Any]] = None  # type: ignore
 
+    @property
     def projects(self) -> List["Project"]:
         path = "org/%s/projects" % self.id
         resp = self.client._requests_do_get_return_http_response(path)
@@ -22,6 +23,7 @@ class Organization(DataClassJSONMixin):
         return projects
 
     # https://snyk.docs.apiary.io/#reference/organisations/members-in-organisation/list-members
+    @property
     def members(self) -> List["Member"]:
         path = "org/%s/members" % self.id
         resp = self.client._requests_do_get_return_http_response(path)
@@ -32,6 +34,7 @@ class Organization(DataClassJSONMixin):
 
     # TODO: convert to objects
     # https://snyk.docs.apiary.io/#reference/licenses/licenses-by-organisation
+    @property
     def licenses(self) -> requests.Response:
         path = "org/%s/licenses?sortBy=license&order=asc" % self.id
         post_body: Dict[str, Dict[str, List[str]]] = {"filters": {}}
