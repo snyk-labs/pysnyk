@@ -1,26 +1,28 @@
 import json
 from pathlib import Path
 import requests
-from typing import Any, Union, List, Dict
+from typing import Any, List, Dict, Optional
 
-from .models import Organization, Member, Project
+from .models import Organization
 from .errors import SnykError
 
 
 class SnykClient(object):
-    def __init__(self, token: str, base_url: str = "https://snyk.io/api/v1/"):
-        self.api_base_url = base_url
-        self.api_headers = {"Authorization": "token %s" % token}
+    API_URL = "https://snyk.io/api/v1/"
 
-        self.post_api_headers = self.api_headers
-        self.post_api_headers["Content-type"] = "application/json"
+    def __init__(self, token: str, url: Optional[str] = None):
+        self.api_token = token
+        self.api_url = url or self.API_URL
+        self.api_headers = {"Authorization": "token %s" % self.api_token}
+        self.api_post_headers = self.api_headers
+        self.api_post_headers["Content-type"] = "application/json"
 
     def _requests_do_post_api_return_http_response(
         self, path: str, obj_json_post_body: Any
 ***REMOVED*** -> requests.Response:
-        api_url = "%s/%s" % (self.api_base_url, path)
+        api_url = "%s/%s" % (self.api_url, path)
         resp = requests.post(
-            api_url, json=obj_json_post_body, headers=self.post_api_headers
+            api_url, json=obj_json_post_body, headers=self.api_post_headers
     ***REMOVED***
         if resp.status_code != requests.codes.ok:
             raise SnykError(resp.json())
@@ -29,23 +31,23 @@ class SnykClient(object):
     def _requests_do_put_api_return_http_response(
         self, path: str, obj_json_post_body: Any
 ***REMOVED*** -> requests.Response:
-        api_url = "%s/%s" % (self.api_base_url, path)
+        api_url = "%s/%s" % (self.api_url, path)
         resp = requests.put(
-            api_url, json=obj_json_post_body, headers=self.post_api_headers
+            api_url, json=obj_json_post_body, headers=self.api_post_headers
     ***REMOVED***
         if resp.status_code != requests.codes.ok:
             raise SnykError(resp.json())
         return resp
 
     def _requests_do_get_return_http_response(self, path: str) -> requests.Response:
-        api_url = "%s/%s" % (self.api_base_url, path)
+        api_url = "%s/%s" % (self.api_url, path)
         resp = requests.get(api_url, headers=self.api_headers)
         if resp.status_code != requests.codes.ok:
             raise SnykError(resp.json())
         return resp
 
     def _requests_do_delete_return_http_response(self, path: str) -> requests.Response:
-        api_url = "%s/%s" % (self.api_base_url, path)
+        api_url = "%s/%s" % (self.api_url, path)
         resp = requests.delete(api_url, headers=self.api_headers)
         if resp.status_code != requests.codes.ok:
             raise SnykError(resp.json())
@@ -71,6 +73,8 @@ class SnykClient(object):
         if "orgs" in resp.json():
             for org_data in resp.json()["orgs"]:
                 orgs.append(Organization.from_dict(org_data))
+        for org in orgs:
+            org.client = self
         return orgs
 
     # Integrations
@@ -84,7 +88,7 @@ class SnykClient(object):
         manifest_files: List[str],
 ***REMOVED*** -> requests.Response:
         full_api_url = "%sorg/%s/integrations/%s/import" % (
-            self.api_base_url,
+            self.api_url,
             org_id,
             integration_id,
     ***REMOVED***
@@ -114,7 +118,7 @@ class SnykClient(object):
         self, package_group_id: str, package_artifact_id: str, version: str, org_id: str
 ***REMOVED*** -> Any:
         full_api_url = "%stest/maven/%s/%s/%s?org=%s" % (
-            self.api_base_url,
+            self.api_url,
             package_group_id,
             package_artifact_id,
             version,
@@ -127,7 +131,7 @@ class SnykClient(object):
     # https://snyk.docs.apiary.io/#reference/test/rubygems/test-for-issues-in-a-public-gem-by-name-and-version
     def test_rubygem(self, gem_name: str, gem_version: str, org_id: str) -> Any:
         full_api_url = "%stest/rubygems/%s/%s?org=%s" % (
-            self.api_base_url,
+            self.api_url,
             gem_name,
             gem_version,
             org_id,
@@ -141,7 +145,7 @@ class SnykClient(object):
         self, package_name: str, package_version: str, org_id: str
 ***REMOVED*** -> Any:
         full_api_url = "%stest/pip/%s/%s?org=%s" % (
-            self.api_base_url,
+            self.api_url,
             package_name,
             package_version,
             org_id,
@@ -155,7 +159,7 @@ class SnykClient(object):
         self, package_name: str, package_version: str, org_id: str
 ***REMOVED*** -> Any:
         full_api_url = "%stest/npm/%s/%s?org=%s" % (
-            self.api_base_url,
+            self.api_url,
             package_name,
             package_version,
             org_id,
