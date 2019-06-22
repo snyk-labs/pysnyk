@@ -14,7 +14,7 @@ class Organization(DataClassJSONMixin):
     @property
     def projects(self) -> List["Project"]:
         path = "org/%s/projects" % self.id
-        resp = self.client._requests_do_get_return_http_response(path)
+        resp = self.client._get(path)
         projects = []
         if "projects" in resp.json():
             for project_data in resp.json()["projects"]:
@@ -26,7 +26,7 @@ class Organization(DataClassJSONMixin):
     @property
     def members(self) -> List["Member"]:
         path = "org/%s/members" % self.id
-        resp = self.client._requests_do_get_return_http_response(path)
+        resp = self.client._get(path)
         members = []
         for member_data in resp.json():
             members.append(Member.from_dict(member_data))
@@ -38,7 +38,7 @@ class Organization(DataClassJSONMixin):
     def licenses(self) -> requests.Response:
         path = "org/%s/licenses?sortBy=license&order=asc" % self.id
         post_body: Dict[str, Dict[str, List[str]]] = {"filters": {}}
-        return self.client._requests_do_post_api_return_http_response(path, post_body)
+        return self.client._post(path, post_body)
 
     # TODO: convert to objects
     # https://snyk.docs.apiary.io/#reference/test/maven/test-for-issues-in-a-public-package-by-group-id,-artifact-id-and-version
@@ -51,25 +51,25 @@ class Organization(DataClassJSONMixin):
             version,
             self.id,
     ***REMOVED***
-        return self.client._requests_do_get_return_http_response(path)
+        return self.client._get(path)
 
     # TODO: convert to objects
     # https://snyk.docs.apiary.io/#reference/test/rubygems/test-for-issues-in-a-public-gem-by-name-and-version
     def test_rubygem(self, name: str, version: str) -> requests.Response:
         path = "test/rubygems/%s/%s?org=%s" % (name, version, self.id)
-        return self.client._requests_do_get_return_http_response(path)
+        return self.client._get(path)
 
     # TODO: convert to objects
     # https://snyk.docs.apiary.io/#reference/test/pip/test-for-issues-in-a-public-package-by-name-and-version
     def test_python(self, name: str, version: str) -> requests.Response:
         path = "test/pip/%s/%s?org=%s" % (name, version, self.id)
-        return self.client._requests_do_get_return_http_response(path)
+        return self.client._get(path)
 
     # TODO: convert to objects
     # https://snyk.docs.apiary.io/#reference/test/npm/test-for-issues-in-a-public-package-by-name-and-version
     def test_npm(self, name: str, version: str) -> requests.Response:
         path = "test/npm/%s/%s?org=%s" % (name, version, self.id)
-        return self.client._requests_do_get_return_http_response(path)
+        return self.client._get(path)
 
 
 @dataclass
@@ -106,9 +106,10 @@ class Project(DataClassJSONMixin):
 
     def delete(self) -> requests.Response:
         path = "org/%s/project/%s" % (self.organization.id, self.id)
-        return self.organization.client._requests_do_delete_return_http_response(path)
+        return self.organization.client._delete(path)
 
     # https://snyk.docs.apiary.io/#reference/projects/project-issues
+    @property
     def issues(self) -> requests.Response:
         path = "org/%s/project/%s/issues" % (self.organization.id, self.id)
         post_body = {
@@ -119,28 +120,29 @@ class Project(DataClassJSONMixin):
                 "patched": False,
             }
         }
-        resp = self.organization.client._requests_do_post_api_return_http_response(
-            path, post_body
-    ***REMOVED***
+        resp = self.organization.client._post(path, post_body)
         return IssueSet.from_dict(resp.json())
 
     # TODO: convert to object
     # https://snyk.docs.apiary.io/#reference/projects/project-ignores/list-all-ignores
+    @property
     def ignores(self) -> Any:
         path = "org/%s/project/%s/ignores" % (self.organization.id, self.id)
-        resp = self.organization.client._requests_do_get_return_http_response(path)
+        resp = self.organization.client._get(path)
         return resp.json()
 
     # TODO: convert to objects
+    @property
     def jira_issues(self) -> Any:
         path = "org/%s/project/%s/jira-issues" % (self.organization.id, self.id)
-        resp = self.organization.client._requests_do_get_return_http_response(path)
+        resp = self.organization.client._get(path)
         return resp.json()
 
     # TODO: convert to objects
+    @property
     def dependency_graph(self) -> Any:
         path = "org/%s/project/%s/dep-graph" % (self.organization.id, self.id)
-        resp = self.organization.client._requests_do_get_return_http_response(path)
+        resp = self.organization.client._get(path)
         return resp.json()
 
     # TODO: move pagingation per page value to constant
@@ -156,9 +158,7 @@ class Project(DataClassJSONMixin):
 
         post_body = {"filters": {"projects": [self.id]}}
 
-        resp = self.organization.client._requests_do_post_api_return_http_response(
-            path, post_body
-    ***REMOVED***
+        resp = self.organization.client._post(path, post_body)
         obj_json_response_content = resp.json()
 
         total = obj_json_response_content[
@@ -179,9 +179,7 @@ class Project(DataClassJSONMixin):
         post_body: Dict[str, Dict[str, List[str]]] = {
             "filters": {"projects": [self.id]}
         }
-        return self.organization.client._requests_do_post_api_return_http_response(
-            path, post_body
-    ***REMOVED***
+        return self.organization.client._post(path, post_body)
 
     def update_settings(self, **kwargs: str) -> requests.Response:
         path = "org/%s/project/%s/settings" % (self.organization.id, self.id)
@@ -198,9 +196,7 @@ class Project(DataClassJSONMixin):
                 "pullRequestFailOnlyForHighSeverity"
             ]
 
-        return self.organization.client._requests_do_put_api_return_http_response(
-            path, post_body
-    ***REMOVED***
+        return self.organization.client._put(path, post_body)
 
 
 @dataclass
