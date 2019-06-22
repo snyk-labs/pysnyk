@@ -3,7 +3,7 @@ from pathlib import Path
 import requests
 from typing import Any, Union, List, Dict
 
-from .models import Organization, Member
+from .models import Organization, Member, Project
 from .errors import SnykError
 
 
@@ -52,6 +52,13 @@ class SnykClient(object):
             raise SnykError(resp.json())
         return resp
 
+    def _requests_do_delete_return_http_response(self, path: str) -> requests.Response:
+        api_url = "%s/%s" % (self.api_base_url, path)
+        resp = requests.delete(api_url, headers=self.api_headers)
+        if resp.status_code != requests.codes.ok:
+            raise SnykError(resp.json())
+        return resp
+
     ###########
     # API functions organized per Snyk API Structure
     ###########
@@ -66,7 +73,7 @@ class SnykClient(object):
 
     # Organizations
 
-    def organizations_orgs(self) -> List[Organization]:
+    def organizations(self) -> List[Organization]:
         resp = self._requests_do_get_return_http_response("orgs")
         orgs = []
         if "orgs" in resp.json():
@@ -75,7 +82,7 @@ class SnykClient(object):
         return orgs
 
     # https://snyk.docs.apiary.io/#reference/organisations/members-in-organisation/list-members
-    def organizations_list_members(self, org_id: str) -> List[Member]:
+    def organization__members(self, org_id: str) -> List[Member]:
         path = "org/%s/members" % org_id
         resp = self._requests_do_get_return_http_response(path)
         members = []
@@ -85,19 +92,17 @@ class SnykClient(object):
 
     # Projects
 
-    # Projects -> List All Projects
     # https://snyk.docs.apiary.io/#reference/projects/all-projects/list-all-projects
-    def projects_projects(self, org_id: str) -> Any:
-        full_api_url = "%sorg/%s/projects" % (self.api_base_url, org_id)
-        resp = requests.get(full_api_url, headers=self.api_headers)
-        obj_json_response_content = resp.json()
-        return obj_json_response_content
-
-    # Projects -> Delete a Project
-    # https://snyk.docs.apiary.io/#reference/projects/individual-project/delete-a-project
-    def projects_delete(self, org_id: str, project_id: str) -> requests.Response:
-        full_api_url = "%sorg/%s/project/%s" % (self.api_base_url, org_id, project_id)
-        return requests.delete(full_api_url, headers=self.api_headers)
+    def projects(self, org_id: str) -> List[Project]:
+        path = "org/%s/projects" % org_id
+        resp = self._requests_do_get_return_http_response(path)
+        projects = []
+        org_data = resp.json()["org"]
+        if "projects" in resp.json():
+            for project_data in resp.json()["projects"]:
+                project_data["organization"] = org_data
+                projects.append(Project.from_dict(project_data))
+        return projects
 
     # Projects -> List All Issues
     # https://snyk.docs.apiary.io/#reference/projects/project-issues
