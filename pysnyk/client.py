@@ -1,8 +1,10 @@
-import requests
 import json
 from pathlib import Path
-
+import requests
 from typing import Any, Union, List, Dict
+
+from .models import Organization, Member
+from .errors import SnykError
 
 
 class SnykClient(object):
@@ -13,15 +15,14 @@ class SnykClient(object):
         self.post_api_headers = self.api_headers
         self.post_api_headers["Content-type"] = "application/json"
 
-    def _print_json(self, json_obj: Any) -> None:
-        print(json.dumps(json_obj, indent=4))
-
     def _requests_do_post_api_return_json_object(
         self, api_url: str, obj_json_post_body: Any
     ) -> Any:
         resp = requests.post(
             api_url, json=obj_json_post_body, headers=self.post_api_headers
         )
+        if resp.status_code != requests.codes.ok:
+            raise SnykError(resp.json())
         return resp.json()
 
     def _requests_do_post_api_return_http_response(
@@ -30,6 +31,8 @@ class SnykClient(object):
         resp = requests.post(
             api_url, json=obj_json_post_body, headers=self.post_api_headers
         )
+        if resp.status_code != requests.codes.ok:
+            raise SnykError(resp.json())
         return resp
 
     def _requests_do_put_api_return_http_response(
@@ -38,6 +41,15 @@ class SnykClient(object):
         resp = requests.put(
             api_url, json=obj_json_post_body, headers=self.post_api_headers
         )
+        if resp.status_code != requests.codes.ok:
+            raise SnykError(resp.json())
+        return resp
+
+    def _requests_do_get_return_http_response(self, path: str) -> requests.Response:
+        api_url = "%s/%s" % (self.api_base_url, path)
+        resp = requests.get(api_url, headers=self.api_headers)
+        if resp.status_code != requests.codes.ok:
+            raise SnykError(resp.json())
         return resp
 
     ###########
@@ -47,38 +59,29 @@ class SnykClient(object):
     # Groups
     # https://snyk.docs.apiary.io/#reference/0/list-members-in-a-group/list-all-members-in-a-group
     def groups_members(self, group_id: str) -> Any:
-        full_api_url = "%sorg/%s/members" % (self.api_base_url, group_id)
-        resp = requests.get(full_api_url, headers=self.api_headers)
+        path = "org/%s/members" % group_id
+        resp = self._requests_do_get_return_http_response(path)
         obj_json_response_content = resp.json()
         return obj_json_response_content
 
     # Organizations
 
-    # Organizations -> orgs
-    # Lists all Organizations a User belongs to
-    # Status: not working - something weird going on where I don't have the permissions to see my orgs
-    def organizations_orgs(self) -> None:
-        full_api_url = "%sorgs" % (self.api_base_url)
+    def organizations_orgs(self) -> List[Organization]:
+        resp = self._requests_do_get_return_http_response("orgs")
+        orgs = []
+        if "orgs" in resp.json():
+            for org_data in resp.json()["orgs"]:
+                orgs.append(Organization.from_dict(org_data))
+        return orgs
 
-        print(full_api_url)
-        # print(api_headers)
-        # quit()
-
-        print("calling api...")
-
-        resp = requests.get(full_api_url, headers=self.api_headers)
-        obj_json_response_content = resp.json()
-        self._print_json(obj_json_response_content)
-
-    # Organizations -> List Members
     # https://snyk.docs.apiary.io/#reference/organisations/members-in-organisation/list-members
-    def organizations_list_members(self, org_id: str) -> None:
-        full_api_url = "%sorg/%s/members" % (self.api_base_url, org_id)
-        print(full_api_url)
-
-        resp = requests.get(full_api_url, headers=self.api_headers)
-        obj_json_response_content = resp.json()
-        self._print_json(obj_json_response_content)
+    def organizations_list_members(self, org_id: str) -> List[Member]:
+        path = "org/%s/members" % org_id
+        resp = self._requests_do_get_return_http_response(path)
+        members = []
+        for member_data in resp.json():
+            members.append(Member.from_dict(member_data))
+        return members
 
     # Projects
 
