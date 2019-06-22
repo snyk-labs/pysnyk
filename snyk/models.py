@@ -165,6 +165,68 @@ class IssueSet(DataClassJSONMixin):
 
 
 @dataclass
+class DependencyGraphPackageInfo(DataClassJSONMixin):
+    name: str
+    version: str
+
+
+@dataclass
+class DependencyGraphPackage(DataClassJSONMixin):
+    id: str
+    info: DependencyGraphPackageInfo
+
+
+@dataclass
+class Node(DataClassJSONMixin):
+    nodeId: str
+    pkgId: str
+    deps: List[Dict[str, str]]
+
+
+@dataclass
+class Graph(DataClassJSONMixin):
+    rootNodeId: str
+    nodes: List[Node]
+
+
+@dataclass
+class DependencyGraph(DataClassJSONMixin):
+    schemaVersion: str
+    pkgManager: Dict[str, str]
+    pkgs: List[DependencyGraphPackage]
+    graph: Graph
+
+
+@dataclass
+class DependencyLicense(DataClassJSONMixin):
+    id: str
+    title: str
+    license: str
+
+
+@dataclass
+class DependencyProject(DataClassJSONMixin):
+    name: str
+    id: str
+
+
+@dataclass
+class Dependency(DataClassJSONMixin):
+    id: str
+    name: str
+    version: str
+    latestVersion: str
+    latestVersionPublishedDate: str
+    firstPublishedData: str
+    isDeprecated: bool
+    deprecatedVersions: List[str]
+    licenses: List[DependencyLicense]
+    dependenciesWithIssues: List[str]
+    packageManager: str
+    projects: List[DependencyProject]
+
+
+@dataclass
 class Project(DataClassJSONMixin):
     name: str
     organization: Organization
@@ -205,32 +267,28 @@ class Project(DataClassJSONMixin):
         resp = self.organization.client._get(path)
         return resp.json()
 
-    # TODO: convert to object
     # https://snyk.docs.apiary.io/#reference/projects/project-ignores/list-all-ignores
     @property
-    def ignores(self) -> Any:
+    def ignores(self) -> Dict[str, List[object]]:
         path = "org/%s/project/%s/ignores" % (self.organization.id, self.id)
         resp = self.organization.client._get(path)
         return resp.json()
 
-    # TODO: convert to objects
     @property
-    def jira_issues(self) -> Any:
+    def jira_issues(self) -> Dict[str, List[object]]:
         path = "org/%s/project/%s/jira-issues" % (self.organization.id, self.id)
         resp = self.organization.client._get(path)
         return resp.json()
 
-    # TODO: convert to objects
     @property
-    def dependency_graph(self) -> Any:
+    def dependency_graph(self) -> DependencyGraph:
         path = "org/%s/project/%s/dep-graph" % (self.organization.id, self.id)
         resp = self.organization.client._get(path)
-        return resp.json()
+        dependency_data = resp.json()
+        return DependencyGraph.from_dict(dependency_data)
 
-    # TODO: move pagingation per page value to constant
-    # TODO: convert to objects
     # https://snyk.docs.apiary.io/#reference/dependencies/dependencies-by-organisation
-    def dependencies(self, page: int = 1) -> Any:
+    def dependencies(self, page: int = 1) -> List[Dependency]:
         results_per_page = 50
         path = "org/%s/dependencies?sortBy=dependency&order=asc&page=%s&perPage=%s" % (
             self.organization.id,
@@ -241,27 +299,37 @@ class Project(DataClassJSONMixin):
         post_body = {"filters": {"projects": [self.id]}}
 
         resp = self.organization.client._post(path, post_body)
-        obj_json_response_content = resp.json()
+        dependency_data = resp.json()
 
-        total = obj_json_response_content[
+        total = dependency_data[
             "total"
         ]  # contains the total number of results (for pagination use)
-        results = obj_json_response_content["results"]
+        results = dependency_data["results"]
 
         if total > (page * results_per_page):
             next_results = self.dependencies(page + 1)
             results.extend(next_results)
             return results
-        return results
 
-    # TODO: convert to objects
+        dependencies = []
+        for dependency_data in results:
+            dependencies.append(Dependency.from_dict(dependency_data))
+        return dependencies
+
     # https://snyk.docs.apiary.io/#reference/licenses/licenses-by-organisation
-    def licenses(self) -> requests.Response:
+    def licenses(self) -> List[License]:
         path = "org/%s/licenses?sortBy=license&order=asc" % self.organization.id
         post_body: Dict[str, Dict[str, List[str]]] = {
             "filters": {"projects": [self.id]}
         }
-        return self.organization.client._post(path, post_body)
+
+        resp = self.organization.client._post(path, post_body)
+        license_data = resp.json()
+        licenses = []
+        if "results" in license_data:
+            for license in license_data["results"]:
+                licenses.append(License.from_dict(license_data))
+        return licenses
 
     def update_settings(self, **kwargs: str) -> requests.Response:
         path = "org/%s/project/%s/settings" % (self.organization.id, self.id)
