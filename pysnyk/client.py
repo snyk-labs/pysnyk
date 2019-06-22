@@ -68,34 +68,3 @@ class SnykClient(object):
         for org in orgs:
             org.client = self
         return orgs
-
-    def integrations_import(
-        self,
-        org_id: str,
-        integration_id: str,
-        github_org: str,
-        repo_name: str,
-        manifest_files: List[str],
-    ) -> requests.Response:
-        full_api_url = "%sorg/%s/integrations/%s/import" % (
-            self.api_url,
-            org_id,
-            integration_id,
-        )
-
-        post_body: Dict[str, Any] = {
-            "target": {"owner": github_org, "name": repo_name, "branch": "master"}
-        }
-
-        if manifest_files is not None and len(manifest_files) > 0:
-            files = []
-            for f in manifest_files:
-                f_obj = {"path": f}
-                files.append(f_obj)
-
-            post_body["files"] = files
-
-        http_response = self._requests_do_post_api_return_http_response(
-            full_api_url, post_body
-        )
-        return http_response
