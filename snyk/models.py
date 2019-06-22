@@ -9,9 +9,7 @@ from mashumaro import DataClassJSONMixin  # type: ignore
 class Organization(DataClassJSONMixin):
     name: str
     id: str
-    # TODO: client should be marked as an InitVar but pending a fix for
-    # https://github.com/Fatal1ty/mashumaro/issues/8
-    client: Optional[Any] = None  # type: ignore
+    client: InitVar[Optional[Any]] = None  # type: ignore
 
     def projects(self) -> List["Project"]:
         path = "org/%s/projects" % self.id
