@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field, InitVar
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Union
 
 import requests
 from mashumaro import DataClassJSONMixin  # type: ignore
@@ -30,6 +30,13 @@ class Organization(DataClassJSONMixin):
         for x in projects:
             x.organization = self
         return projects
+
+    def project(self, id) -> Union["Project", None]:
+        # TODO: filter
+        for project in self.projects:
+            if project.id == id:
+                return project
+        return None
 
     # https://snyk.docs.apiary.io/#reference/organisations/members-in-organisation/list-members
     @property
@@ -160,6 +167,7 @@ class Vulnerability(DataClassJSONMixin):
 @dataclass
 class Issue(DataClassJSONMixin):
     vulnerabilities: List[Vulnerability]
+    # TODO: define type for license issue
     licenses: List[Any]
 
 
