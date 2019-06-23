@@ -3,43 +3,35 @@
 from pysnyk import SnykClient
 from utils import get_token
 
+
 ***REMOVED***
 ***REMOVED***
-***REMOVED***'--orgId', type=str,
-                        help='The Snyk Organisation Id', required=True)
-
-    args = parser.parse_args()
-
-    return args
-
-snyk_token = get_token('snyk-api-token')
 ***REMOVED***
-***REMOVED***  # TODO: specify --orgId=<your-org-id>
+***REMOVED***
+***REMOVED***
+***REMOVED***
+
+
+snyk_token = get_token("snyk-api-token")
+***REMOVED***
+***REMOVED***
 
 show_dependencies = True
 show_projects = True
 
 
-# List issues in a project
-***REMOVED***
-json_res = client.snyk_licenses_list_all_licenses_by_org(org_id)
-print('\n\nNumber of licenses: %s' % json_res['total'])
-print(json_res)
-for v in json_res['results']:
-    print('\nLicense: %s' % (v['id']))
+client = SnykClient(snyk_token)
+licenses = client.organization(org_id).licenses
+print("\n\nNumber of licenses: %s" % len(licenses))
+for license in licenses:
+    print("\nLicense: %s" % (license.id))
 
     if show_dependencies:
-        dependencies = v['dependencies']
-        print('  Dependencies:')
-        for d in dependencies:
-            print('   - %s: %s' % (d['packageManager'], d['id']))
+        print("  Dependencies:")
+        for dep in license.dependencies:
+            print("   - %s: %s" % (dep.packageManager, dep.id))
 
     if show_projects:
-        projects = v['projects']
-        print('  Projects:')
-        for p in projects:
-            print('   - %s' % p['name'])
-
-    # print('  %s@%s' % (v['package'], v['version']))
-    # print('  Severity: %s' % v['severity'])
-
+        print("  Projects:")
+        for proj in license.projects:
+            print("   - %s" % proj.name)
