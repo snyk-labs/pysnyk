@@ -6,9 +6,16 @@ from mashumaro import DataClassJSONMixin  # type: ignore
 
 
 @dataclass
+class OrganizationGroup(DataClassJSONMixin):
+    name: str
+    id: str
+
+
+@dataclass
 class Organization(DataClassJSONMixin):
     name: str
     id: str
+    group: Optional[OrganizationGroup] = None
     client: InitVar[Optional[Any]] = None  # type: ignore
 
     @property
