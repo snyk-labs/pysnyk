@@ -29,39 +29,39 @@ class TestSnykClient(object):
 
     def test_get_sends_request_to_snyk(self, requests_mock, client):
         requests_mock.get("https://snyk.io/api/v1/sample", text="pong")
-        assert client._get("sample")
+        assert client.get("sample")
 
     def test_put_sends_request_to_snyk(self, requests_mock, client):
         requests_mock.put("https://snyk.io/api/v1/sample", text="pong")
-        assert client._put("sample", {})
+        assert client.put("sample", {})
 
     def test_delete_sends_request_to_snyk(self, requests_mock, client):
         requests_mock.delete("https://snyk.io/api/v1/sample")
-        assert client._delete("sample")
+        assert client.delete("sample")
 
     def test_post_sends_request_to_snyk(self, requests_mock, client):
         requests_mock.post("https://snyk.io/api/v1/sample")
-        assert client._post("sample", {})
+        assert client.post("sample", {})
 
     def test_post_raises_error(self, requests_mock, client):
         requests_mock.post("https://snyk.io/api/v1/sample", status_code=500, json={})
         with pytest.raises(SnykError):
-            client._post("sample", {})
+            client.post("sample", {})
 
     def test_put_raises_error(self, requests_mock, client):
         requests_mock.put("https://snyk.io/api/v1/sample", status_code=500, json={})
         with pytest.raises(SnykError):
-            client._put("sample", {})
+            client.put("sample", {})
 
     def test_delete_raises_error(self, requests_mock, client):
         requests_mock.delete("https://snyk.io/api/v1/sample", status_code=500, json={})
         with pytest.raises(SnykError):
-            client._delete("sample")
+            client.delete("sample")
 
     def test_get_raises_error(self, requests_mock, client):
         requests_mock.get("https://snyk.io/api/v1/sample", status_code=500, json={})
         with pytest.raises(SnykError):
-            client._get("sample")
+            client.get("sample")
 
     def test_empty_organizations(self, requests_mock, client):
         requests_mock.get("https://snyk.io/api/v1/orgs", json={})

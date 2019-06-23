@@ -16,28 +16,28 @@ class SnykClient(object):
         self.api_post_headers = self.api_headers
         self.api_post_headers["Content-Type"] = "application/json"
 
-    def _post(self, path: str, body: Any) -> requests.Response:
+    def post(self, path: str, body: Any) -> requests.Response:
         url = "%s/%s" % (self.api_url, path)
         resp = requests.post(url, json=body, headers=self.api_post_headers)
         if not resp:
             raise SnykError(resp.json())
         return resp
 
-    def _put(self, path: str, body: Any) -> requests.Response:
+    def put(self, path: str, body: Any) -> requests.Response:
         url = "%s/%s" % (self.api_url, path)
         resp = requests.put(url, json=body, headers=self.api_post_headers)
         if not resp:
             raise SnykError(resp.json())
         return resp
 
-    def _get(self, path: str) -> requests.Response:
+    def get(self, path: str) -> requests.Response:
         url = "%s/%s" % (self.api_url, path)
         resp = requests.get(url, headers=self.api_headers)
         if not resp:
             raise SnykError(resp.json())
         return resp
 
-    def _delete(self, path: str) -> requests.Response:
+    def delete(self, path: str) -> requests.Response:
         url = "%s/%s" % (self.api_url, path)
         resp = requests.delete(url, headers=self.api_headers)
         if not resp:
@@ -46,7 +46,7 @@ class SnykClient(object):
 
     @property
     def organizations(self) -> List[Organization]:
-        resp = self._get("orgs")
+        resp = self.get("orgs")
         orgs = []
         if "orgs" in resp.json():
             for org_data in resp.json()["orgs"]:
