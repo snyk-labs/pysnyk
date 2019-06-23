@@ -4,6 +4,8 @@ from typing import Optional, List, Dict, Any, Union
 import requests
 from mashumaro import DataClassJSONMixin  # type: ignore
 
+from .errors import SnykProjectNotFound
+
 
 @dataclass
 class OrganizationGroup(DataClassJSONMixin):
@@ -36,7 +38,7 @@ class Organization(DataClassJSONMixin):
         for project in self.projects:
             if project.id == id:
                 return project
-        return None
+        raise SnykProjectNotFound
 
     # https://snyk.docs.apiary.io/#reference/organisations/members-in-organisation/list-members
     @property

@@ -3,7 +3,7 @@ from typing import Any, List, Dict, Optional, Union
 import requests
 
 from .models import Organization, Project
-from .errors import SnykError
+from .errors import SnykError, SnykOrganizationNotFound, SnykProjectNotFound
 
 
 class SnykClient(object):
@@ -55,12 +55,12 @@ class SnykClient(object):
             org.client = self
         return orgs
 
-    def organization(self, id) -> Union[Organization, None]:
+    def organization(self, id) -> Organization:
         # TODO: replace with filter
         for org in self.organizations:
             if org.id == id:
                 return org
-        return None
+        raise SnykOrganizationNotFound
 
     @property
     def projects(self) -> List[Project]:
@@ -72,7 +72,8 @@ class SnykClient(object):
     def project(self, id) -> Union[Project, None]:
         # TODO: replace with filter
         for org in self.organizations:
-            project = org.project(id)
-            if project:
-                return project
-        return None
+            try:
+                return org.project(id)
+            except SnykProjectNotFound:
+                pass
+        raise SnykProjectNotFound
