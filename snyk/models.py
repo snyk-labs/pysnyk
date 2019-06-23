@@ -244,9 +244,9 @@ class Project(DataClassJSONMixin):
     readOnly: bool
     testFrequency: str
     totalDependencies: int
-    imageTag: str
     lastTestedDate: str
     issueCountsBySeverity: IssueCounts
+    imageTag: Optional[str] = None
     imageId: Optional[str] = None
 
     def delete(self) -> requests.Response:

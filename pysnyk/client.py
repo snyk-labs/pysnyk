@@ -2,7 +2,7 @@ from typing import Any, List, Dict, Optional
 
 import requests
 
-from .models import Organization
+from .models import Organization, Project
 from .errors import SnykError
 
 
@@ -54,3 +54,10 @@ class SnykClient(object):
         for org in orgs:
             org.client = self
         return orgs
+
+    @property
+    def projects(self) -> List[Project]:
+        projects = []
+        for org in self.organizations:
+            projects.extend(org.projects)
+        return projects
