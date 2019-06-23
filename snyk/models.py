@@ -21,7 +21,7 @@ class Organization(DataClassJSONMixin):
     @property
     def projects(self) -> List["Project"]:
         path = "org/%s/projects" % self.id
-        resp = self.client._get(path)
+        resp = self.client.get(path)
         projects = []
         if "projects" in resp.json():
             for project_data in resp.json()["projects"]:
@@ -35,7 +35,7 @@ class Organization(DataClassJSONMixin):
     @property
     def members(self) -> List["Member"]:
         path = "org/%s/members" % self.id
-        resp = self.client._get(path)
+        resp = self.client.get(path)
         members = []
         for member_data in resp.json():
             members.append(Member.from_dict(member_data))
@@ -44,7 +44,7 @@ class Organization(DataClassJSONMixin):
     @property
     def entitlements(self) -> Dict[str, bool]:
         path = "org/%s/entitlements" % self.id
-        resp = self.client._get(path)
+        resp = self.client.get(path)
         return resp.json()
 
     # https://snyk.docs.apiary.io/#reference/licenses/licenses-by-organisation
@@ -52,7 +52,7 @@ class Organization(DataClassJSONMixin):
     def licenses(self) -> List["License"]:
         path = "org/%s/licenses?sortBy=license&order=asc" % self.id
         post_body: Dict[str, Dict[str, List[str]]] = {"filters": {}}
-        resp = self.client._post(path, post_body)
+        resp = self.client.post(path, post_body)
         license_data = resp.json()
         licenses = []
         if "results" in license_data:
@@ -71,25 +71,25 @@ class Organization(DataClassJSONMixin):
             version,
             self.id,
         )
-        return self.client._get(path)
+        return self.client.get(path)
 
     # TODO: convert to objects
     # https://snyk.docs.apiary.io/#reference/test/rubygems/test-for-issues-in-a-public-gem-by-name-and-version
     def test_rubygem(self, name: str, version: str) -> requests.Response:
         path = "test/rubygems/%s/%s?org=%s" % (name, version, self.id)
-        return self.client._get(path)
+        return self.client.get(path)
 
     # TODO: convert to objects
     # https://snyk.docs.apiary.io/#reference/test/pip/test-for-issues-in-a-public-package-by-name-and-version
     def test_python(self, name: str, version: str) -> requests.Response:
         path = "test/pip/%s/%s?org=%s" % (name, version, self.id)
-        return self.client._get(path)
+        return self.client.get(path)
 
     # TODO: convert to objects
     # https://snyk.docs.apiary.io/#reference/test/npm/test-for-issues-in-a-public-package-by-name-and-version
     def test_npm(self, name: str, version: str) -> requests.Response:
         path = "test/npm/%s/%s?org=%s" % (name, version, self.id)
-        return self.client._get(path)
+        return self.client.get(path)
 
 
 @dataclass
@@ -251,7 +251,7 @@ class Project(DataClassJSONMixin):
 
     def delete(self) -> requests.Response:
         path = "org/%s/project/%s" % (self.organization.id, self.id)
-        return self.organization.client._delete(path)
+        return self.organization.client.delete(path)
 
     # https://snyk.docs.apiary.io/#reference/projects/project-issues
     @property
@@ -265,32 +265,32 @@ class Project(DataClassJSONMixin):
                 "patched": False,
             }
         }
-        resp = self.organization.client._post(path, post_body)
+        resp = self.organization.client.post(path, post_body)
         return IssueSet.from_dict(resp.json())
 
     @property
     def settings(self) -> Dict[str, Any]:
         path = "org/%s/project/%s/settings" % (self.organization.id, self.id)
-        resp = self.organization.client._get(path)
+        resp = self.organization.client.get(path)
         return resp.json()
 
     # https://snyk.docs.apiary.io/#reference/projects/project-ignores/list-all-ignores
     @property
     def ignores(self) -> Dict[str, List[object]]:
         path = "org/%s/project/%s/ignores" % (self.organization.id, self.id)
-        resp = self.organization.client._get(path)
+        resp = self.organization.client.get(path)
         return resp.json()
 
     @property
     def jira_issues(self) -> Dict[str, List[object]]:
         path = "org/%s/project/%s/jira-issues" % (self.organization.id, self.id)
-        resp = self.organization.client._get(path)
+        resp = self.organization.client.get(path)
         return resp.json()
 
     @property
     def dependency_graph(self) -> DependencyGraph:
         path = "org/%s/project/%s/dep-graph" % (self.organization.id, self.id)
-        resp = self.organization.client._get(path)
+        resp = self.organization.client.get(path)
         dependency_data = resp.json()
         return DependencyGraph.from_dict(dependency_data)
 
@@ -305,7 +305,7 @@ class Project(DataClassJSONMixin):
 
         post_body = {"filters": {"projects": [self.id]}}
 
-        resp = self.organization.client._post(path, post_body)
+        resp = self.organization.client.post(path, post_body)
         dependency_data = resp.json()
 
         total = dependency_data[
@@ -330,7 +330,7 @@ class Project(DataClassJSONMixin):
             "filters": {"projects": [self.id]}
         }
 
-        resp = self.organization.client._post(path, post_body)
+        resp = self.organization.client.post(path, post_body)
         license_data = resp.json()
         licenses = []
         if "results" in license_data:
@@ -353,4 +353,4 @@ class Project(DataClassJSONMixin):
                 "pullRequestFailOnlyForHighSeverity"
             ]
 
-        return self.organization.client._put(path, post_body)
+        return self.organization.client.put(path, post_body)
