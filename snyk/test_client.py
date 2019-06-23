@@ -1,8 +1,10 @@
+import re
+
 import pytest  # type: ignore
 
 ***REMOVED***
 from snyk.errors import SnykError
-from snyk.models import Organization
+from snyk.models import Organization, Project
 
 
 class TestSnykClient(object):
@@ -87,6 +89,25 @@ class TestSnykClient(object):
             ]
         }
 
+    @pytest.fixture
+    def projects(self):
+        return {
+            "projects": [
+                {
+                    "name": "atokeneduser/goof",
+                    "id": "6d5813be-7e6d-4ab8-80c2-1e3e2a454545",
+                    "created": "2018-10-29T09:50:54.014Z",
+                    "origin": "cli",
+                    "type": "npm",
+                    "readOnly": "false",
+                    "testFrequency": "daily",
+                    "totalDependencies": 438,
+                    "issueCountsBySeverity": {"low": 8, "high": 13, "medium": 15},
+                    "lastTestedDate": "2019-02-05T06:21:00.000Z",
+                }
+            ]
+        }
+
     def test_loads_organizations(self, requests_mock, client, organizations):
         requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
         assert len(client.organizations) == 2
@@ -102,3 +123,21 @@ class TestSnykClient(object):
     def test_organization_load_group(self, requests_mock, client, organizations):
         requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
         assert client.organizations[1].group.name == "ACME Inc."
+
+    def test_empty_projects(self, requests_mock, client, organizations):
+        requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
+        matcher = re.compile("projects$")
+        requests_mock.get(matcher, json={})
+        assert [] == client.projects
+
+    def test_projects_count(self, requests_mock, client, organizations, projects):
+        requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
+        matcher = re.compile("projects$")
+        requests_mock.get(matcher, json=projects)
+        assert len(client.projects) == 2
+
+    def test_projects_type(self, requests_mock, client, organizations, projects):
+        requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
+        matcher = re.compile("projects$")
+        requests_mock.get(matcher, json=projects)
+        assert all(type(x) is Project for x in client.projects)
