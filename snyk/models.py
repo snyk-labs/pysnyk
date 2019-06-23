@@ -50,7 +50,7 @@ class Organization(DataClassJSONMixin):
     # https://snyk.docs.apiary.io/#reference/licenses/licenses-by-organisation
     @property
     def licenses(self) -> List["License"]:
-        path = "org/%s/licenses?sortBy=license&order=asc" % self.id
+        path = "org/%s/licenses" % self.id
         post_body: Dict[str, Dict[str, List[str]]] = {"filters": {}}
         resp = self.client.post(path, post_body)
         license_data = resp.json()
