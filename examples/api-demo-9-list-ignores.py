@@ -6,15 +6,13 @@ from utils import get_token
 
 def parse_command_line_args():
     parser = argparse.ArgumentParser(description="Snyk API Examples")
-    parser.add_argument('--orgId', type=str,
-                        help='The Snyk Organisation Id', required=True)
-
-    args = parser.parse_args()
-
-    return args
+    parser.add_argument(
+        "--orgId", type=str, help="The Snyk Organisation Id", required=True
+    )
+    return parser.parse_args()
 
 
-snyk_token = get_token('snyk-api-token')
+snyk_token = get_token("snyk-api-token")
 args = parse_command_line_args()
 org_id = args.orgId
 
@@ -22,22 +20,20 @@ org_id = args.orgId
 show_dependencies = True
 show_projects = True
 
-client = SnykClient(token=snyk_token)
+client = SnykClient(snyk_token)
 json_res_projects = client.snyk_projects_projects(org_id)
-for proj in json_res_projects['projects']:
-    project_id = proj['id']
-    project_name = proj['name']
+for proj in json_res_projects["projects"]:
+    project_id = proj["id"]
+    project_name = proj["name"]
 
     json_res_ignores = client.snyk_projects_list_all_ignores(org_id, project_id)
 
     if len(json_res_ignores.keys()) > 0:
         # issues exist for this project
-
-        print('Project ID: %s' % project_id)
-        print('Project Name: %s' % project_name)
-
+        print("Project ID: %s" % project_id)
+        print("Project Name: %s" % project_name)
         for next_issue_id in json_res_ignores.keys():
-            print('  Ignored Issue ID: %s' % next_issue_id)
+            print("  Ignored Issue ID: %s" % next_issue_id)
             next_issue_ignores = json_res_ignores[next_issue_id]
 
             for next_ignore in next_issue_ignores:
@@ -47,23 +43,24 @@ for proj in json_res_projects['projects']:
                     i_value = next_ignore[i_key]
                     # print(i_value)
 
-                    reason = i_value['reason']
-                    created_date = i_value['created']
-                    expires_date = i_value['expires']
-                    ignored_by_user = i_value['ignoredBy']
-                    ignored_by_id = ignored_by_user['id']
-                    ignored_by_name = ignored_by_user['name']
-                    ignored_by_email = ignored_by_user['email']
-                    reason_type = i_value['reasonType']
-                    disregard_if_fixable = i_value['disregardIfFixable']
-                    print('    Ignore reason: %s ' % reason)
-                    print('    Ignore created: %s ' % created_date)
-                    print('    Ignore expires: %s ' % expires_date)
-                    print('    Ignored by (User ID): %s ' % ignored_by_id)
-                    print('    Ignored by (name): %s ' % ignored_by_name)
-                    print('    Ignored by (email) %s ' % ignored_by_email)
-                    print('    Ignore type: %s ' % reason_type)
-                    print('    Ignore is disregard if fixable: %s ' % disregard_if_fixable)
+                    reason = i_value["reason"]
+                    created_date = i_value["created"]
+                    expires_date = i_value["expires"]
+                    ignored_by_user = i_value["ignoredBy"]
+                    ignored_by_id = ignored_by_user["id"]
+                    ignored_by_name = ignored_by_user["name"]
+                    ignored_by_email = ignored_by_user["email"]
+                    reason_type = i_value["reasonType"]
+                    disregard_if_fixable = i_value["disregardIfFixable"]
+                    print("    Ignore reason: %s " % reason)
+                    print("    Ignore created: %s " % created_date)
+                    print("    Ignore expires: %s " % expires_date)
+                    print("    Ignored by (User ID): %s " % ignored_by_id)
+                    print("    Ignored by (name): %s " % ignored_by_name)
+                    print("    Ignored by (email) %s " % ignored_by_email)
+                    print("    Ignore type: %s " % reason_type)
+                    print(
+                        "    Ignore is disregard if fixable: %s " % disregard_if_fixable
+                    )
 
-        print('\n')
-
+        print("\n")
