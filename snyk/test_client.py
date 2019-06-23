@@ -3,7 +3,7 @@ import re
 import pytest  # type: ignore
 
 from snyk import SnykClient
-from snyk.errors import SnykError
+from snyk.errors import SnykError, SnykOrganizationNotFound, SnykProjectNotFound
 from snyk.models import Organization, Project
 
 
@@ -119,7 +119,8 @@ class TestSnykClient(object):
 
     def test_non_existent_organization(self, requests_mock, client, organizations):
         requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
-        assert client.organization("not-present") is None
+        with pytest.raises(SnykOrganizationNotFound):
+            client.organization("not-present")
 
     def test_organization_type(self, requests_mock, client, organizations):
         requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
@@ -159,4 +160,5 @@ class TestSnykClient(object):
         requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
         matcher = re.compile("projects$")
         requests_mock.get(matcher, json=projects)
-        assert client.project("not-present") is None
+        with pytest.raises(SnykProjectNotFound):
+            client.project("not-present")
