@@ -112,6 +112,15 @@ class TestSnykClient(object):
         requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
         assert len(client.organizations) == 2
 
+    def test_loads_organization(self, requests_mock, client, organizations):
+        requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
+        org = client.organization("689ce7f9-7943-4a71-b704-2ba575f01089")
+        assert "defaultOrg" == org.name
+
+    def test_non_existent_organization(self, requests_mock, client, organizations):
+        requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
+        assert client.organization("not-present") is None
+
     def test_organization_type(self, requests_mock, client, organizations):
         requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
         assert all(type(x) is Organization for x in client.organizations)
@@ -130,14 +139,24 @@ class TestSnykClient(object):
         requests_mock.get(matcher, json={})
         assert [] == client.projects
 
-    def test_projects_count(self, requests_mock, client, organizations, projects):
+    def test_projects(self, requests_mock, client, organizations, projects):
         requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
         matcher = re.compile("projects$")
         requests_mock.get(matcher, json=projects)
         assert len(client.projects) == 2
+        assert all(type(x) is Project for x in client.projects)
 
-    def test_projects_type(self, requests_mock, client, organizations, projects):
+    def test_project(self, requests_mock, client, organizations, projects):
         requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
         matcher = re.compile("projects$")
         requests_mock.get(matcher, json=projects)
-        assert all(type(x) is Project for x in client.projects)
+        assert (
+            "atokeneduser/goof"
+            == client.project("6d5813be-7e6d-4ab8-80c2-1e3e2a454545").name
+        )
+
+    def test_non_existent_project(self, requests_mock, client, organizations, projects):
+        requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
+        matcher = re.compile("projects$")
+        requests_mock.get(matcher, json=projects)
+        assert client.project("not-present") is None

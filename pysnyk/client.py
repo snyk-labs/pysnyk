@@ -1,4 +1,4 @@
-from typing import Any, List, Dict, Optional
+from typing import Any, List, Dict, Optional, Union
 
 import requests
 
@@ -55,9 +55,24 @@ class SnykClient(object):
             org.client = self
         return orgs
 
+    def organization(self, id) -> Union[Organization, None]:
+        # TODO: replace with filter
+        for org in self.organizations:
+            if org.id == id:
+                return org
+        return None
+
     @property
     def projects(self) -> List[Project]:
         projects = []
         for org in self.organizations:
             projects.extend(org.projects)
         return projects
+
+    def project(self, id) -> Union[Project, None]:
+        # TODO: replace with filter
+        for org in self.organizations:
+            project = org.project(id)
+            if project:
+                return project
+        return None
