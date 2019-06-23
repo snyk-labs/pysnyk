@@ -7,7 +7,7 @@ from .errors import SnykError
 
 
 class SnykClient(object):
-    API_URL = "https://snyk.io/api/v1/"
+    API_URL = "https://snyk.io/api/v1"
 
     def __init__(self, token: str, url: Optional[str] = None):
         self.api_token = token
@@ -16,42 +16,33 @@ class SnykClient(object):
         self.api_post_headers = self.api_headers
         self.api_post_headers["Content-Type"] = "application/json"
 
-    def _post(self, path: str, obj_json_post_body: Any) -> requests.Response:
+    def _post(self, path: str, body: Any) -> requests.Response:
         url = "%s/%s" % (self.api_url, path)
-        resp = requests.post(
-            url, json=obj_json_post_body, headers=self.api_post_headers
-    ***REMOVED***
-        if resp.status_code != requests.codes.ok:
+        resp = requests.post(url, json=body, headers=self.api_post_headers)
+        if not resp:
             raise SnykError(resp.json())
         return resp
 
-    def _put(self, path: str, obj_json_post_body: Any) -> requests.Response:
+    def _put(self, path: str, body: Any) -> requests.Response:
         url = "%s/%s" % (self.api_url, path)
-        resp = requests.put(url, json=obj_json_post_body, headers=self.api_post_headers)
-        if resp.status_code != requests.codes.ok:
+        resp = requests.put(url, json=body, headers=self.api_post_headers)
+        if not resp:
             raise SnykError(resp.json())
         return resp
 
     def _get(self, path: str) -> requests.Response:
         url = "%s/%s" % (self.api_url, path)
         resp = requests.get(url, headers=self.api_headers)
-        if resp.status_code != requests.codes.ok:
+        if not resp:
             raise SnykError(resp.json())
         return resp
 
     def _delete(self, path: str) -> requests.Response:
         url = "%s/%s" % (self.api_url, path)
         resp = requests.delete(url, headers=self.api_headers)
-        if resp.status_code != requests.codes.ok:
+        if not resp:
             raise SnykError(resp.json())
         return resp
-
-    # https://snyk.docs.apiary.io/#reference/0/list-members-in-a-group/list-all-members-in-a-group
-    def groups_members(self, group_id: str) -> Any:
-        path = "org/%s/members" % group_id
-        resp = self._get(path)
-        obj_json_response_content = resp.json()
-        return obj_json_response_content
 
     @property
     def organizations(self) -> List[Organization]:
