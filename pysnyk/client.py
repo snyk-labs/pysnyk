@@ -20,28 +20,28 @@ class SnykClient(object):
         url = "%s/%s" % (self.api_url, path)
         resp = requests.post(url, json=body, headers=self.api_post_headers)
         if not resp:
-            raise SnykError(resp.json())
+            raise SnykError(resp)
         return resp
 
     def put(self, path: str, body: Any) -> requests.Response:
         url = "%s/%s" % (self.api_url, path)
         resp = requests.put(url, json=body, headers=self.api_post_headers)
         if not resp:
-            raise SnykError(resp.json())
+            raise SnykError(resp)
         return resp
 
     def get(self, path: str) -> requests.Response:
         url = "%s/%s" % (self.api_url, path)
         resp = requests.get(url, headers=self.api_headers)
         if not resp:
-            raise SnykError(resp.json())
+            raise SnykError(resp)
         return resp
 
     def delete(self, path: str) -> requests.Response:
         url = "%s/%s" % (self.api_url, path)
         resp = requests.delete(url, headers=self.api_headers)
         if not resp:
-            raise SnykError(resp.json())
+            raise SnykError(resp)
         return resp
 
     @property
@@ -56,11 +56,16 @@ class SnykClient(object):
         return orgs
 
     def organization(self, id) -> Organization:
-        # TODO: replace with filter
-        for org in self.organizations:
-            if org.id == id:
-                return org
-        raise SnykOrganizationNotFound
+        try:
+            resp = self.get("orgs/%s" % id)
+            if "orgs" in resp.json():
+                for org_data in resp.json()["orgs"]:
+                    org = Organization.from_dict(org_data)
+                    org.client = self
+                    return org
+            raise SnykOrganizationNotFound
+        except SnykError:
+            raise SnykOrganizationNotFound
 
     @property
     def projects(self) -> List[Project]:
@@ -70,7 +75,6 @@ class SnykClient(object):
         return projects
 
     def project(self, id) -> Union[Project, None]:
-        # TODO: replace with filter
         for org in self.organizations:
             try:
                 return org.project(id)

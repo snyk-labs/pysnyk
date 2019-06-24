@@ -113,12 +113,13 @@ class TestSnykClient(object):
         assert len(client.organizations) == 2
 
     def test_loads_organization(self, requests_mock, client, organizations):
-        requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
-        org = client.organization("689ce7f9-7943-4a71-b704-2ba575f01089")
+        key = organizations["orgs"][0]["id"]
+        requests_mock.get("https://snyk.io/api/v1/orgs/%s" % key, json=organizations)
+        org = client.organization(key)
         assert "defaultOrg" == org.name
 
     def test_non_existent_organization(self, requests_mock, client, organizations):
-        requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
+        requests_mock.get("https://snyk.io/api/v1/orgs/not-present", status_code=404)
         with pytest.raises(SnykOrganizationNotFound):
             client.organization("not-present")
 

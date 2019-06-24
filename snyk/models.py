@@ -34,7 +34,6 @@ class Organization(DataClassJSONMixin):
         return projects
 
     def project(self, id) -> Union["Project", None]:
-        # TODO: filter
         for project in self.projects:
             if project.id == id:
                 return project
