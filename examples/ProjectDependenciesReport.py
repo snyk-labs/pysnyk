@@ -1,6 +1,6 @@
 import json
 
-***REMOVED***
+from pysnyk import SnykClient
 
 
 def print_json(json_obj):

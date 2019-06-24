@@ -2,7 +2,7 @@ import json
 ***REMOVED***
 import xlsxwriter
 
-***REMOVED***
+from pysnyk import SnykClient
 from utils import get_token
 import ProjectDependenciesReport
 
