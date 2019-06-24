@@ -8,3 +8,7 @@ class SnykOrganizationNotFound(SnykError):
 
 class SnykProjectNotFound(SnykError):
     pass
+
+
+class SnykNotImplemented(SnykError):
+    pass
