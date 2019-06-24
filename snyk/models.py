@@ -333,6 +333,7 @@ class Project(DataClassJSONMixin):
         return dependencies
 
     # https://snyk.docs.apiary.io/#reference/licenses/licenses-by-organisation
+    @property
     def licenses(self) -> List[License]:
         path = "org/%s/licenses?sortBy=license&order=asc" % self.organization.id
         post_body: Dict[str, Dict[str, List[str]]] = {
