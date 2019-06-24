@@ -3,7 +3,7 @@ from distutils import util
 import json
 
 
-from snyk import SnykClient
+from pysnyk import SnykClient
 from utils import get_token
 
 

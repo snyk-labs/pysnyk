@@ -1,7 +1,7 @@
 import argparse
 import xlsxwriter
 
-from snyk import SnykClient
+from pysnyk import SnykClient
 from utils import get_token
 
 
