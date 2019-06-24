@@ -39,7 +39,7 @@ The `snyk.models.Organization` object has the following properties related to th
 * `licenses` - returns the list of licenses currently in use by projects in this organisation
 * `projects` - the list of associated projects, see below for more details
 
-## Projects
+### Projects
 
 Once you have an organization you're likely to want to grab a particular project:
 
@@ -67,3 +67,21 @@ The `snyk.models.Project` object has the following useful properties and methods
 * `dependencies()`
 * `licenses`
 
+
+### Low-level client
+
+As well as the high-level functions of the client you can use the HTTP methods directly. For these
+you simply need to pass the path. The full domain, and the authentication details, are already provided
+by the client.
+
+
+```python
+client.get("<path>")
+client.delete("<path>")
+client.put("<path>", <data>)
+client.post("<path>", <data>)
+```
+
+Most of the time you shouldn't need to use these. They are mainly useful if new methods are added to the
+API which are not yet supported in the client. This can also be useful if you want to pass very specific
+parameters, or to parse the raw JSON output from the API.
