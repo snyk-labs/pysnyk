@@ -81,3 +81,18 @@ class SnykClient(object):
             except SnykProjectNotFound:
                 pass
         raise SnykProjectNotFound
+
+    # https://snyk.docs.apiary.io/#reference/general/the-api-details/get-notification-settings
+    # https://snyk.docs.apiary.io/#reference/users/user-notification-settings/modify-notification-settings
+    def notification_settings(self):
+        raise SnykNotImplemented
+
+    # https://snyk.docs.apiary.io/#reference/groups/organisations-in-groups/create-a-new-organisation-in-the-group
+    # https://snyk.docs.apiary.io/#reference/0/list-members-in-a-group/list-all-members-in-a-group
+    # https://snyk.docs.apiary.io/#reference/0/members-in-an-organisation-of-a-group/add-a-member-to-an-organisation-from-another-organisation-in-the-group
+    def groups(self):
+        raise SnykNotImplemented
+
+    # https://snyk.docs.apiary.io/#reference/reporting-api/issues/get-list-of-issues
+    def issues(self):
+        raise SnykNotImplemented

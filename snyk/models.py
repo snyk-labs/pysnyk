@@ -4,7 +4,7 @@ from typing import Optional, List, Dict, Any, Union
 import requests
 from mashumaro import DataClassJSONMixin  # type: ignore
 
-from .errors import SnykProjectNotFound
+from .errors import SnykProjectNotFound, SnykNotImplemented
 
 
 @dataclass
@@ -55,6 +55,10 @@ class Organization(DataClassJSONMixin):
         resp = self.client.get(path)
         return resp.json()
 
+    # https://snyk.docs.apiary.io/#reference/entitlements/a-specific-entitlement-by-organisation/get-an-organisation's-entitlement-value
+    def entitlement(self, key: str) -> bool:
+        raise SnykNotImplemented
+
     # https://snyk.docs.apiary.io/#reference/licenses/licenses-by-organisation
     @property
     def licenses(self) -> List["License"]:
@@ -67,6 +71,15 @@ class Organization(DataClassJSONMixin):
             for license in license_data["results"]:
                 licenses.append(License.from_dict(license_data))
         return licenses
+
+    # https://snyk.docs.apiary.io/#reference/users/user-organisation-notification-settings/modify-org-notification-settings
+    # https://snyk.docs.apiary.io/#reference/users/user-organisation-notification-settings/get-org-notification-settings
+    def notification_settings(self):
+        raise SnykNotImplemented
+
+    # https://snyk.docs.apiary.io/#reference/organisations/the-snyk-organisation-for-a-request/invite-users
+    def invite(self, email: str, admin: bool = False):
+        raise SnykNotImplemented
 
     # TODO: convert to objects
     # https://snyk.docs.apiary.io/#reference/test/maven/test-for-issues-in-a-public-package-by-group-id,-artifact-id-and-version
@@ -99,6 +112,18 @@ class Organization(DataClassJSONMixin):
         path = "test/npm/%s/%s?org=%s" % (name, version, self.id)
         return self.client.get(path)
 
+    # https://snyk.docs.apiary.io/#reference/test/pip/test-requirements.txt-file
+    def test_pip(self):
+        raise SnykNotImplemented
+
+    # https://snyk.docs.apiary.io/#reference/test/sbt/test-sbt-file
+    def test_sbt(self):
+        raise SnykNotImplemented
+
+    # https://snyk.docs.apiary.io/#reference/test/gradle/test-gradle-file
+    def test_gradle(self):
+        raise SnykNotImplemented
+
 
 @dataclass
 class LicenseDependency(DataClassJSONMixin):
@@ -128,6 +153,14 @@ class Member(DataClassJSONMixin):
     name: str
     email: str
     role: str
+
+    # https://snyk.docs.apiary.io/#reference/organisations/manage-roles-in-organisation/update-a-member-in-the-organisation
+    def update_role(self, role: str):
+        raise SnykNotImplemented
+
+    # https://snyk.docs.apiary.io/#reference/organisations/manage-roles-in-organisation/remove-a-member-from-the-organisation
+    def delete(self):
+        raise SnykNotImplemented
 
 
 @dataclass
@@ -364,3 +397,8 @@ class Project(DataClassJSONMixin):
             ]
 
         return self.organization.client.put(path, post_body)
+
+    # https://snyk.docs.apiary.io/#reference/users/user-project-notification-settings/modify-project-notification-settings
+    # https://snyk.docs.apiary.io/#reference/users/user-project-notification-settings/get-project-notification-settings
+    def notification_settings(self):
+        raise SnykNotImplemented
