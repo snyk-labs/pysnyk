@@ -40,6 +40,7 @@ class Manager(object):
                 "Organization": OrganizationManager,
                 "Member": MemberManager,
                 "License": LicenseManager,
+                "Dependency": DependencyManager,
             }[klass.__name__]
             return manager(klass, client, instance)
         except KeyError:
@@ -88,8 +89,13 @@ class MemberManager(Manager):
 
 class LicenseManager(Manager):
     def all(self):
-        path = "org/%s/licenses" % self.instance.id
-        post_body: Dict[str, Dict[str, List[str]]] = {"filters": {}}
+        if hasattr(self.instance, "organization"):
+            path = "org/%s/licenses" % self.instance.organization.id
+            post_body = {"filters": {"projects": [self.instance.id]}}
+        else:
+            path = "org/%s/licenses" % self.instance.id
+            post_body: Dict[str, Dict[str, List[str]]] = {"filters": {}}
+
         resp = self.client.post(path, post_body)
         license_data = resp.json()
         licenses = []
@@ -97,3 +103,33 @@ class LicenseManager(Manager):
             for license in license_data["results"]:
                 licenses.append(self.klass.from_dict(license))
         return licenses
+
+
+def DependencyManager(Manager):
+    def all(self, page: int = 1):
+        results_per_page = 50
+        path = "org/%s/dependencies?sortBy=dependency&order=asc&page=%s&perPage=%s" % (
+            self.instance.organization.id,
+            page,
+            results_per_page,
+        )
+
+        post_body = {"filters": {"projects": [self.instance.id]}}
+
+        resp = self.client.post(path, post_body)
+        dependency_data = resp.json()
+
+        total = dependency_data[
+            "total"
+        ]  # contains the total number of results (for pagination use)
+        results = dependency_data["results"]
+
+        if total > (page * results_per_page):
+            next_results = self.all(page + 1)
+            results.extend(next_results)
+            return results
+
+        dependencies = []
+        for dependency_data in results:
+            dependencies.append(self.klass.from_dict(dependency_data))
+        return dependencies

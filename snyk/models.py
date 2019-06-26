@@ -308,49 +308,14 @@ class Project(DataClassJSONMixin):
         return DependencyGraph.from_dict(dependency_data)
 
     # https://snyk.docs.apiary.io/#reference/dependencies/dependencies-by-organisation
-    def dependencies(self, page: int = 1) -> List[Dependency]:
-        results_per_page = 50
-        path = "org/%s/dependencies?sortBy=dependency&order=asc&page=%s&perPage=%s" % (
-            self.organization.id,
-            page,
-            results_per_page,
-        )
-
-        post_body = {"filters": {"projects": [self.id]}}
-
-        resp = self.organization.client.post(path, post_body)
-        dependency_data = resp.json()
-
-        total = dependency_data[
-            "total"
-        ]  # contains the total number of results (for pagination use)
-        results = dependency_data["results"]
-
-        if total > (page * results_per_page):
-            next_results = self.dependencies(page + 1)
-            results.extend(next_results)
-            return results
-
-        dependencies = []
-        for dependency_data in results:
-            dependencies.append(Dependency.from_dict(dependency_data))
-        return dependencies
+    @property
+    def dependencies(self) -> Manager:
+        return Manager.factory(Dependency, self.client, self)
 
     # https://snyk.docs.apiary.io/#reference/licenses/licenses-by-organisation
     @property
-    def licenses(self) -> List[License]:
-        path = "org/%s/licenses?sortBy=license&order=asc" % self.organization.id
-        post_body: Dict[str, Dict[str, List[str]]] = {
-            "filters": {"projects": [self.id]}
-        }
-
-        resp = self.organization.client.post(path, post_body)
-        license_data = resp.json()
-        licenses = []
-        if "results" in license_data:
-            for license in license_data["results"]:
-                licenses.append(License.from_dict(license_data))
-        return licenses
+    def licenses(self) -> Manager:
+        return Manager.factory(License, self.client, self)
 
     def update_settings(self, **kwargs: str) -> requests.Response:
         path = "org/%s/project/%s/settings" % (self.organization.id, self.id)
