@@ -49,7 +49,7 @@ class TestOrganization(TestModels):
     def test_empty_licenses(self, organization, requests_mock):
         matcher = re.compile("licenses$")
         requests_mock.post(matcher, json={})
-        assert [] == organization.licenses
+        assert [] == organization.licenses.all()
 
 
 class TestProject(TestModels):

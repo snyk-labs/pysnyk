@@ -39,6 +39,7 @@ class Manager(object):
                 "Project": ProjectManager,
                 "Organization": OrganizationManager,
                 "Member": MemberManager,
+                "License": LicenseManager,
             }[klass.__name__]
             return manager(klass, client, instance)
         except KeyError:
@@ -83,3 +84,16 @@ class MemberManager(Manager):
         for member_data in resp.json():
             members.append(self.klass.from_dict(member_data))
         return members
+
+
+class LicenseManager(Manager):
+    def all(self):
+        path = "org/%s/licenses" % self.instance.id
+        post_body: Dict[str, Dict[str, List[str]]] = {"filters": {}}
+        resp = self.client.post(path, post_body)
+        license_data = resp.json()
+        licenses = []
+        if "results" in license_data:
+            for license in license_data["results"]:
+                licenses.append(self.klass.from_dict(license))
+        return licenses
