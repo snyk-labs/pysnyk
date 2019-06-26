@@ -25,15 +25,9 @@ class Organization(DataClassJSONMixin):
     def projects(self) -> Manager:
         return Manager.factory(Project, self.client, self)
 
-    # https://snyk.docs.apiary.io/#reference/organisations/members-in-organisation/list-members
     @property
-    def members(self) -> List["Member"]:
-        path = "org/%s/members" % self.id
-        resp = self.client.get(path)
-        members = []
-        for member_data in resp.json():
-            members.append(Member.from_dict(member_data))
-        return members
+    def members(self) -> Manager:
+        return Manager.factory(Member, self.client, self)
 
     @property
     def entitlements(self) -> Dict[str, bool]:

@@ -34,10 +34,19 @@ returned by these two methods.
 
 The `snyk.models.Organization` object has the following properties related to the API:
 
-* `members` - returns a list of members of the organization
+* `members` - returns a Manager for members
 * `entitlements` - returns the set of Snyk features available to this account
 * `licenses` - returns the list of licenses currently in use by projects in this organisation
 * `projects` - the list of associated projects, see below for more details
+
+### Managers
+
+Managers are how you can query data from the Snyk API. Each manager exposes the following methods:
+
+* `all()` - return a list of all of the relevant objects
+* `get("<id>")` - return a single instance of the object if it exists
+* `first()` - grab the first instance of the object if one exists
+* `filter(<key>="<value>")` - return a list filtered by one or more key/value pairs
 
 ### Projects
 

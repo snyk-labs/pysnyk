@@ -26,14 +26,14 @@ class TestOrganization(TestModels):
     def test_empty_members(self, organization, requests_mock):
         matcher = re.compile("members$")
         requests_mock.get(matcher, json=[])
-        assert [] == organization.members
+        assert [] == organization.members.all()
 
     def test_members(self, organization, requests_mock, members):
         matcher = re.compile("members$")
         requests_mock.get(matcher, json=members)
-        assert 1 == len(organization.members)
-        assert all(type(x) is Member for x in organization.members)
-        assert "admin" == organization.members[0].role
+        assert 1 == len(organization.members.all())
+        assert all(type(x) is Member for x in organization.members.all())
+        assert "admin" == organization.members.first().role
 
     def test_empty_entitlements(self, organization, requests_mock):
         matcher = re.compile("entitlements$")
