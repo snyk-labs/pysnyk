@@ -1,19 +1,17 @@
-import abc
 import inspect
 from typing import List, Any
 
 from .errors import SnykError, SnykNotFoundError
 
 
-class Manager(abc.ABC):
+class Manager(object):
     def __init__(self, klass, client, instance=None):
         self.klass = klass
         self.client = client
         self.instance = instance
 
-    @abc.abstractmethod
     def all(self):
-        pass  # pragma: no cover
+        return []
 
     def get(self, id: str):
         try:
@@ -37,9 +35,11 @@ class Manager(abc.ABC):
     @staticmethod
     def factory(klass, client, instance=None):
         try:
-            manager = {"Project": ProjectManager, "Organization": OrganizationManager}[
-                klass.__name__
-            ]
+            manager = {
+                "Project": ProjectManager,
+                "Organization": OrganizationManager,
+                "Member": MemberManager,
+            }[klass.__name__]
             return manager(klass, client, instance)
         except KeyError:
             raise SnykError
@@ -73,3 +73,13 @@ class ProjectManager(Manager):
             for org in self.client.organizations.all():
                 projects.extend(org.projects.all())
         return projects
+
+
+class MemberManager(Manager):
+    def all(self):
+        path = "org/%s/members" % self.instance.id
+        resp = self.client.get(path)
+        members = []
+        for member_data in resp.json():
+            members.append(self.klass.from_dict(member_data))
+        return members
