@@ -73,7 +73,7 @@ The `snyk.models.Project` object has the following useful properties and methods
 * `ignores`
 * `jira_issues`
 * `dependency_graph`
-* `dependencies()`
+* `dependencies`
 * `licenses`
 
 
