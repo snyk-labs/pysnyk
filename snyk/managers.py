@@ -1,17 +1,19 @@
+import abc
 import inspect
 from typing import List, Any
 
 from .errors import SnykError, SnykNotFoundError
 
 
-class Manager(object):
+class Manager(abc.ABC):
     def __init__(self, klass, client, instance=None):
         self.klass = klass
         self.client = client
         self.instance = instance
 
+    @abc.abstractmethod
     def all(self):
-        return []
+        pass  # pragma: no cover
 
     def get(self, id: str):
         try:
