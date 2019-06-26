@@ -2,13 +2,9 @@ from typing import Any, List, Dict, Optional, Union
 
 import requests
 
-from .errors import (
-    SnykError,
-    SnykNotFoundError,
-    SnykProjectNotFoundError,
-    SnykNotImplementedError,
-)
-from .managers import OrganizationManager, ProjectManager
+from .errors import SnykError, SnykNotFoundError, SnykNotImplementedError
+from .managers import Manager
+from .models import Project, Organization
 
 
 class SnykClient(object):
@@ -50,12 +46,12 @@ class SnykClient(object):
         return resp
 
     @property
-    def organizations(self) -> OrganizationManager:
-        return OrganizationManager(self)
+    def organizations(self) -> Manager:
+        return Manager.factory(Organization, self)
 
     @property
-    def projects(self) -> ProjectManager:
-        return ProjectManager(self)
+    def projects(self) -> Manager:
+        return Manager.factory(Project, self)
 
     # https://snyk.docs.apiary.io/#reference/general/the-api-details/get-notification-settings
     # https://snyk.docs.apiary.io/#reference/users/user-notification-settings/modify-notification-settings

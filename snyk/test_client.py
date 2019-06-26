@@ -3,7 +3,7 @@ import re
 import pytest  # type: ignore
 
 ***REMOVED***
-from snyk.errors import SnykError, SnykNotFoundError, SnykProjectNotFoundError
+from snyk.errors import SnykError, SnykNotFoundError
 from snyk.models import Organization, Project
 
 
@@ -111,6 +111,24 @@ class TestSnykClient(object):
     def test_loads_organizations(self, requests_mock, client, organizations):
         requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
         assert len(client.organizations.all()) == 2
+
+    def test_first_organizations(self, requests_mock, client, organizations):
+        requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
+        org = client.organizations.first()
+        assert "defaultOrg" == org.name
+
+    def test_first_organizations_on_empty(self, requests_mock, client):
+        requests_mock.get("https://snyk.io/api/v1/orgs", json={})
+        with pytest.raises(SnykNotFoundError):
+            client.organizations.first()
+
+    def test_filter_organizations(self, requests_mock, client, organizations):
+        requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
+        assert 1 == len(client.organizations.filter(name="defaultOrg"))
+
+    def test_filter_organizations_empty(self, requests_mock, client, organizations):
+        requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
+        assert [] == client.organizations.filter(name="not present")
 
     def test_loads_organization(self, requests_mock, client, organizations):
         key = organizations["orgs"][0]["id"]

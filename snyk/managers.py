@@ -1,15 +1,19 @@
+import abc
+import inspect
 from typing import List, Any
 
-from .models import Organization, Project
 from .errors import SnykError, SnykNotFoundError
 
 
-class Manager(object):
-    def __init__(self, client):
+class Manager(abc.ABC):
+    def __init__(self, klass, client, instance=None):
+        self.klass = klass
         self.client = client
+        self.instance = instance
 
+    @abc.abstractmethod
     def all(self):
-        return []
+        pass  # pragma: no cover
 
     def get(self, id: str):
         try:
@@ -30,22 +34,42 @@ class Manager(object):
                 data = [x for x in data if getattr(x, key) == value]
         return data
 
+    @staticmethod
+    def factory(klass, client, instance=None):
+        try:
+            manager = {"Project": ProjectManager, "Organization": OrganizationManager}[
+                klass.__name__
+            ]
+            return manager(klass, client, instance)
+        except KeyError:
+            raise SnykError
+
 
 class OrganizationManager(Manager):
-    def all(self) -> List[Organization]:
+    def all(self):
         resp = self.client.get("orgs")
         orgs = []
         if "orgs" in resp.json():
             for org_data in resp.json()["orgs"]:
-                orgs.append(Organization.from_dict(org_data))
+                orgs.append(self.klass.from_dict(org_data))
         for org in orgs:
             org.client = self.client
         return orgs
 
 
 class ProjectManager(Manager):
-    def all(self) -> List[Project]:
-        projects: List[Project] = []
-        for org in self.client.organizations.all():
-            projects.extend(org.projects)
+    def all(self):
+        projects = []
+        if self.instance:
+            path = "org/%s/projects" % self.instance.id
+            resp = self.client.get(path)
+            if "projects" in resp.json():
+                for project_data in resp.json()["projects"]:
+                    project_data["organization"] = self.instance.to_dict()
+                    projects.append(self.klass.from_dict(project_data))
+            for x in projects:
+                x.organization = self.instance
+        else:
+            for org in self.client.organizations.all():
+                projects.extend(org.projects.all())
         return projects

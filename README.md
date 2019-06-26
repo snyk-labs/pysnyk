@@ -44,7 +44,7 @@ The `snyk.models.Organization` object has the following properties related to th
 Once you have an organization you're likely to want to grab a particular project:
 
 ```python
-client.organizations.first().projects
+client.organizations.first().projects.all()
 ```
 
 This will return a list of `snyk.models.Project` objects.

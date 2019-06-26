@@ -10,9 +10,5 @@ class SnykOrganizationNotFoundError(SnykError):
     pass
 
 
-class SnykProjectNotFoundError(SnykError):
-    pass
-
-
 class SnykNotImplementedError(SnykError):
     pass
