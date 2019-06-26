@@ -139,14 +139,14 @@ class TestSnykClient(object):
         requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
         matcher = re.compile("projects$")
         requests_mock.get(matcher, json={})
-        assert [] == client.projects
+        assert [] == client.projects.all()
 
     def test_projects(self, requests_mock, client, organizations, projects):
         requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
         matcher = re.compile("projects$")
         requests_mock.get(matcher, json=projects)
-        assert len(client.projects) == 2
-        assert all(type(x) is Project for x in client.projects)
+        assert len(client.projects.all()) == 2
+        assert all(type(x) is Project for x in client.projects.all())
 
     def test_project(self, requests_mock, client, organizations, projects):
         requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
@@ -154,12 +154,12 @@ class TestSnykClient(object):
         requests_mock.get(matcher, json=projects)
         assert (
             "atokeneduser/goof"
-            == client.project("6d5813be-7e6d-4ab8-80c2-1e3e2a454545").name
+            == client.projects.get("6d5813be-7e6d-4ab8-80c2-1e3e2a454545").name
     ***REMOVED***
 
     def test_non_existent_project(self, requests_mock, client, organizations, projects):
         requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
         matcher = re.compile("projects$")
         requests_mock.get(matcher, json=projects)
-        with pytest.raises(SnykProjectNotFoundError):
-            client.project("not-present")
+        with pytest.raises(SnykNotFoundError):
+            client.projects.get("not-present")

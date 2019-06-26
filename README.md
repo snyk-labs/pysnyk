@@ -53,7 +53,7 @@ In the case where you want to get all of the projects across all of your organiz
 method on the client.
 
 ```python
-client.projects
+client.projects.all()
 ```
 
 The `snyk.models.Project` object has the following useful properties and methods:

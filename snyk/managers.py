@@ -1,6 +1,6 @@
 from typing import List, Any
 
-from .models import Organization
+from .models import Organization, Project
 from .errors import SnykError, SnykNotFoundError
 
 
@@ -41,3 +41,11 @@ class OrganizationManager(Manager):
         for org in orgs:
             org.client = self.client
         return orgs
+
+
+class ProjectManager(Manager):
+    def all(self) -> List[Project]:
+        projects: List[Project] = []
+        for org in self.client.organizations.all():
+            projects.extend(org.projects)
+        return projects
