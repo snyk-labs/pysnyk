@@ -2,14 +2,13 @@ from typing import Any, List, Dict, Optional, Union
 
 import requests
 
-from .models import Organization, Project
 from .errors import (
     SnykError,
     SnykNotFoundError,
     SnykProjectNotFoundError,
     SnykNotImplementedError,
 )
-from .managers import OrganizationManager
+from .managers import OrganizationManager, ProjectManager
 
 
 class SnykClient(object):
@@ -55,19 +54,8 @@ class SnykClient(object):
         return OrganizationManager(self)
 
     @property
-    def projects(self) -> List[Project]:
-        projects = []
-        for org in self.organizations.all():
-            projects.extend(org.projects)
-        return projects
-
-    def project(self, id) -> Union[Project, None]:
-        for org in self.organizations.all():
-            try:
-                return org.project(id)
-            except SnykProjectNotFoundError:
-                pass
-        raise SnykProjectNotFoundError
+    def projects(self) -> ProjectManager:
+        return ProjectManager(self)
 
     # https://snyk.docs.apiary.io/#reference/general/the-api-details/get-notification-settings
     # https://snyk.docs.apiary.io/#reference/users/user-notification-settings/modify-notification-settings
