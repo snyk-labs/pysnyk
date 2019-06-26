@@ -21,7 +21,7 @@ show_projects = True
 
 
 client = SnykClient(snyk_token)
-licenses = client.organization(org_id).licenses
+licenses = client.organizations.get(org_id).licenses.all()
 print("\n\nNumber of licenses: %s" % len(licenses))
 for license in licenses:
     print("\nLicense: %s" % (license.id))

@@ -18,7 +18,7 @@ args = parse_command_line_args()
 org_id = args.orgId
 
 client = SnykClient(token=snyk_token)
-for proj in client.organization(org_id).projects:
+for proj in client.organizations.get(org_id).projects.all():
     print("\nProject name: %s" % proj.name)
     print("  Issues Found:")
     print("      High  : %s" % proj.issueCountsBySeverity.high)

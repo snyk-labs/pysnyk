@@ -21,7 +21,7 @@ org_id = args.orgId
 project_id = args.projectId
 
 client = SnykClient(snyk_token)
-project = client.organization(org_id).project(project_id)
+project = client.organizations.get(org_id).projects.get(project_id)
 issues = project.issues.issues
 jira_issues = project.jira_issues
 

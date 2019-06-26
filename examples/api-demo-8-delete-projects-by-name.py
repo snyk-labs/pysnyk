@@ -40,7 +40,7 @@ project_name = args.projectName
 project_origin = args.projectOrigin
 
 client = SnykClient(snyk_token)
-for project in client.organisation(org_id).projects:
+for project in client.organisations.get(org_id).projects.all():
     if project_name == project.name and (
         project.origin == project_origin or not project_origin
     ):
