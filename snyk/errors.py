@@ -2,6 +2,10 @@ class SnykError(Exception):
     pass
 
 
+class SnykNotFoundError(SnykError):
+    pass
+
+
 class SnykOrganizationNotFound(SnykError):
     pass
 

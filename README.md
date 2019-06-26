@@ -16,7 +16,7 @@ client = snyk.SnykClient("<your-api-token>")
 With the client we can get a list of Snyk organizations you are a member of:
 
 ```python
-client.organizations
+client.organizations.all()
 ```
 
 This returns a list of `snyk.models.Organization` objects.
@@ -24,7 +24,7 @@ This returns a list of `snyk.models.Organization` objects.
 If you already have the ID of the organization you're after you can grab it directly:
 
 ```python
-client.organization("<organization-id>")
+client.organizations.get("<organization-id>")
 ```
 
 This will return a single `snyk.models.Organization` object.
@@ -44,7 +44,7 @@ The `snyk.models.Organization` object has the following properties related to th
 Once you have an organization you're likely to want to grab a particular project:
 
 ```python
-client.organizations[0].projects
+client.organizations.first().projects
 ```
 
 This will return a list of `snyk.models.Project` objects.
