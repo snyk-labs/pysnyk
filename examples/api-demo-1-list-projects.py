@@ -18,7 +18,7 @@ snyk_token = get_token("snyk-api-token")
 ***REMOVED***
 
 ***REMOVED***
-for proj in client.organization(org_id).projects:
+***REMOVED***
 ***REMOVED***
 ***REMOVED***
 ***REMOVED***
