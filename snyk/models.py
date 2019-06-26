@@ -4,7 +4,8 @@ from typing import Optional, List, Dict, Any, Union
 import requests
 from mashumaro import DataClassJSONMixin  # type: ignore
 
-from .errors import SnykProjectNotFoundError, SnykNotImplementedError
+from .errors import SnykNotImplementedError
+from .managers import Manager
 
 
 @dataclass
@@ -21,23 +22,8 @@ class Organization(DataClassJSONMixin):
     client: InitVar[Optional[Any]] = None  # type: ignore
 
     @property
-    def projects(self) -> List["Project"]:
-        path = "org/%s/projects" % self.id
-        resp = self.client.get(path)
-        projects = []
-        if "projects" in resp.json():
-            for project_data in resp.json()["projects"]:
-                project_data["organization"] = self.to_dict()
-                projects.append(Project.from_dict(project_data))
-        for x in projects:
-            x.organization = self
-        return projects
-
-    def project(self, id) -> Union["Project", None]:
-        for project in self.projects:
-            if project.id == id:
-                return project
-        raise SnykProjectNotFoundError
+    def projects(self) -> Manager:
+        return Manager.factory(Project, self.client, self)
 
     # https://snyk.docs.apiary.io/#reference/organisations/members-in-organisation/list-members
     @property
