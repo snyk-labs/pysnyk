@@ -6,13 +6,13 @@ class SnykNotFoundError(SnykError):
     pass
 
 
-class SnykOrganizationNotFound(SnykError):
+class SnykOrganizationNotFoundError(SnykError):
     pass
 
 
-class SnykProjectNotFound(SnykError):
+class SnykProjectNotFoundError(SnykError):
     pass
 
 
-class SnykNotImplemented(SnykError):
+class SnykNotImplementedError(SnykError):
     pass
