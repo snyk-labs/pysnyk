@@ -35,9 +35,9 @@ returned by these two methods.
 The `snyk.models.Organization` object has the following properties related to the API:
 
 * `members` - returns a Manager for members
+* `licenses` - returns a Manager for licenses currently in use by projects in this organisation
+* `projects` - returns a Manager for associated projects
 * `entitlements` - returns the set of Snyk features available to this account
-* `licenses` - returns the list of licenses currently in use by projects in this organisation
-* `projects` - the list of associated projects, see below for more details
 
 ### Managers
 
