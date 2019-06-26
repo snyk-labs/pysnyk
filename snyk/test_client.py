@@ -3,7 +3,7 @@ import re
 import pytest  # type: ignore
 
 from snyk import SnykClient
-from snyk.errors import SnykError, SnykOrganizationNotFound, SnykProjectNotFound
+from snyk.errors import SnykError, SnykNotFoundError, SnykProjectNotFound
 from snyk.models import Organization, Project
 
 
@@ -67,7 +67,7 @@ class TestSnykClient(object):
 
     def test_empty_organizations(self, requests_mock, client):
         requests_mock.get("https://snyk.io/api/v1/orgs", json={})
-        assert [] == client.organizations
+        assert [] == client.organizations.all()
 
     @pytest.fixture
     def organizations(self):
@@ -110,30 +110,30 @@ class TestSnykClient(object):
 
     def test_loads_organizations(self, requests_mock, client, organizations):
         requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
-        assert len(client.organizations) == 2
+        assert len(client.organizations.all()) == 2
 
     def test_loads_organization(self, requests_mock, client, organizations):
         key = organizations["orgs"][0]["id"]
-        requests_mock.get("https://snyk.io/api/v1/orgs/%s" % key, json=organizations)
-        org = client.organization(key)
+        requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
+        org = client.organizations.get(key)
         assert "defaultOrg" == org.name
 
     def test_non_existent_organization(self, requests_mock, client, organizations):
-        requests_mock.get("https://snyk.io/api/v1/orgs/not-present", status_code=404)
-        with pytest.raises(SnykOrganizationNotFound):
-            client.organization("not-present")
+        requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
+        with pytest.raises(SnykNotFoundError):
+            client.organizations.get("not-present")
 
     def test_organization_type(self, requests_mock, client, organizations):
         requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
-        assert all(type(x) is Organization for x in client.organizations)
+        assert all(type(x) is Organization for x in client.organizations.all())
 
     def test_organization_attributes(self, requests_mock, client, organizations):
         requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
-        assert client.organizations[0].name == "defaultOrg"
+        assert client.organizations.first().name == "defaultOrg"
 
     def test_organization_load_group(self, requests_mock, client, organizations):
         requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
-        assert client.organizations[1].group.name == "ACME Inc."
+        assert client.organizations.all()[1].group.name == "ACME Inc."
 
     def test_empty_projects(self, requests_mock, client, organizations):
         requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)

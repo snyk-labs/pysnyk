@@ -3,7 +3,8 @@ from typing import Any, List, Dict, Optional, Union
 import requests
 
 from .models import Organization, Project
-from .errors import SnykError, SnykOrganizationNotFound, SnykProjectNotFound
+from .errors import SnykError, SnykNotFoundError, SnykProjectNotFound
+from .managers import OrganizationManager
 
 
 class SnykClient(object):
@@ -45,37 +46,18 @@ class SnykClient(object):
         return resp
 
     @property
-    def organizations(self) -> List[Organization]:
-        resp = self.get("orgs")
-        orgs = []
-        if "orgs" in resp.json():
-            for org_data in resp.json()["orgs"]:
-                orgs.append(Organization.from_dict(org_data))
-        for org in orgs:
-            org.client = self
-        return orgs
-
-    def organization(self, id) -> Organization:
-        try:
-            resp = self.get("orgs/%s" % id)
-            if "orgs" in resp.json():
-                for org_data in resp.json()["orgs"]:
-                    org = Organization.from_dict(org_data)
-                    org.client = self
-                    return org
-            raise SnykOrganizationNotFound
-        except SnykError:
-            raise SnykOrganizationNotFound
+    def organizations(self) -> OrganizationManager:
+        return OrganizationManager(self)
 
     @property
     def projects(self) -> List[Project]:
         projects = []
-        for org in self.organizations:
+        for org in self.organizations.all():
             projects.extend(org.projects)
         return projects
 
     def project(self, id) -> Union[Project, None]:
-        for org in self.organizations:
+        for org in self.organizations.all():
             try:
                 return org.project(id)
             except SnykProjectNotFound:
