@@ -4,7 +4,7 @@ from typing import Optional, List, Dict, Any, Union
 import requests
 from mashumaro import DataClassJSONMixin  # type: ignore
 
-from .errors import SnykProjectNotFound, SnykNotImplemented
+from .errors import SnykProjectNotFoundError, SnykNotImplementedError
 
 
 @dataclass
@@ -37,7 +37,7 @@ class Organization(DataClassJSONMixin):
         for project in self.projects:
             if project.id == id:
                 return project
-        raise SnykProjectNotFound
+        raise SnykProjectNotFoundError
 
     # https://snyk.docs.apiary.io/#reference/organisations/members-in-organisation/list-members
     @property
@@ -57,7 +57,7 @@ class Organization(DataClassJSONMixin):
 
     # https://snyk.docs.apiary.io/#reference/entitlements/a-specific-entitlement-by-organisation/get-an-organisation's-entitlement-value
     def entitlement(self, key: str) -> bool:
-        raise SnykNotImplemented
+        raise SnykNotImplementedError
 
     # https://snyk.docs.apiary.io/#reference/licenses/licenses-by-organisation
     @property
@@ -79,7 +79,7 @@ class Organization(DataClassJSONMixin):
 
     # https://snyk.docs.apiary.io/#reference/organisations/the-snyk-organisation-for-a-request/invite-users
     def invite(self, email: str, admin: bool = False):
-        raise SnykNotImplemented
+        raise SnykNotImplementedError
 
     # TODO: convert to objects
     # https://snyk.docs.apiary.io/#reference/test/maven/test-for-issues-in-a-public-package-by-group-id,-artifact-id-and-version
@@ -114,15 +114,15 @@ class Organization(DataClassJSONMixin):
 
     # https://snyk.docs.apiary.io/#reference/test/pip/test-requirements.txt-file
     def test_pip(self):
-        raise SnykNotImplemented
+        raise SnykNotImplementedError
 
     # https://snyk.docs.apiary.io/#reference/test/sbt/test-sbt-file
     def test_sbt(self):
-        raise SnykNotImplemented
+        raise SnykNotImplementedError
 
     # https://snyk.docs.apiary.io/#reference/test/gradle/test-gradle-file
     def test_gradle(self):
-        raise SnykNotImplemented
+        raise SnykNotImplementedError
 
 
 @dataclass
@@ -156,11 +156,11 @@ class Member(DataClassJSONMixin):
 
     # https://snyk.docs.apiary.io/#reference/organisations/manage-roles-in-organisation/update-a-member-in-the-organisation
     def update_role(self, role: str):
-        raise SnykNotImplemented
+        raise SnykNotImplementedError
 
     # https://snyk.docs.apiary.io/#reference/organisations/manage-roles-in-organisation/remove-a-member-from-the-organisation
     def delete(self):
-        raise SnykNotImplemented
+        raise SnykNotImplementedError
 
 
 @dataclass
@@ -401,4 +401,4 @@ class Project(DataClassJSONMixin):
     # https://snyk.docs.apiary.io/#reference/users/user-project-notification-settings/modify-project-notification-settings
     # https://snyk.docs.apiary.io/#reference/users/user-project-notification-settings/get-project-notification-settings
     def notification_settings(self):
-        raise SnykNotImplemented
+        raise SnykNotImplementedError

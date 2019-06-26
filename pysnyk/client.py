@@ -3,7 +3,12 @@ from typing import Any, List, Dict, Optional, Union
 import requests
 
 from .models import Organization, Project
-from .errors import SnykError, SnykNotFoundError, SnykProjectNotFound
+from .errors import (
+    SnykError,
+    SnykNotFoundError,
+    SnykProjectNotFoundError,
+    SnykNotImplementedError,
+)
 from .managers import OrganizationManager
 
 
@@ -60,21 +65,21 @@ class SnykClient(object):
         for org in self.organizations.all():
             try:
                 return org.project(id)
-            except SnykProjectNotFound:
+            except SnykProjectNotFoundError:
                 pass
-        raise SnykProjectNotFound
+        raise SnykProjectNotFoundError
 
     # https://snyk.docs.apiary.io/#reference/general/the-api-details/get-notification-settings
     # https://snyk.docs.apiary.io/#reference/users/user-notification-settings/modify-notification-settings
     def notification_settings(self):
-        raise SnykNotImplemented
+        raise SnykNotImplementedError
 
     # https://snyk.docs.apiary.io/#reference/groups/organisations-in-groups/create-a-new-organisation-in-the-group
     # https://snyk.docs.apiary.io/#reference/0/list-members-in-a-group/list-all-members-in-a-group
     # https://snyk.docs.apiary.io/#reference/0/members-in-an-organisation-of-a-group/add-a-member-to-an-organisation-from-another-organisation-in-the-group
     def groups(self):
-        raise SnykNotImplemented
+        raise SnykNotImplementedError
 
     # https://snyk.docs.apiary.io/#reference/reporting-api/issues/get-list-of-issues
     def issues(self):
-        raise SnykNotImplemented
+        raise SnykNotImplementedError

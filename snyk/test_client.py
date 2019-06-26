@@ -3,7 +3,7 @@ import re
 import pytest  # type: ignore
 
 from snyk import SnykClient
-from snyk.errors import SnykError, SnykNotFoundError, SnykProjectNotFound
+from snyk.errors import SnykError, SnykNotFoundError, SnykProjectNotFoundError
 from snyk.models import Organization, Project
 
 
@@ -161,5 +161,5 @@ class TestSnykClient(object):
         requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
         matcher = re.compile("projects$")
         requests_mock.get(matcher, json=projects)
-        with pytest.raises(SnykProjectNotFound):
+        with pytest.raises(SnykProjectNotFoundError):
             client.project("not-present")
