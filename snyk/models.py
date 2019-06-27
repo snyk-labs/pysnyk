@@ -4,8 +4,9 @@ from typing import Optional, List, Dict, Any, Union
 import requests
 from mashumaro import DataClassJSONMixin  # type: ignore
 
-from .errors import SnykNotImplementedError
+from .errors import SnykError, SnykNotImplementedError
 from .managers import Manager
+from .utils import snake_to_camel
 
 
 @dataclass
@@ -262,9 +263,12 @@ class Project(DataClassJSONMixin):
     imageTag: Optional[str] = None
     imageId: Optional[str] = None
 
-    def delete(self) -> requests.Response:
+    def delete(self) -> bool:
         path = "org/%s/project/%s" % (self.organization.id, self.id)
-        return self.organization.client.delete(path)
+        if self.organization.client.delete(path):
+            return True
+        else:
+            raise SnykError
 
     # https://snyk.docs.apiary.io/#reference/projects/project-issues
     @property
@@ -317,22 +321,24 @@ class Project(DataClassJSONMixin):
     def licenses(self) -> Manager:
         return Manager.factory(License, self.client, self)
 
-    def update_settings(self, **kwargs: str) -> requests.Response:
+    def update_settings(self, **kwargs: str) -> bool:
         path = "org/%s/project/%s/settings" % (self.organization.id, self.id)
         post_body = {}
 
-        if "pullRequestTestEnabled" in kwargs:
-            post_body["pullRequestTestEnabled"] = kwargs["pullRequestTestEnabled"]
+        settings = [
+            "pull_request_test_enabled",
+            "pull_request_fail_on_vuln",
+            "pull_request_fail_only_fo-high_severity",
+        ]
 
-        if "pullRequestFailOnAnyVulns" in kwargs:
-            post_body["pullRequestFailOnAnyVulns"] = kwargs["pullRequestFailOnAnyVulns"]
+        for setting in settings:
+            if settings in kwargs:
+                post_body[snake_to_camel(settings)] = kwargs[setting]
 
-        if "pullRequestFailOnlyForHighSeverity" in kwargs:
-            post_body["pullRequestFailOnlyForHighSeverity"] = kwargs[
-                "pullRequestFailOnlyForHighSeverity"
-            ]
-
-        return self.organization.client.put(path, post_body)
+        if self.organization.client.put(path, post_body):
+            return True
+        else:
+            raise SnykError
 
     # https://snyk.docs.apiary.io/#reference/users/user-project-notification-settings/modify-project-notification-settings
     # https://snyk.docs.apiary.io/#reference/users/user-project-notification-settings/get-project-notification-settings

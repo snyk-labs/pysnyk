@@ -4,6 +4,7 @@ import pytest  # type: ignore
 
 from snyk.models import Organization, Project, Member
 from snyk.client import SnykClient
+from snyk.errors import SnykError
 
 
 class TestModels(object):
@@ -74,6 +75,14 @@ class TestProject(TestModels):
             "https://snyk.io/api/v1/org/a04d9cbd-ae6e-44af-b573-0556b0ad4bd2/project/6d5813be-7e6d-4ab8-80c2-1e3e2a454545"
     ***REMOVED***
         assert project.delete()
+
+    def test_failed_delete(self, project, requests_mock):
+        requests_mock.delete(
+            "https://snyk.io/api/v1/org/a04d9cbd-ae6e-44af-b573-0556b0ad4bd2/project/6d5813be-7e6d-4ab8-80c2-1e3e2a454545",
+            status_code=410,
+    ***REMOVED***
+        with pytest.raises(SnykError):
+            assert project.delete()
 
     def test_issues(self, project):
         pass
