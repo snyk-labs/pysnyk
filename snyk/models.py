@@ -35,14 +35,8 @@ class Organization(DataClassJSONMixin):
         return Manager.factory(License, self.client, self)
 
     @property
-    def entitlements(self) -> Dict[str, bool]:
-        path = "org/%s/entitlements" % self.id
-        resp = self.client.get(path)
-        return resp.json()
-
-    # https://snyk.docs.apiary.io/#reference/entitlements/a-specific-entitlement-by-organisation/get-an-organisation's-entitlement-value
-    def entitlement(self, key: str) -> bool:
-        raise SnykNotImplementedError
+    def entitlements(self) -> Manager:
+        return Manager.factory("Entitlement", self.client, self)
 
     # https://snyk.docs.apiary.io/#reference/users/user-organisation-notification-settings/modify-org-notification-settings
     # https://snyk.docs.apiary.io/#reference/users/user-organisation-notification-settings/get-org-notification-settings

@@ -1,8 +1,7 @@
 import abc
-import inspect
-from typing import List, Any
+from typing import List, Any, Dict
 
-from .errors import SnykError, SnykNotFoundError
+from .errors import SnykError, SnykNotFoundError, SnykNotImplementedError
 
 
 class Manager(abc.ABC):
@@ -37,16 +36,42 @@ class Manager(abc.ABC):
     @staticmethod
     def factory(klass, client, instance=None):
         try:
+            if isinstance(klass, str):
+                key = klass
+            else:
+                key = klass.__name__
             manager = {
                 "Project": ProjectManager,
                 "Organization": OrganizationManager,
                 "Member": MemberManager,
                 "License": LicenseManager,
                 "Dependency": DependencyManager,
-            }[klass.__name__]
+                "Entitlement": EntitlementManager,
+            }[key]
             return manager(klass, client, instance)
         except KeyError:
             raise SnykError
+
+
+class DictManager(Manager):
+    @abc.abstractmethod
+    def all(self) -> Dict[str, Any]:
+        pass
+
+    def get(self, id: str):
+        try:
+            self.all()[id]
+        except KeyError:
+            raise SnykNotFoundError
+
+    def filter(self, **kwargs: Any):
+        raise SnykNotImplementedError
+
+    def first(self):
+        try:
+            next(iter(self.all().items()))
+        except StopIteration:
+            raise SnykNotFoundError
 
 
 class OrganizationManager(Manager):
@@ -107,7 +132,7 @@ class LicenseManager(Manager):
         return licenses
 
 
-def DependencyManager(Manager):
+class DependencyManager(Manager):
     def all(self, page: int = 1):
         results_per_page = 50
         path = "org/%s/dependencies?sortBy=dependency&order=asc&page=%s&perPage=%s" % (
@@ -135,3 +160,10 @@ def DependencyManager(Manager):
         for dependency_data in results:
             dependencies.append(self.klass.from_dict(dependency_data))
         return dependencies
+
+
+class EntitlementManager(DictManager):
+    def all(self) -> Dict[str, bool]:
+        path = "org/%s/entitlements" % self.instance.id
+        resp = self.client.get(path)
+        return resp.json()
