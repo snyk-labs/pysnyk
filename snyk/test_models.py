@@ -39,13 +39,13 @@ class TestOrganization(TestModels):
     def test_empty_entitlements(self, organization, requests_mock):
         matcher = re.compile("entitlements$")
         requests_mock.get(matcher, json={})
-        assert {} == organization.entitlements
+        assert {} == organization.entitlements.all()
 
     def test_entitlements(self, organization, requests_mock):
         matcher = re.compile("entitlements$")
         output = {"reports": True}
         requests_mock.get(matcher, json=output)
-        assert output == organization.entitlements
+        assert output == organization.entitlements.all()
 
     def test_empty_licenses(self, organization, requests_mock):
         matcher = re.compile("licenses$")
