@@ -47,36 +47,44 @@ class Organization(DataClassJSONMixin):
     def invite(self, email: str, admin: bool = False):
         raise SnykNotImplementedError
 
-    # TODO: convert to objects
     # https://snyk.docs.apiary.io/#reference/test/maven/test-for-issues-in-a-public-package-by-group-id,-artifact-id-and-version
     def test_maven(
         self, package_group_id: str, package_artifact_id: str, version: str
-    ) -> requests.Response:
+    ) -> bool:
         path = "test/maven/%s/%s/%s?org=%s" % (
             package_group_id,
             package_artifact_id,
             version,
             self.id,
         )
-        return self.client.get(path)
+        if self.client.get(path):
+            return True
+        else:
+            raise SnykError
 
-    # TODO: convert to objects
     # https://snyk.docs.apiary.io/#reference/test/rubygems/test-for-issues-in-a-public-gem-by-name-and-version
-    def test_rubygem(self, name: str, version: str) -> requests.Response:
+    def test_rubygem(self, name: str, version: str) -> bool:
         path = "test/rubygems/%s/%s?org=%s" % (name, version, self.id)
-        return self.client.get(path)
+        if self.client.get(path):
+            return True
+        else:
+            raise SnykError
 
-    # TODO: convert to objects
     # https://snyk.docs.apiary.io/#reference/test/pip/test-for-issues-in-a-public-package-by-name-and-version
-    def test_python(self, name: str, version: str) -> requests.Response:
+    def test_python(self, name: str, version: str) -> bool:
         path = "test/pip/%s/%s?org=%s" % (name, version, self.id)
-        return self.client.get(path)
+        if self.client.get(path):
+            return True
+        else:
+            raise SnykError
 
-    # TODO: convert to objects
     # https://snyk.docs.apiary.io/#reference/test/npm/test-for-issues-in-a-public-package-by-name-and-version
-    def test_npm(self, name: str, version: str) -> requests.Response:
+    def test_npm(self, name: str, version: str) -> bool:
         path = "test/npm/%s/%s?org=%s" % (name, version, self.id)
-        return self.client.get(path)
+        if self.client.get(path):
+            return True
+        else:
+            raise SnykError
 
     # https://snyk.docs.apiary.io/#reference/test/pip/test-requirements.txt-file
     def test_pip(self):
@@ -264,6 +272,36 @@ class Project(DataClassJSONMixin):
         else:
             raise SnykError
 
+    @property
+    def settings(self) -> Manager:
+        return Manager.factory("Setting", self.client, self)
+
+    # https://snyk.docs.apiary.io/#reference/projects/project-ignores/list-all-ignores
+    @property
+    def ignores(self) -> Manager:
+        return Manager.factory("Ignore", self.client, self)
+
+    @property
+    def jira_issues(self) -> Manager:
+        return Manager.factory("JiraIssue", self.client, self)
+
+    # https://snyk.docs.apiary.io/#reference/dependencies/dependencies-by-organisation
+    @property
+    def dependencies(self) -> Manager:
+        return Manager.factory(Dependency, self.client, self)
+
+    # https://snyk.docs.apiary.io/#reference/licenses/licenses-by-organisation
+    @property
+    def licenses(self) -> Manager:
+        return Manager.factory(License, self.client, self)
+
+    @property
+    def dependency_graph(self) -> DependencyGraph:
+        path = "org/%s/project/%s/dep-graph" % (self.organization.id, self.id)
+        resp = self.organization.client.get(path)
+        dependency_data = resp.json()
+        return DependencyGraph.from_dict(dependency_data)
+
     # https://snyk.docs.apiary.io/#reference/projects/project-issues
     @property
     def issues(self) -> IssueSet:
@@ -278,42 +316,6 @@ class Project(DataClassJSONMixin):
         }
         resp = self.organization.client.post(path, post_body)
         return IssueSet.from_dict(resp.json())
-
-    @property
-    def settings(self) -> Dict[str, Any]:
-        path = "org/%s/project/%s/settings" % (self.organization.id, self.id)
-        resp = self.organization.client.get(path)
-        return resp.json()
-
-    # https://snyk.docs.apiary.io/#reference/projects/project-ignores/list-all-ignores
-    @property
-    def ignores(self) -> Dict[str, List[object]]:
-        path = "org/%s/project/%s/ignores" % (self.organization.id, self.id)
-        resp = self.organization.client.get(path)
-        return resp.json()
-
-    @property
-    def jira_issues(self) -> Dict[str, List[object]]:
-        path = "org/%s/project/%s/jira-issues" % (self.organization.id, self.id)
-        resp = self.organization.client.get(path)
-        return resp.json()
-
-    @property
-    def dependency_graph(self) -> DependencyGraph:
-        path = "org/%s/project/%s/dep-graph" % (self.organization.id, self.id)
-        resp = self.organization.client.get(path)
-        dependency_data = resp.json()
-        return DependencyGraph.from_dict(dependency_data)
-
-    # https://snyk.docs.apiary.io/#reference/dependencies/dependencies-by-organisation
-    @property
-    def dependencies(self) -> Manager:
-        return Manager.factory(Dependency, self.client, self)
-
-    # https://snyk.docs.apiary.io/#reference/licenses/licenses-by-organisation
-    @property
-    def licenses(self) -> Manager:
-        return Manager.factory(License, self.client, self)
 
     def update_settings(self, **kwargs: str) -> bool:
         path = "org/%s/project/%s/settings" % (self.organization.id, self.id)
