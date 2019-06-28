@@ -75,9 +75,9 @@ The `snyk.models.Project` object has the following useful properties and methods
 
 * `delete()` - deletes the project in question. We careful as this will delete all associated data too
 * `dependencies` - returns a Manager for packages in use in this project
-* `dependency_graph` - returns a Manager for the full dependency graph
+* `dependency_graph` - returns a `snyk.models.DependencyGraph` object which represents the full dependency graph of package dependencies
 * `ignores` - returns a Manager for ignore rules set on the project
-* `issues` - returns a Manager for accessing the list of current vulnerabilities and license violations in this project
+* `issues()` - returns a `snyk.models.IssueSet` for accessing the list of current vulnerabilities and license violations in this project
 * `jira_issues` - returns a Manager with access to any associated Jira issues
 * `licenses` - returns a Manager for licenses currently in use by this project
 * `settings` - returns a Manager for interacting with the current project settings  
