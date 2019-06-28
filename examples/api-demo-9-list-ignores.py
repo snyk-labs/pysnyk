@@ -21,20 +21,20 @@ show_dependencies = True
 show_projects = True
 
 client = SnykClient(snyk_token)
-json_res_projects = client.snyk_projects_projects(org_id)
-for proj in json_res_projects["projects"]:
-    project_id = proj["id"]
-    project_name = proj["name"]
+projects = client.organizations.get(org_id).projects.all()
+for proj in projects:
+    project_id = proj.id
+    project_name = proj.name
 
-    json_res_ignores = client.snyk_projects_list_all_ignores(org_id, project_id)
+    ignores = project.ignores.all()
 
-    if len(json_res_ignores.keys()) > 0:
+    if len(ignores) > 0:
         # issues exist for this project
         print("Project ID: %s" % project_id)
         print("Project Name: %s" % project_name)
-        for next_issue_id in json_res_ignores.keys():
+        for next_issue_id in ignores.keys():
             print("  Ignored Issue ID: %s" % next_issue_id)
-            next_issue_ignores = json_res_ignores[next_issue_id]
+            next_issue_ignores = ignores[next_issue_id]
 
             for next_ignore in next_issue_ignores:
 

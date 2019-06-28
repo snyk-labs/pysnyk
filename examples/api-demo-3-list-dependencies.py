@@ -21,25 +21,22 @@ org_id = args.orgId
 project_id = args.projectId
 
 
-client = SnykClient(token=snyk_token)
-lst_licenses = client.snyk_dependencies_list_all_dependencies_by_project(
-    org_id, project_id
+client = SnykClient(snyk_token)
+dependencies = (
+    client.organizations.get(org_id).projects.get(project_id).dependencies.all()
 )
 
-for v in lst_licenses:
-    print("\n%s: %s@%s" % (v["type"], v["name"], v["version"]))
+for dep in dependencies:
+    print("%s@%s" % (dep.name, dep.version))
 
-    licenses = v["licenses"]
+    licenses = dep.licenses
     if len(licenses) > 0:
         print("  Licenses:")
         for l in licenses:
-            print("   - %s | %s" % (l["license"], l["id"]))
+            print("   - %s | %s" % (l.license, l.id))
 
-    deps_with_issues = v["dependenciesWithIssues"]
+    deps_with_issues = dep.dependenciesWithIssues
     if len(deps_with_issues) > 0:
         print("  Deps with Issues:")
         for d in deps_with_issues:
             print("   - %s" % d)
-
-    # print('  %s@%s' % (v['package'], v['version']))
-    # print('  Severity: %s' % v['severity'])

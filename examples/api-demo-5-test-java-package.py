@@ -9,13 +9,9 @@ def parse_command_line_args():
     parser.add_argument(
         "--orgId", type=str, help="The Snyk Organisation Id", required=True
     )
-
     parser.add_argument("--groupId", type=str, help="The maven package name")
-
     parser.add_argument("--artifactId", type=str, help="The maven package name")
-
     parser.add_argument("--packageVersion", type=str, help="The maven package name")
-
     parser.add_argument(
         "full_package_descriptor",
         nargs="?",
@@ -23,9 +19,7 @@ def parse_command_line_args():
         type=str,
         help="Full package to test.",
     )
-
     args_list = parser.parse_args()
-
     if args_list.full_package_descriptor:
         try:
             args_list.groupId = args_list.full_package_descriptor.split(":")[0]
@@ -47,13 +41,10 @@ def parse_command_line_args():
     else:
         if args_list.groupId is None:
             parser.error("You must specify --groupId")
-
         if args_list.artifactId is None:
             parser.error("You must specify --artifactId")
-
         if args_list.packageVersion is None:
             parser.error("You must specify --packageVersion")
-
     return args_list
 
 
@@ -65,9 +56,9 @@ package_group_id = args.groupId
 package_artifact_id = args.artifactId
 package_version = args.packageVersion
 
-client = SnykClient(token=snyk_token)
-json_res = client.snyk_test_maven(
-    package_group_id, package_artifact_id, package_version, org_id
+client = SnykClient(snyk_token)
+result = client.organizations.get(org_id).test_maven(
+    package_group_id, package_artifact_id, package_version
 )
 
 all_vulnerability_issues = json_res["issues"]["vulnerabilities"]
