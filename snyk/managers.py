@@ -47,6 +47,9 @@ class Manager(abc.ABC):
                 "License": LicenseManager,
                 "Dependency": DependencyManager,
                 "Entitlement": EntitlementManager,
+                "Setting": SettingManager,
+                "Ignore": IgnoreManager,
+                "JiraIssue": JiraIssueManager,
             }[key]
             return manager(klass, client, instance)
         except KeyError:
@@ -165,5 +168,35 @@ class DependencyManager(Manager):
 class EntitlementManager(DictManager):
     def all(self) -> Dict[str, bool]:
         path = "org/%s/entitlements" % self.instance.id
+        resp = self.client.get(path)
+        return resp.json()
+
+
+class SettingManager(DictManager):
+    def all(self) -> Dict[str, Any]:
+        path = "org/%s/project/%s/settings" % (
+            self.instance.organization.id,
+            self.instance.id,
+    ***REMOVED***
+        resp = self.client.get(path)
+        return resp.json()
+
+
+class IgnoreManager(DictManager):
+    def all(self) -> Dict[str, List[object]]:
+        path = "org/%s/project/%s/ignores" % (
+            self.instance.organization.id,
+            self.instance.id,
+    ***REMOVED***
+        resp = self.client.get(path)
+        return resp.json()
+
+
+class JiraIssueManager(DictManager):
+    def all(self) -> Dict[str, List[object]]:
+        path = "org/%s/project/%s/jira-issues" % (
+            self.instance.organization.id,
+            self.instance.id,
+    ***REMOVED***
         resp = self.client.get(path)
         return resp.json()
