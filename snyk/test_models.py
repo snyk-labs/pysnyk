@@ -4,7 +4,7 @@ import pytest  # type: ignore
 
 from snyk.models import Organization, Project, Member
 from snyk.client import SnykClient
-from snyk.errors import SnykError
+from snyk.errors import SnykError, SnykNotFoundError, SnykNotImplementedError
 
 
 class TestModels(object):
@@ -76,6 +76,12 @@ class TestOrganization(TestModels):
         matcher = re.compile("licenses$")
         requests_mock.post(matcher, json={})
         assert [] == organization.licenses.all()
+
+    def test_empty_dependencies(self, organization, organization_url, requests_mock):
+        requests_mock.post(
+            "%s/dependencies" % organization_url, json={"total": 0, "results": []}
+    ***REMOVED***
+        assert [] == organization.dependencies.all()
 
     def test_rubygems_test(self, organization, base_url, blank_test, requests_mock):
         requests_mock.get("%s/test/rubygems/puppet/4.0.0" % base_url, json=blank_test)
@@ -201,6 +207,24 @@ class TestProject(TestModels):
         assert 1 == len(project.ignores.all())
         assert [{}] == project.ignores.get("key")
 
+    def test_missing_ignores(self, project, project_url, requests_mock):
+        requests_mock.get("%s/ignores" % project_url, json={})
+        with pytest.raises(SnykNotFoundError):
+            project.ignores.get("not-present")
+
+    def test_filter_not_implemented_on_dict_managers(
+        self, project, project_url, requests_mock
+***REMOVED***:
+        with pytest.raises(SnykNotImplementedError):
+            project.ignores.filter(key="value")
+
+    def test_first_fails_on_empty_dict_managers(
+        self, project, project_url, requests_mock
+***REMOVED***:
+        requests_mock.get("%s/ignores" % project_url, json={})
+        with pytest.raises(SnykNotFoundError):
+            project.ignores.first()
+
     def test_empty_jira_issues(self, project, project_url, requests_mock):
         requests_mock.get("%s/jira-issues" % project_url, json={})
         assert {} == project.jira_issues.all()
@@ -210,14 +234,59 @@ class TestProject(TestModels):
         assert 1 == len(project.jira_issues.all())
         assert [{}] == project.jira_issues.get("key")
 
-    def test_issues(self, project):
-        pass
+    def test_empty_dependencies(self, project, organization_url, requests_mock):
+        requests_mock.post(
+            "%s/dependencies" % organization_url, json={"total": 0, "results": []}
+    ***REMOVED***
+        assert [] == project.dependencies.all()
 
-    def test_dependency_graph(self, project):
-        pass
+    def test_empty_issues(self, project, project_url, requests_mock):
+        requests_mock.post(
+            "%s/issues" % project_url,
+            json={
+                "ok": True,
+                "packageManager": "fake",
+                "dependencyCount": 0,
+                "issues": {"vulnerabilities": [], "licenses": []},
+            },
+    ***REMOVED***
+        assert project.issues.all().ok
 
-    def test_dependencies(self, project):
-        pass
+    def test_filtering_empty_issues(self, project, project_url, requests_mock):
+        requests_mock.post(
+            "%s/issues" % project_url,
+            json={
+                "ok": True,
+                "packageManager": "fake",
+                "dependencyCount": 0,
+                "issues": {"vulnerabilities": [], "licenses": []},
+            },
+    ***REMOVED***
+        assert project.issues.filter(ignored=True).ok
+
+    def test_filter_not_implemented_on_singleton_managers(self, project, requests_mock):
+        with pytest.raises(SnykNotImplementedError):
+            project.dependency_graph.filter(key="value")
+
+    def test_first_not_implemented_on_singleton_managers(self, project, requests_mock):
+        with pytest.raises(SnykNotImplementedError):
+            project.issues.first()
+
+    def test_get_not_implemented_on_singleton_managers(self, project, requests_mock):
+        with pytest.raises(SnykNotImplementedError):
+            project.issues.get("key")
+
+    def test_empty_dependency_graph(self, project, project_url, requests_mock):
+        requests_mock.get(
+            "%s/dep-graph" % project_url,
+            json={
+                "schemaVersion": "fake",
+                "pkgManager": {},
+                "pkgs": [],
+                "graph": {"rootNodeId": "fake", "nodes": []},
+            },
+    ***REMOVED***
+        assert project.dependency_graph.all()
 
     def test_empty_licenses(self, project, organization_url, requests_mock):
         requests_mock.post("%s/licenses" % organization_url, json=[])

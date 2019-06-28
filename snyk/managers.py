@@ -62,7 +62,7 @@ class Manager(abc.ABC):
 class DictManager(Manager):
     @abc.abstractmethod
     def all(self) -> Dict[str, Any]:
-        pass
+        pass  # pragma: no cover
 
     def get(self, id: str):
         try:
@@ -83,7 +83,7 @@ class DictManager(Manager):
 class SingletonManager(Manager):
     @abc.abstractmethod
     def all(self) -> Any:
-        pass
+        pass  # pragma: no cover
 
     def first(self):
         raise SnykNotImplementedError
@@ -156,13 +156,18 @@ class LicenseManager(Manager):
 class DependencyManager(Manager):
     def all(self, page: int = 1):
         results_per_page = 50
+        if hasattr(self.instance, "organization"):
+            org_id = self.instance.organization.id
+            post_body = {"filters": {"projects": [self.instance.id]}}
+        else:
+            org_id = self.instance.id
+            post_body = {"filters": {}}
+
         path = "org/%s/dependencies?sortBy=dependency&order=asc&page=%s&perPage=%s" % (
-            self.instance.organization.id,
+            org_id,
             page,
             results_per_page,
     ***REMOVED***
-
-        post_body = {"filters": {"projects": [self.instance.id]}}
 
         resp = self.client.post(path, post_body)
         dependency_data = resp.json()
@@ -170,6 +175,7 @@ class DependencyManager(Manager):
         total = dependency_data[
             "total"
         ]  # contains the total number of results (for pagination use)
+
         results = dependency_data["results"]
 
         if total > (page * results_per_page):
@@ -273,7 +279,7 @@ class IssueSetManager(SingletonManager):
             self.instance.id,
     ***REMOVED***
         filters = {}
-        for filter_name in ["severity"]:
+        for filter_name in ["severity", "types", "ignored", "patched"]:
             if kwargs.get(filter_name):
                 filters[filter_name] = kwargs[filter_name]
         post_body = {"filters": filters}
