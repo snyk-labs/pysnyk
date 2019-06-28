@@ -101,12 +101,26 @@ False
 {'CVE': ['CVE-2018-1000656'], 'CWE': ['CWE-20']
 ```
 
+As well as testing individual packages you can also test all packages found in various dependency management manifests. The client currently supports the following methods:
+
+* `test_pipfile(<file-handle-or-string>)` - returns an IssueSet for all Python dependencies in a `Pipfile` 
+* `test_gemfilelock(<file-handle-or-string>)` - returns an IssueSet for all Ruby dependencies in a `Gemfile`
+* `test_packagejson(<file-handle-or-string>)` - returns an IssueSet for all Javascript dependencies in a `package.json` file 
+* `test_gradlefile(<file-handle-or-string>)` - returns an IssueSet for all dependencies in a `Gradlefile` 
+* `test_sbt(<file-handle-or-string>)` - returns an IssueSet for all dependencies defined in a `.sbt` file 
+* `test_pom(<file-handle-or-string>)` - returns an IssueSet for all dependencies in a Maven `pom.xml` file
+
+For example, here we are testing a Python `Pipfile`.
+
+```python
+>>> org = client.organizations.first()
+>>> file = open("Pipfile")
+>>> org.test_pipfile(file)
+```
+
 ### Low-level client
 
-As well as the high-level functions of the client you can use the HTTP methods directly. For these
-you simply need to pass the path. The full domain, and the authentication details, are already provided
-by the client.
-
+As well as the high-level functions of the client you can use the HTTP methods directly. For these you simply need to pass the path. The full domain, and the authentication details, are already provided by the client.
 
 ```python
 client.get("<path>")
@@ -115,6 +129,4 @@ client.put("<path>", <data>)
 client.post("<path>", <data>)
 ```
 
-Most of the time you shouldn't need to use these. They are mainly useful if new methods are added to the
-API which are not yet supported in the client. This can also be useful if you want to pass very specific
-parameters, or to parse the raw JSON output from the API.
+Most of the time you shouldn't need to use these. They are mainly useful if new methods are added to the API which are not yet supported in the client. This can also be useful if you want to pass very specific parameters, or to parse the raw JSON output from the API.
