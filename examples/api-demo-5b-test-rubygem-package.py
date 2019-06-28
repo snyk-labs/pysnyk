@@ -1,6 +1,6 @@
 ***REMOVED***
 
-from pysnyk import SnykClient
+***REMOVED***
 from utils import get_token
 
 
@@ -9,17 +9,13 @@ from utils import get_token
 ***REMOVED***
         "--orgId", type=str, help="The Snyk Organisation Id", required=True
 ***REMOVED***
-
 ***REMOVED***
         "--packageName", type=str, help="The RubyGem package name", required=True
 ***REMOVED***
-
 ***REMOVED***
         "--packageVersion", type=str, help="The RubyGem package version", required=True
 ***REMOVED***
-
-    args_list = parser.parse_args()
-    return args_list
+***REMOVED***
 
 
 snyk_token = get_token("snyk-api-token")

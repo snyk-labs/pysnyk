@@ -1,6 +1,6 @@
 ***REMOVED***
 
-from pysnyk import SnykClient
+***REMOVED***
 from utils import get_token
 
 

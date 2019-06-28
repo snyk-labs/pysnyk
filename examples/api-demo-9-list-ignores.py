@@ -1,6 +1,6 @@
 ***REMOVED***
 
-from pysnyk import SnykClient
+***REMOVED***
 from utils import get_token
 
 
@@ -15,18 +15,15 @@ from utils import get_token
 snyk_token = get_token("snyk-api-token")
 ***REMOVED***
 ***REMOVED***
-
-
 show_dependencies = True
 show_projects = True
-
 client = SnykClient(snyk_token)
 projects = client.organizations.get(org_id).projects.all()
+
 for proj in projects:
     project_id = proj.id
     project_name = proj.name
-
-    ignores = project.ignores.all()
+    ignores = proj.ignores.all()
 
     if len(ignores) > 0:
         # issues exist for this project
@@ -35,14 +32,9 @@ for proj in projects:
         for next_issue_id in ignores.keys():
             print("  Ignored Issue ID: %s" % next_issue_id)
             next_issue_ignores = ignores[next_issue_id]
-
             for next_ignore in next_issue_ignores:
-
                 for i_key in next_ignore.keys():
-                    # print('    %s ' % i_key)  # Not sure why this is a dictionary - they is always *
                     i_value = next_ignore[i_key]
-                    # print(i_value)
-
                     reason = i_value["reason"]
                     created_date = i_value["created"]
                     expires_date = i_value["expires"]

@@ -2,7 +2,7 @@ import json
 ***REMOVED***
 import xlsxwriter
 
-from pysnyk import SnykClient
+***REMOVED***
 from utils import get_token
 import ProjectDependenciesReport
 
@@ -95,13 +95,11 @@ allowed_origins = [
 ]
 
 all_projects_list = []
-***REMOVED***
-get_projects_response = client.snyk_projects_projects(org_id)
-for proj in get_projects_response["projects"]:
-    if proj["origin"] in allowed_origins:
-        all_projects_list.append(
-            {"project_id": proj["id"], "project_name": proj["name"]}
-    ***REMOVED***
+client = SnykClient(snyk_token)
+projects = client.organizations.get(org_id).projects.all()
+for proj in projects:
+    if proj.origin in allowed_origins:
+        all_projects_list.append({"project_id": proj.id, "project_name": proj.name})
 
 project_trees = []
 flattened_project_dependencies_lists = []

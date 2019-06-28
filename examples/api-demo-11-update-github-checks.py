@@ -3,7 +3,7 @@ from distutils import util
 import json
 
 
-from pysnyk import SnykClient
+***REMOVED***
 from utils import get_token
 
 
@@ -12,21 +12,16 @@ from utils import get_token
 ***REMOVED***
         "--orgId", type=str, help="The Snyk Organisation Id", required=True
 ***REMOVED***
-
 ***REMOVED***
         "--projectId", type=str, help="The project ID in Snyk", required=True
 ***REMOVED***
-
 ***REMOVED***
         "--pullRequestTestEnabled",
         type=lambda x: bool(util.strtobool(x)),
         help="Whether or not you want to enable PR checks [true|false]",
         required=True,
 ***REMOVED***
-
-    args = parser.parse_args()
-
-    return args
+***REMOVED***
 
 
 snyk_token = get_token("snyk-api-token")
@@ -38,7 +33,7 @@ pullRequestTestEnabled = args.pullRequestTestEnabled
 
 project_settings = {"pullRequestTestEnabled": pullRequestTestEnabled}
 
-***REMOVED***
+client = SnykClient(snyk_token)
 json_res = client.snyk_projects_projects(org_id)
 
 github_projects = [

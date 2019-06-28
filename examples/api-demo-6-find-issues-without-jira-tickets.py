@@ -1,6 +1,6 @@
 ***REMOVED***
 
-from pysnyk import SnykClient
+***REMOVED***
 from utils import get_token
 
 
@@ -22,7 +22,7 @@ project_id = args.projectId
 
 client = SnykClient(snyk_token)
 project = client.organizations.get(org_id).projects.get(project_id)
-issues = project.issues.all().issues
+issues = project.issues.issues
 jira_issues = project.jira_issues.all()
 
 all_issue_ids = []
