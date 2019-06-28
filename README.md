@@ -2,7 +2,7 @@
 
 A Python client for the [Snyk API](https://snyk.docs.apiary.io/#).
 
-## Usage
+## Client
 
 Using the client requires you to provide your Snyk API token.
 
@@ -11,7 +11,14 @@ import snyk
 client = snyk.SnykClient("<your-api-token>")
 ```
 
-### Organizations
+By default the client will connect to the public Snyk service. If you are using a local installation then you can provide the API url as the second argument.
+
+```python
+import snyk
+client = snyk.SnykClient("<your-api-token>", "<your-instance-of-snyk>")
+```
+
+## Organizations
 
 With the client we can get a list of Snyk organizations you are a member of:
 
@@ -33,15 +40,15 @@ Most of the API is scoped to organizations, so most other methods are found on t
 
 The `snyk.models.Organization` object has the following properties related to the API:
 
-* `members` - returns a Manager for members
-* `licenses` - returns a Manager for licenses currently in use by projects in this organisation
-* `projects` - returns a Manager for associated projects
 * `entitlements` - returns the set of Snyk features available to this account
+* `dependencies`- returns a Manager for packages in use in this organization
+* `licenses` - returns a Manager for licenses currently in use by projects in this organisation
+* `members` - returns a Manager for members
+* `projects` - returns a Manager for associated projects
 
+### A note on Managers
 
-### Managers
-
-Managers are how you can query data from the Snyk API. Each manager exposes the following methods:
+Managers provide a consistent API for accessing objects from the Snyk API. Each manager implements the following methods:
 
 * `all()` - return a list of all of the relevant objects
 * `get("<id>")` - return a single instance of the object if it exists
@@ -50,7 +57,7 @@ Managers are how you can query data from the Snyk API. Each manager exposes the 
 
 ### Projects
 
-Once you have an organization you're likely to want to grab a particular project:
+Once you have an organization you're likely to want to grab the related projects:
 
 ```python
 client.organizations.first().projects.all()
@@ -58,8 +65,7 @@ client.organizations.first().projects.all()
 
 This will return a list of `snyk.models.Project` objects.
 
-In the case where you want to get all of the projects across all of your organizations then you can use the handy
-method on the client.
+In the case where you want to get all of the projects across all of your organizations then you can use the handy method on the client.
 
 ```python
 client.projects.all()
@@ -67,19 +73,25 @@ client.projects.all()
 
 The `snyk.models.Project` object has the following useful properties and methods:
 
-* `issues`
-* `delete()`
-* `settings`
-* `ignores`
-* `jira_issues`
-* `dependency_graph`
-* `dependencies`
-* `licenses`
+* `delete()` - deletes the project in question. We careful as this will delete all associated data too
+* `dependencies` - returns a Manager for packages in use in this project
+* `dependency_graph` - returns a Manager for the full dependency graph
+* `ignores` - returns a Manager for ignore rules set on the project
+* `issues` - returns a Manager for accessing the list of current vulnerabilities and license violations in this project
+* `jira_issues` - returns a Manager with access to any associated Jira issues
+* `licenses` - returns a Manager for licenses currently in use by this project
+* `settings` - returns a Manager for interacting with the current project settings  
+
+Note that the `settings` Manager can also be used to update settings like so, assumibg you have a `snyk.models.Project` object in the variable `project`.
+
+```python
+project.settings.update(pull_request_test_enabled=True)
+```
 
 
-### Tests
+### Testing for vulnerabilties
 
-The API also exposes meythods to test packages. These methods are found on the Organization object.
+The API also exposes meythods to discover vulnerability information about individual packages. These methods are found on the Organization object.
 
 * `test_maven(<package_group_id>, <package_artifact_id>, <version>)` - returns an IssueSet containing vulnerability information for a Maven artifact
 * `test_rubygem(<name>, <version>)` - returns an IssueSet containing vulnerability information for a Ruby Gem
@@ -87,7 +99,7 @@ The API also exposes meythods to test packages. These methods are found on the O
 * `test_npm(<name>, <version>)` - returns an IssueSet containing vulnerability information for an NPM package
 
 
-Here's an example of testing a particular Python package.
+Here's an example of checking a particular Python package.
 
 ```python
 >>> org = client.organizations.first()
@@ -120,7 +132,7 @@ For example, here we are testing a Python `Pipfile`.
 
 ### Low-level client
 
-As well as the high-level functions of the client you can use the HTTP methods directly. For these you simply need to pass the path. The full domain, and the authentication details, are already provided by the client.
+As well as the high-level API of the Snyk client you can use the HTTP methods directly. For these you simply need to pass the path, and optionally a data payload. The full domain, and the authentication details, are already provided by the client.
 
 ```python
 client.get("<path>")
