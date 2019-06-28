@@ -78,6 +78,10 @@ class Organization(DataClassJSONMixin):
         return Manager.factory(License, self.client, self)
 
     @property
+    def dependencies(self) -> Manager:
+        return Manager.factory(Dependency, self.client, self)
+
+    @property
     def entitlements(self) -> Manager:
         return Manager.factory("Entitlement", self.client, self)
 
