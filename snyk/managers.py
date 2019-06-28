@@ -2,6 +2,7 @@ import abc
 from typing import List, Any, Dict
 
 from .errors import SnykError, SnykNotFoundError, SnykNotImplementedError
+from .utils import snake_to_camel
 
 
 class Manager(abc.ABC):
@@ -197,6 +198,25 @@ class SettingManager(DictManager):
     ***REMOVED***
         resp = self.client.get(path)
         return resp.json()
+
+    def update(self, **kwargs: bool) -> bool:
+        path = "org/%s/project/%s/settings" % (
+            self.instance.organization.id,
+            self.instance.id,
+    ***REMOVED***
+        post_body = {}
+
+        settings = [
+            "pull_request_test_enabled",
+            "pull_request_fail_on_vuln",
+            "pull_request_fail_only_for_high_severity",
+        ]
+
+        for setting in settings:
+            if setting in kwargs:
+                post_body[snake_to_camel(setting)] = kwargs[setting]
+
+        return bool(self.client.put(path, post_body))
 
 
 class IgnoreManager(DictManager):
