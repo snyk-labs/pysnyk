@@ -7,7 +7,6 @@ from mashumaro import DataClassJSONMixin  # type: ignore
 
 from .errors import SnykError, SnykNotImplementedError
 from .managers import Manager
-from .utils import snake_to_camel
 
 
 @dataclass
@@ -85,11 +84,11 @@ class Organization(DataClassJSONMixin):
     # https://snyk.docs.apiary.io/#reference/users/user-organisation-notification-settings/modify-org-notification-settings
     # https://snyk.docs.apiary.io/#reference/users/user-organisation-notification-settings/get-org-notification-settings
     def notification_settings(self):
-        raise SnykNotImplemented
+        raise SnykNotImplemented  # pragma: no cover
 
     # https://snyk.docs.apiary.io/#reference/organisations/the-snyk-organisation-for-a-request/invite-users
     def invite(self, email: str, admin: bool = False):
-        raise SnykNotImplementedError
+        raise SnykNotImplementedError  # pragma: no cover
 
     def _test(self, path, contents=None):
         if contents:
@@ -106,10 +105,7 @@ class Organization(DataClassJSONMixin):
             resp = self.client.post(path, post_body)
         else:
             resp = self.client.get(path)
-        if resp:
-            return IssueSet.from_dict(resp.json())
-        else:
-            raise SnykError
+        return IssueSet.from_dict(resp.json())
 
     # https://snyk.docs.apiary.io/#reference/test/maven/test-for-issues-in-a-public-package-by-group-id,-artifact-id-and-version
     def test_maven(
@@ -155,11 +151,11 @@ class Organization(DataClassJSONMixin):
         path = "test/gradle?org=%s" % self.id
         return self._test(path, contents)
 
-    def test_sbt(self):
+    def test_sbt(self, contents):
         path = "test/sbt?org=%s" % self.id
         return self._test(path, contents)
 
-    def test_pom(self):
+    def test_pom(self, contents):
         path = "test/maven?org=%s" % self.id
         return self._test(path, contents)
 
@@ -195,11 +191,11 @@ class Member(DataClassJSONMixin):
 
     # https://snyk.docs.apiary.io/#reference/organisations/manage-roles-in-organisation/update-a-member-in-the-organisation
     def update_role(self, role: str):
-        raise SnykNotImplementedError
+        raise SnykNotImplementedError  # pragma: no cover
 
     # https://snyk.docs.apiary.io/#reference/organisations/manage-roles-in-organisation/remove-a-member-from-the-organisation
     def delete(self):
-        raise SnykNotImplementedError
+        raise SnykNotImplementedError  # pragma: no cover
 
 
 @dataclass
@@ -289,9 +285,7 @@ class Project(DataClassJSONMixin):
 
     def delete(self) -> bool:
         path = "org/%s/project/%s" % (self.organization.id, self.id)
-        if self.organization.client.delete(path):
-            return True
-        raise SnykError
+        return bool(self.organization.client.delete(path))
 
     @property
     def settings(self) -> Manager:
@@ -317,7 +311,7 @@ class Project(DataClassJSONMixin):
         return Manager.factory(License, self.organization.client, self)
 
     @property
-    def licenses(self) -> Manager:
+    def dependency_graph(self) -> Manager:
         return Manager.factory(DependencyGraph, self.organization.client, self)
 
     # https://snyk.docs.apiary.io/#reference/projects/project-issues
@@ -325,26 +319,7 @@ class Project(DataClassJSONMixin):
     def issues(self) -> Manager:
         return Manager.factory(IssueSet, self.organization.client, self)
 
-    def update_settings(self, **kwargs: str) -> bool:
-        path = "org/%s/project/%s/settings" % (self.organization.id, self.id)
-        post_body = {}
-
-        settings = [
-            "pull_request_test_enabled",
-            "pull_request_fail_on_vuln",
-            "pull_request_fail_only_fo-high_severity",
-        ]
-
-        for setting in settings:
-            if settings in kwargs:
-                post_body[snake_to_camel(settings)] = kwargs[setting]
-
-        if self.organization.client.put(path, post_body):
-            return True
-        else:
-            raise SnykError
-
     # https://snyk.docs.apiary.io/#reference/users/user-project-notification-settings/modify-project-notification-settings
     # https://snyk.docs.apiary.io/#reference/users/user-project-notification-settings/get-project-notification-settings
     def notification_settings(self):
-        raise SnykNotImplementedError
+        raise SnykNotImplementedError  # pragma: no cover
