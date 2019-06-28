@@ -296,26 +296,13 @@ class Project(DataClassJSONMixin):
         return Manager.factory(License, self.client, self)
 
     @property
-    def dependency_graph(self) -> DependencyGraph:
-        path = "org/%s/project/%s/dep-graph" % (self.organization.id, self.id)
-        resp = self.organization.client.get(path)
-        dependency_data = resp.json()
-        return DependencyGraph.from_dict(dependency_data)
+    def licenses(self) -> Manager:
+        return Manager.factory(DependencyGraph, self.client, self)
 
     # https://snyk.docs.apiary.io/#reference/projects/project-issues
     @property
-    def issues(self) -> IssueSet:
-        path = "org/%s/project/%s/issues" % (self.organization.id, self.id)
-        post_body = {
-            "filters": {
-                "severities": ["high", "medium", "low"],
-                "types": ["vuln", "license"],
-                "ignored": False,
-                "patched": False,
-            }
-        }
-        resp = self.organization.client.post(path, post_body)
-        return IssueSet.from_dict(resp.json())
+    def issues(self) -> Manager:
+        return Manager.factory(IssueSet, self.client, self)
 
     def update_settings(self, **kwargs: str) -> bool:
         path = "org/%s/project/%s/settings" % (self.organization.id, self.id)

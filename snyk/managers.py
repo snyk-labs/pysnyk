@@ -50,6 +50,8 @@ class Manager(abc.ABC):
                 "Setting": SettingManager,
                 "Ignore": IgnoreManager,
                 "JiraIssue": JiraIssueManager,
+                "DependencyGraph": DependencyGraphManager,
+                "Issue": IssueManager,
             }[key]
             return manager(klass, client, instance)
         except KeyError:
@@ -75,6 +77,21 @@ class DictManager(Manager):
             next(iter(self.all().items()))
         except StopIteration:
             raise SnykNotFoundError
+
+
+class SingletonManager(Manager):
+    @abc.abstractmethod
+    def all(self) -> Any:
+        pass
+
+    def first(self):
+        raise SnykNotImplementedError
+
+    def get(self, id: str):
+        raise SnykNotImplementedError
+
+    def filter(self, **kwargs: Any):
+        raise SnykNotImplementedError
 
 
 class OrganizationManager(Manager):
@@ -200,3 +217,45 @@ class JiraIssueManager(DictManager):
         )
         resp = self.client.get(path)
         return resp.json()
+
+
+class DependencyGraphManager(SingletonManager):
+    def all(self) -> Any:
+        path = "org/%s/project/%s/dep-graph" % (
+            self.instance.organization.id,
+            self.instance.id,
+        )
+        resp = self.client.get(path)
+        dependency_data = resp.json()
+        return self.klass.from_dict(dependency_data)
+
+
+class IssueManager(SingletonManager):
+    def all(self) -> Any:
+        path = "org/%s/project/%s/issues" % (
+            self.instance.organization.id,
+            self.instance.id,
+        )
+        post_body = {
+            "filters": {
+                "severities": ["high", "medium", "low"],
+                "types": ["vuln", "license"],
+                "ignored": False,
+                "patched": False,
+            }
+        }
+        resp = self.client.post(path, post_body)
+        return self.klass.from_dict(resp.json())
+
+    def filter(self, **kwargs: Any):
+        path = "org/%s/project/%s/issues" % (
+            self.instance.organization.id,
+            self.instance.id,
+        )
+        filters = {}
+        for filter_name in ["severity"]:
+            if kwargs.get(filter_name):
+                filters[filter_name] = kwargs[filter_name]
+        post_body = {"filters": filters}
+        resp = self.client.post(path, post_body)
+        return self.klass.from_dict(resp.json())
