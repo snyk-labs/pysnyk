@@ -1,6 +1,6 @@
 import argparse
 
-from pysnyk import SnykClient
+from snyk import SnykClient
 from utils import get_token
 
 
@@ -45,4 +45,4 @@ for project in client.organisations.get(org_id).projects.all():
         project.origin == project_origin or not project_origin
     ):
         if project.delete():
-            print("Project ID %s deleted" % project)
+            print("Project ID %s deleted" % project.id)

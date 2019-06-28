@@ -1,6 +1,6 @@
 import argparse
 
-from pysnyk import SnykClient
+from snyk import SnykClient
 from utils import get_token
 
 
@@ -9,7 +9,6 @@ def parse_command_line_args():
     parser.add_argument(
         "--orgId", type=str, help="The Snyk Organisation ID", required=True
     )
-
     return parser.parse_args()
 
 

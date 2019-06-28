@@ -1,6 +1,6 @@
 import argparse
 
-from pysnyk import SnykClient
+from snyk import SnykClient
 from utils import get_token
 
 
@@ -9,17 +9,13 @@ def parse_command_line_args():
     parser.add_argument(
         "--orgId", type=str, help="The Snyk Organisation Id", required=True
     )
-
     parser.add_argument(
         "--packageName", type=str, help="The npm package name", required=True
     )
-
     parser.add_argument(
         "--packageVersion", type=str, help="The npm package version", required=True
     )
-
-    args_list = parser.parse_args()
-    return args_list
+    return parser.parse_args()
 
 
 snyk_token = get_token("snyk-api-token")
@@ -33,8 +29,8 @@ print("Testing package %s@%s\n" % (package_name, package_version))
 client = SnykClient(snyk_token)
 result = client.organizations.get(org_id).test_npm(package_name, package_version)
 
-all_vulnerability_issues = json_res["issues"]["vulnerabilities"]
-all_license_issues = json_res["issues"]["licenses"]
+all_vulnerability_issues = result.issues.vulnerabilities
+all_license_issues = result.issues.licenses
 
 print("Security Vulnerabilities:")
 for v in all_vulnerability_issues:

@@ -1,6 +1,6 @@
 import json
 
-from pysnyk import SnykClient
+from snyk import SnykClient
 
 
 def print_json(json_obj):
@@ -11,27 +11,22 @@ def list_of_dictionaries_to_map(input_list, key_field, data_fields_list=None):
     lookup_map = {}
     for next_item in input_list:
         next_item_key = next_item[key_field]
-
         data = {}
-
         if data_fields_list is None:
             # include all other fields in the data
             for k, v in next_item.items():
                 if k != key_field:
                     data[k] = v
-
         lookup_map[next_item_key] = data
         print("added another")
-
     return lookup_map
 
 
 def get_project_tree(snyk_token, org_id, project_id):
-    client = SnykClient(token=snyk_token)
+    client = SnykClient(snyk_token)
     json_res_dep_graph = client.snyk_projects_get_product_dependency_graph(
         org_id, project_id
     )
-
     print_json(json_res_dep_graph)
 
     print("\nPackages (Flat List):")

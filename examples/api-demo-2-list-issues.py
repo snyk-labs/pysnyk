@@ -1,7 +1,7 @@
 import argparse
 import xlsxwriter
 
-from pysnyk import SnykClient
+from snyk import SnykClient
 from utils import get_token
 
 
@@ -10,20 +10,15 @@ def parse_command_line_args():
     parser.add_argument(
         "--orgId", type=str, help="The Snyk Organisation Id", required=True
     )
-
     parser.add_argument(
         "--projectId", type=str, help="The project ID in Snyk", required=True
     )
-
     parser.add_argument(
         "--outputPathExcel",
         type=str,
         help="Optional. The desired output if you want Excel output (use .xlsx).",
     )
-
-    args = parser.parse_args()
-
-    return args
+    return parser.parse_args()
 
 
 snyk_token = get_token("snyk-api-token")
@@ -59,14 +54,11 @@ def output_excel(vulns, output_path):
     excel_workbook.close()
 
 
-# List issues in a project
 client = SnykClient(snyk_token)
-issue_set = client.organizations.get(org_id).projects.get(project_id).issues.all()
-print(json_res)
+issue_set = client.organizations.get(org_id).projects.get(project_id).issues()
 
-vulnerabilities = issue_set.issues.vulnerabilites
 lst_output = []
-for v in vulnerability_issues:
+for v in issue_set.issues.vulnerabilities:
     print("\n %s" % v.title)
     print("  id: %s" % v.id)
     print("  url: %s" % v.url)

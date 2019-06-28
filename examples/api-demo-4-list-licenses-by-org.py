@@ -1,6 +1,6 @@
 import argparse
 
-from pysnyk import SnykClient
+from snyk import SnykClient
 from utils import get_token
 
 
