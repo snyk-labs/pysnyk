@@ -107,7 +107,6 @@ class Organization(DataClassJSONMixin):
             resp = self.client.get(path)
         return IssueSet.from_dict(resp.json())
 
-    # https://snyk.docs.apiary.io/#reference/test/maven/test-for-issues-in-a-public-package-by-group-id,-artifact-id-and-version
     def test_maven(
         self, package_group_id: str, package_artifact_id: str, version: str
     ) -> IssueSet:
@@ -119,22 +118,18 @@ class Organization(DataClassJSONMixin):
         )
         return self._test(path)
 
-    # https://snyk.docs.apiary.io/#reference/test/rubygems/test-for-issues-in-a-public-gem-by-name-and-version
     def test_rubygem(self, name: str, version: str) -> IssueSet:
         path = "test/rubygems/%s/%s?org=%s" % (name, version, self.id)
         return self._test(path)
 
-    # https://snyk.docs.apiary.io/#reference/test/pip/test-for-issues-in-a-public-package-by-name-and-version
     def test_python(self, name: str, version: str) -> bool:
         path = "test/pip/%s/%s?org=%s" % (name, version, self.id)
         return self._test(path)
 
-    # https://snyk.docs.apiary.io/#reference/test/npm/test-for-issues-in-a-public-package-by-name-and-version
     def test_npm(self, name: str, version: str) -> bool:
         path = "test/npm/%s/%s?org=%s" % (name, version, self.id)
         return self._test(path)
 
-    # https://snyk.docs.apiary.io/#reference/test/pip/test-requirements.txt-file
     def test_pipfile(self, contents):
         path = "test/pip?org=%s" % self.id
         return self._test(path, contents)
@@ -291,7 +286,6 @@ class Project(DataClassJSONMixin):
     def settings(self) -> Manager:
         return Manager.factory("Setting", self.organization.client, self)
 
-    # https://snyk.docs.apiary.io/#reference/projects/project-ignores/list-all-ignores
     @property
     def ignores(self) -> Manager:
         return Manager.factory("Ignore", self.organization.client, self)
@@ -300,12 +294,10 @@ class Project(DataClassJSONMixin):
     def jira_issues(self) -> Manager:
         return Manager.factory("JiraIssue", self.organization.client, self)
 
-    # https://snyk.docs.apiary.io/#reference/dependencies/dependencies-by-organisation
     @property
     def dependencies(self) -> Manager:
         return Manager.factory(Dependency, self.organization.client, self)
 
-    # https://snyk.docs.apiary.io/#reference/licenses/licenses-by-organisation
     @property
     def licenses(self) -> Manager:
         return Manager.factory(License, self.organization.client, self)
@@ -314,7 +306,6 @@ class Project(DataClassJSONMixin):
     def dependency_graph(self) -> Manager:
         return Manager.factory(DependencyGraph, self.organization.client, self)
 
-    # https://snyk.docs.apiary.io/#reference/projects/project-issues
     @property
     def issues(self) -> Manager:
         return Manager.factory(IssueSet, self.organization.client, self)
