@@ -258,28 +258,20 @@ class DependencyGraphManager(SingletonManager):
 
 class IssueSetManager(SingletonManager):
     def all(self) -> Any:
-        path = "org/%s/project/%s/issues" % (
-            self.instance.organization.id,
-            self.instance.id,
-        )
-        post_body = {
-            "filters": {
-                "severities": ["high", "medium", "low"],
-                "types": ["vuln", "license"],
-                "ignored": False,
-                "patched": False,
-            }
-        }
-        resp = self.client.post(path, post_body)
-        return self.klass.from_dict(resp.json())
+        return self.filter()
 
     def filter(self, **kwargs: Any):
         path = "org/%s/project/%s/issues" % (
             self.instance.organization.id,
             self.instance.id,
         )
-        filters = {}
-        for filter_name in ["severity", "types", "ignored", "patched"]:
+        filters = {
+            "severities": ["high", "medium", "low"],
+            "types": ["vuln", "license"],
+            "ignored": False,
+            "patched": False,
+        }
+        for filter_name in filters.keys():
             if kwargs.get(filter_name):
                 filters[filter_name] = kwargs[filter_name]
         post_body = {"filters": filters}

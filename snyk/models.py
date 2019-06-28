@@ -307,12 +307,13 @@ class Project(DataClassJSONMixin):
         return Manager.factory(License, self.organization.client, self)
 
     @property
-    def dependency_graph(self) -> Manager:
-        return Manager.factory(DependencyGraph, self.organization.client, self)
+    def dependency_graph(self) -> DependencyGraph:
+        return Manager.factory(DependencyGraph, self.organization.client, self).all()
 
-    @property
-    def issues(self) -> Manager:
-        return Manager.factory(IssueSet, self.organization.client, self)
+    def issues(self, **kwargs: Any) -> Manager:
+        return Manager.factory(IssueSet, self.organization.client, self).filter(
+            **kwargs
+        )
 
     # https://snyk.docs.apiary.io/#reference/users/user-project-notification-settings/modify-project-notification-settings
     # https://snyk.docs.apiary.io/#reference/users/user-project-notification-settings/get-project-notification-settings

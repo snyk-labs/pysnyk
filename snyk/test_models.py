@@ -250,7 +250,7 @@ class TestProject(TestModels):
                 "issues": {"vulnerabilities": [], "licenses": []},
             },
         )
-        assert project.issues.all().ok
+        assert project.issues().ok
 
     def test_filtering_empty_issues(self, project, project_url, requests_mock):
         requests_mock.post(
@@ -262,19 +262,7 @@ class TestProject(TestModels):
                 "issues": {"vulnerabilities": [], "licenses": []},
             },
         )
-        assert project.issues.filter(ignored=True).ok
-
-    def test_filter_not_implemented_on_singleton_managers(self, project, requests_mock):
-        with pytest.raises(SnykNotImplementedError):
-            project.dependency_graph.filter(key="value")
-
-    def test_first_not_implemented_on_singleton_managers(self, project, requests_mock):
-        with pytest.raises(SnykNotImplementedError):
-            project.issues.first()
-
-    def test_get_not_implemented_on_singleton_managers(self, project, requests_mock):
-        with pytest.raises(SnykNotImplementedError):
-            project.issues.get("key")
+        assert project.issues(ignored=True).ok
 
     def test_empty_dependency_graph(self, project, project_url, requests_mock):
         requests_mock.get(
@@ -286,7 +274,7 @@ class TestProject(TestModels):
                 "graph": {"rootNodeId": "fake", "nodes": []},
             },
         )
-        assert project.dependency_graph.all()
+        assert project.dependency_graph
 
     def test_empty_licenses(self, project, organization_url, requests_mock):
         requests_mock.post("%s/licenses" % organization_url, json=[])
