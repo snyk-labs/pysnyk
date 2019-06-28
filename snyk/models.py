@@ -1,3 +1,4 @@
+import base64
 from dataclasses import dataclass, field, InitVar
 from typing import Optional, List, Dict, Any, Union
 
@@ -90,8 +91,16 @@ class Organization(DataClassJSONMixin):
     def invite(self, email: str, admin: bool = False):
         raise SnykNotImplementedError
 
-    def _test(self, path):
-        resp = self.client.get(path)
+    def _test(self, path, contents=None):
+        if contents:
+            encoded = base64.b64encode(contents.encode()).decode()
+            post_body = {
+                "encoding": "base64",
+                "files": {"target": {"contents": encoded}},
+            }
+            resp = self.client.post(path, post_body)
+        else:
+            resp = self.client.get(path)
         if resp:
             return IssueSet.from_dict(resp.json())
         else:
@@ -125,16 +134,29 @@ class Organization(DataClassJSONMixin):
         return self._test(path)
 
     # https://snyk.docs.apiary.io/#reference/test/pip/test-requirements.txt-file
-    def test_pip(self):
-        raise SnykNotImplementedError
+    def test_pipfile(self, contents):
+        path = "test/pip?org=%s" % self.id
+        return self._test(path, contents)
 
-    # https://snyk.docs.apiary.io/#reference/test/sbt/test-sbt-file
+    def test_gemfilelock(self, contents):
+        path = "test/rubygems?org=%s" % self.id
+        return self._test(path, contents)
+
+    def test_packagejson(self, contents):
+        path = "test/npm?org=%s" % self.id
+        return self._test(path, contents)
+
+    def test_gradlefile(self, contents):
+        path = "test/gradle?org=%s" % self.id
+        return self._test(path, contents)
+
     def test_sbt(self):
-        raise SnykNotImplementedError
+        path = "test/sbt?org=%s" % self.id
+        return self._test(path, contents)
 
-    # https://snyk.docs.apiary.io/#reference/test/gradle/test-gradle-file
-    def test_gradle(self):
-        raise SnykNotImplementedError
+    def test_pom(self):
+        path = "test/maven?org=%s" % self.id
+        return self._test(path, contents)
 
 
 @dataclass
