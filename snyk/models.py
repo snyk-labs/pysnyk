@@ -93,6 +93,11 @@ class Organization(DataClassJSONMixin):
 
     def _test(self, path, contents=None):
         if contents:
+            # Check for a file-like object, allows us to support files
+            # and strings in the same interface
+            read = getattr(contents, "read", None)
+            if callable(read):
+                contents = contents.read()
             encoded = base64.b64encode(contents.encode()).decode()
             post_body = {
                 "encoding": "base64",
