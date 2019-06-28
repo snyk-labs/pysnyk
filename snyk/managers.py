@@ -51,7 +51,7 @@ class Manager(abc.ABC):
                 "Ignore": IgnoreManager,
                 "JiraIssue": JiraIssueManager,
                 "DependencyGraph": DependencyGraphManager,
-                "Issue": IssueManager,
+                "IssueSet": IssueSetManager,
             }[key]
             return manager(klass, client, instance)
         except KeyError:
@@ -65,7 +65,7 @@ class DictManager(Manager):
 
     def get(self, id: str):
         try:
-            self.all()[id]
+            return self.all()[id]
         except KeyError:
             raise SnykNotFoundError
 
@@ -74,7 +74,7 @@ class DictManager(Manager):
 
     def first(self):
         try:
-            next(iter(self.all().items()))
+            return next(iter(self.all().items()))
         except StopIteration:
             raise SnykNotFoundError
 
@@ -230,7 +230,7 @@ class DependencyGraphManager(SingletonManager):
         return self.klass.from_dict(dependency_data)
 
 
-class IssueManager(SingletonManager):
+class IssueSetManager(SingletonManager):
     def all(self) -> Any:
         path = "org/%s/project/%s/issues" % (
             self.instance.organization.id,

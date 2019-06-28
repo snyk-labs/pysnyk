@@ -61,30 +61,30 @@ result = client.organizations.get(org_id).test_maven(
     package_group_id, package_artifact_id, package_version
 )
 
-all_vulnerability_issues = json_res["issues"]["vulnerabilities"]
-all_license_issues = json_res["issues"]["licenses"]
+all_vulnerability_issues = result.issues.vulnerabilities
+all_license_issues = result.issues.licenses
 
 print("Security Vulnerabilities:")
 for v in all_vulnerability_issues:
-    print(v["id"])
-    print("  %s" % v["title"])
-    print("  %s" % v["url"])
-    print("  %s@%s" % (v["package"], v["version"]))
-    print("  identifiers: %s" % v["identifiers"]["CVE"])
-    print("  severity: %s" % v["severity"])
-    print("  language: %s" % v["language"])
-    print("  packageManager: %s" % v["packageManager"])
-    print("  isUpgradable: %s" % v["isUpgradable"])
-    print("  isPatchable: %s" % v["isPatchable"])
+    print(v.id)
+    print("  %s" % v.title)
+    print("  %s" % v.url)
+    print("  %s@%s" % (v.package, v.version))
+    print("  identifiers: %s" % v.identifiers["CVE"])
+    print("  severity: %s" % v.severity)
+    print("  language: %s" % v.language)
+    print("  packageManager: %s" % v.packageManager)
+    print("  isUpgradable: %s" % v.isUpgradable)
+    print("  isPatchable: %s" % v.isPatchable)
     print()
 
 print("\nLicense Issues:")
 for l in all_license_issues:
     print(l)
 
-high_vulns_list = [v for v in all_vulnerability_issues if v["severity"] == "high"]
-medium_vulns_list = [v for v in all_vulnerability_issues if v["severity"] == "medium"]
-low_vulns_list = [v for v in all_vulnerability_issues if v["severity"] == "low"]
+high_vulns_list = [v for v in all_vulnerability_issues if v.severity == "high"]
+medium_vulns_list = [v for v in all_vulnerability_issues if v.severity == "medium"]
+low_vulns_list = [v for v in all_vulnerability_issues if v.severity == "low"]
 
 print("\nSummary:")
 print("%s vulnerabilities found:" % len(all_vulnerability_issues))

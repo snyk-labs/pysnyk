@@ -70,25 +70,35 @@ class TestProject(TestModels):
             organization=organization,
     ***REMOVED***
 
-    def test_delete(self, project, requests_mock):
-        requests_mock.delete(
-            "https://snyk.io/api/v1/org/a04d9cbd-ae6e-44af-b573-0556b0ad4bd2/project/6d5813be-7e6d-4ab8-80c2-1e3e2a454545"
+    @pytest.fixture
+    def project_url(self, project):
+        return "https://snyk.io/api/v1/org/%s/project/%s" % (
+            project.organization.id,
+            project.id,
     ***REMOVED***
+
+    def test_delete(self, project, project_url, requests_mock):
+        requests_mock.delete(project_url)
         assert project.delete()
 
-    def test_failed_delete(self, project, requests_mock):
-        requests_mock.delete(
-            "https://snyk.io/api/v1/org/a04d9cbd-ae6e-44af-b573-0556b0ad4bd2/project/6d5813be-7e6d-4ab8-80c2-1e3e2a454545",
-            status_code=410,
-    ***REMOVED***
+    def test_failed_delete(self, project, project_url, requests_mock):
+        requests_mock.delete(project_url, status_code=500)
         with pytest.raises(SnykError):
-            assert project.delete()
+            project.delete()
 
     def test_issues(self, project):
         pass
 
-    def test_settings(self, project):
-        pass
+    def test_empty_settings(self, project, project_url, requests_mock):
+        requests_mock.get("%s/settings" % project_url, json={})
+        assert {} == project.settings.all()
+
+    def test_settings(self, project, project_url, requests_mock):
+        requests_mock.get(
+            "%s/settings" % project_url, json={"PullRequestTestEnabled": True}
+    ***REMOVED***
+        assert 1 == len(project.settings.all())
+        assert project.settings.get("PullRequestTestEnabled")
 
     def test_ignores(self, project):
         pass

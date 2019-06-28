@@ -10,6 +10,49 @@ from .utils import snake_to_camel
 
 
 @dataclass
+class Vulnerability(DataClassJSONMixin):
+    id: str
+    url: str
+    title: str
+    type: str
+    description: str
+    # TODO decode reserved word
+    # from is a reserved word in Python, this will need a custom decoder written based on
+    # https://github.com/Fatal1ty/mashumaro/blob/master/examples/json_remapping.py
+    # from: List[str]
+    package: str
+    version: str
+    severity: str
+    language: str
+    packageManager: str
+    semver: Any
+    publicationTime: str
+    isUpgradable: bool
+    identifiers: Any
+    credit: List[str]
+    isPatch: Optional[bool] = False
+    CVSSv3: Optional[str] = None
+    cvssScore: Optional[str] = None
+    upgradePath: Optional[List[str]] = None
+    disclosureTime: Optional[str] = None
+
+
+@dataclass
+class Issue(DataClassJSONMixin):
+    vulnerabilities: List[Vulnerability]
+    # TODO: define type for license issue
+    licenses: List[Any]
+
+
+@dataclass
+class IssueSet(DataClassJSONMixin):
+    ok: bool
+    packageManager: str
+    dependencyCount: int
+    issues: Issue
+
+
+@dataclass
 class OrganizationGroup(DataClassJSONMixin):
     name: str
     id: str
@@ -47,44 +90,39 @@ class Organization(DataClassJSONMixin):
     def invite(self, email: str, admin: bool = False):
         raise SnykNotImplementedError
 
+    def _test(self, path):
+        resp = self.client.get(path)
+        if resp:
+            return IssueSet.from_dict(resp.json())
+        else:
+            raise SnykError
+
     # https://snyk.docs.apiary.io/#reference/test/maven/test-for-issues-in-a-public-package-by-group-id,-artifact-id-and-version
     def test_maven(
         self, package_group_id: str, package_artifact_id: str, version: str
-***REMOVED*** -> bool:
+***REMOVED*** -> IssueSet:
         path = "test/maven/%s/%s/%s?org=%s" % (
             package_group_id,
             package_artifact_id,
             version,
             self.id,
     ***REMOVED***
-        if self.client.get(path):
-            return True
-        else:
-            raise SnykError
+        return self._test(path)
 
     # https://snyk.docs.apiary.io/#reference/test/rubygems/test-for-issues-in-a-public-gem-by-name-and-version
-    def test_rubygem(self, name: str, version: str) -> bool:
+    def test_rubygem(self, name: str, version: str) -> IssueSet:
         path = "test/rubygems/%s/%s?org=%s" % (name, version, self.id)
-        if self.client.get(path):
-            return True
-        else:
-            raise SnykError
+        return self._test(path)
 
     # https://snyk.docs.apiary.io/#reference/test/pip/test-for-issues-in-a-public-package-by-name-and-version
     def test_python(self, name: str, version: str) -> bool:
         path = "test/pip/%s/%s?org=%s" % (name, version, self.id)
-        if self.client.get(path):
-            return True
-        else:
-            raise SnykError
+        return self._test(path)
 
     # https://snyk.docs.apiary.io/#reference/test/npm/test-for-issues-in-a-public-package-by-name-and-version
     def test_npm(self, name: str, version: str) -> bool:
         path = "test/npm/%s/%s?org=%s" % (name, version, self.id)
-        if self.client.get(path):
-            return True
-        else:
-            raise SnykError
+        return self._test(path)
 
     # https://snyk.docs.apiary.io/#reference/test/pip/test-requirements.txt-file
     def test_pip(self):
@@ -142,49 +180,6 @@ class IssueCounts(DataClassJSONMixin):
     low: int
     high: int
     medium: int
-
-
-@dataclass
-class Vulnerability(DataClassJSONMixin):
-    id: str
-    url: str
-    title: str
-    type: str
-    description: str
-    # TODO decode reserved word
-    # from is a reserved word in Python, this will need a custom decoder written based on
-    # https://github.com/Fatal1ty/mashumaro/blob/master/examples/json_remapping.py
-    # from: List[str]
-    package: str
-    version: str
-    severity: str
-    language: str
-    packageManager: str
-    semver: Any
-    publicationTime: str
-    isUpgradable: bool
-    identifiers: Any
-    credit: List[str]
-    isPatch: Optional[bool] = False
-    CVSSv3: Optional[str] = None
-    cvssScore: Optional[str] = None
-    upgradePath: Optional[List[str]] = None
-    disclosureTime: Optional[str] = None
-
-
-@dataclass
-class Issue(DataClassJSONMixin):
-    vulnerabilities: List[Vulnerability]
-    # TODO: define type for license issue
-    licenses: List[Any]
-
-
-@dataclass
-class IssueSet(DataClassJSONMixin):
-    ok: bool
-    packageManager: str
-    dependencyCount: int
-    issues: Issue
 
 
 @dataclass
@@ -269,40 +264,39 @@ class Project(DataClassJSONMixin):
         path = "org/%s/project/%s" % (self.organization.id, self.id)
         if self.organization.client.delete(path):
             return True
-        else:
-            raise SnykError
+        raise SnykError
 
     @property
     def settings(self) -> Manager:
-        return Manager.factory("Setting", self.client, self)
+        return Manager.factory("Setting", self.organization.client, self)
 
     # https://snyk.docs.apiary.io/#reference/projects/project-ignores/list-all-ignores
     @property
     def ignores(self) -> Manager:
-        return Manager.factory("Ignore", self.client, self)
+        return Manager.factory("Ignore", self.organization.client, self)
 
     @property
     def jira_issues(self) -> Manager:
-        return Manager.factory("JiraIssue", self.client, self)
+        return Manager.factory("JiraIssue", self.organization.client, self)
 
     # https://snyk.docs.apiary.io/#reference/dependencies/dependencies-by-organisation
     @property
     def dependencies(self) -> Manager:
-        return Manager.factory(Dependency, self.client, self)
+        return Manager.factory(Dependency, self.organization.client, self)
 
     # https://snyk.docs.apiary.io/#reference/licenses/licenses-by-organisation
     @property
     def licenses(self) -> Manager:
-        return Manager.factory(License, self.client, self)
+        return Manager.factory(License, self.organization.client, self)
 
     @property
     def licenses(self) -> Manager:
-        return Manager.factory(DependencyGraph, self.client, self)
+        return Manager.factory(DependencyGraph, self.organization.client, self)
 
     # https://snyk.docs.apiary.io/#reference/projects/project-issues
     @property
     def issues(self) -> Manager:
-        return Manager.factory(IssueSet, self.client, self)
+        return Manager.factory(IssueSet, self.organization.client, self)
 
     def update_settings(self, **kwargs: str) -> bool:
         path = "org/%s/project/%s/settings" % (self.organization.id, self.id)
