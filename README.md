@@ -29,8 +29,7 @@ client.organizations.get("<organization-id>")
 
 This will return a single `snyk.models.Organization` object.
 
-Most of the API is scoped to organizations, so most other methods are found on the `snyk.models.Organization` objects
-returned by these two methods.
+Most of the API is scoped to organizations, so most other methods are found on the `snyk.models.Organization` objects returned by these two methods.
 
 The `snyk.models.Organization` object has the following properties related to the API:
 
@@ -38,6 +37,7 @@ The `snyk.models.Organization` object has the following properties related to th
 * `licenses` - returns a Manager for licenses currently in use by projects in this organisation
 * `projects` - returns a Manager for associated projects
 * `entitlements` - returns the set of Snyk features available to this account
+
 
 ### Managers
 
@@ -76,6 +76,30 @@ The `snyk.models.Project` object has the following useful properties and methods
 * `dependencies`
 * `licenses`
 
+
+### Tests
+
+The API also exposes meythods to test packages. These methods are found on the Organization object.
+
+* `test_maven(<package_group_id>, <package_artifact_id>, <version>)` - returns an IssueSet containing vulnerability information for a Maven artifact
+* `test_rubygem(<name>, <version>)` - returns an IssueSet containing vulnerability information for a Ruby Gem
+* `test_python(<name>, <version>)` - returns an IssueSet containing vulnerability information for Python package from PyPi
+* `test_npm(<name>, <version>)` - returns an IssueSet containing vulnerability information for an NPM package
+
+
+Here's an example of testing a particular Python package.
+
+```python
+>>> org = client.organizations.first()
+>>> result = org.test_python("flask", "0.12.2")
+>>> assert result.ok
+False
+# You can access details of the vulnerabilities too, for example
+>>> result.issues.vulnerabilities[0].title
+'Improper Input Validation'
+>>> result.issues.vulnerabilities[0].identifiers
+{'CVE': ['CVE-2018-1000656'], 'CWE': ['CWE-20']
+```
 
 ### Low-level client
 
