@@ -22,8 +22,8 @@ project_id = args.projectId
 
 client = SnykClient(snyk_token)
 project = client.organizations.get(org_id).projects.get(project_id)
-issues = project.issues.issues
-jira_issues = project.jira_issues
+issues = project.issues.all().issues
+jira_issues = project.jira_issues.all()
 
 all_issue_ids = []
 all_issue_ids.extend([i.id for i in issues.vulnerabilities])

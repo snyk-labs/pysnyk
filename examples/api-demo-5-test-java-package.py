@@ -9,13 +9,9 @@ from utils import get_token
 ***REMOVED***
         "--orgId", type=str, help="The Snyk Organisation Id", required=True
 ***REMOVED***
-
 ***REMOVED***"--groupId", type=str, help="The maven package name")
-
 ***REMOVED***"--artifactId", type=str, help="The maven package name")
-
 ***REMOVED***"--packageVersion", type=str, help="The maven package name")
-
 ***REMOVED***
         "full_package_descriptor",
         nargs="?",
@@ -23,9 +19,7 @@ from utils import get_token
         type=str,
         help="Full package to test.",
 ***REMOVED***
-
     args_list = parser.parse_args()
-
     if args_list.full_package_descriptor:
         try:
             args_list.groupId = args_list.full_package_descriptor.split(":")[0]
@@ -47,13 +41,10 @@ from utils import get_token
     else:
         if args_list.groupId is None:
             parser.error("You must specify --groupId")
-
         if args_list.artifactId is None:
             parser.error("You must specify --artifactId")
-
         if args_list.packageVersion is None:
             parser.error("You must specify --packageVersion")
-
     return args_list
 
 
@@ -65,9 +56,9 @@ package_group_id = args.groupId
 package_artifact_id = args.artifactId
 package_version = args.packageVersion
 
-***REMOVED***
-json_res = client.snyk_test_maven(
-    package_group_id, package_artifact_id, package_version, org_id
+client = SnykClient(snyk_token)
+result = client.organizations.get(org_id).test_maven(
+    package_group_id, package_artifact_id, package_version
 )
 
 all_vulnerability_issues = json_res["issues"]["vulnerabilities"]

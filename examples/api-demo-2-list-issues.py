@@ -60,39 +60,30 @@ def output_excel(vulns, output_path):
 
 
 # List issues in a project
-***REMOVED***
-json_res = client.snyk_projects_project_issues(org_id, project_id)
+client = SnykClient(snyk_token)
+issue_set = client.organizations.get(org_id).projects.get(project_id).issues.all()
 print(json_res)
 
-vulnerability_issues = json_res["issues"]["vulnerabilities"]
+vulnerabilities = issue_set.issues.vulnerabilites
 lst_output = []
 for v in vulnerability_issues:
-    print("\n %s" % v["title"])
-    print("  id: %s" % v["id"])
-    print("  url: %s" % v["url"])
+    print("\n %s" % v.title)
+    print("  id: %s" % v.id)
+    print("  url: %s" % v.url)
 
-    print("  %s@%s" % (v["package"], v["version"]))
-    print("  Severity: %s" % v["severity"])
-    print("  CVSS Score: %s" % v["cvssScore"])
-
-    proximity = len(v["from"])
-    path_str = ">".join(v["from"])
-
-    print("  proximety: %s" % proximity)
-    print("  path: %s" % path_str)
+    print("  %s@%s" % (v.package, v.version))
+    print("  Severity: %s" % v.severity)
+    print("  CVSS Score: %s" % v.cvssScore)
 
     # for the excel output
     new_output_item = {
-        "title": v["title"],
-        "id": v["id"],
-        "url": v["url"],
-        "package": "%s@%s" % (v["package"], v["version"]),
-        "severity": v["severity"],
-        "cvssScore": v["cvssScore"],
-        "proximity": proximity,
-        "path": path_str,
+        "title": v.title,
+        "id": v.id,
+        "url": v.url,
+        "package": "%s@%s" % (v.package, v.version),
+        "severity": v.severity,
+        "cvssScore": v.cvssScore,
     }
-
     lst_output.append(new_output_item)
 
 if args.outputPathExcel:
