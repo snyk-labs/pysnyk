@@ -45,6 +45,7 @@ The `snyk.models.Organization` object has the following properties related to th
 * `licenses` - returns a Manager for licenses currently in use by projects in this organisation
 * `members` - returns a Manager for members
 * `projects` - returns a Manager for associated projects
+* `integrations` - returns a Manager for active integrations
 
 ### A note on Managers
 

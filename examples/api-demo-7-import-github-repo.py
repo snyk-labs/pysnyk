@@ -39,14 +39,8 @@ github_integration_id = args.githubIntegrationId
 manifest_files = args.manifestFiles
 
 client = SnykClient(snyk_token)
-http_resp = client.snyk_integrations_import(
-    org_id, github_integration_id, github_org, repo_name, manifest_files
-)
-if http_resp.status_code == 201:
-    print("Project imported or already exists")
-    print("%s %s" % (http_resp.status_code, http_resp.reason))
-else:
-    print("Failed importing project")
-    print(http_resp.status_code)
-    print(http_resp.reason)
-    print(http_resp)
+org = client.organizations.get(org_id)
+integration = org.integrations.get(github_integration_id)
+job = integration.import_git(github_org, repo_name, files=manifest_files)
+
+print(job)

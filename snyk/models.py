@@ -85,6 +85,10 @@ class Organization(DataClassJSONMixin):
     def entitlements(self) -> Manager:
         return Manager.factory("Entitlement", self.client, self)
 
+    @property
+    def integrations(self) -> Manager:
+        return Manager.factory(Integration, self.client, self)
+
     # https://snyk.docs.apiary.io/#reference/users/user-organisation-notification-settings/modify-org-notification-settings
     # https://snyk.docs.apiary.io/#reference/users/user-organisation-notification-settings/get-org-notification-settings
     def notification_settings(self):
@@ -157,6 +161,79 @@ class Organization(DataClassJSONMixin):
     def test_pom(self, contents):
         path = "test/maven?org=%s" % self.id
         return self._test(path, contents)
+
+
+@dataclass
+class Integration(DataClassJSONMixin):
+    name: str
+    id: str
+    organization: Optional[Organization] = None
+
+    @property
+    def settings(self):
+        if not self.organization:
+            raise SnykError
+        return Manager.factory("IntegrationSetting", self.organization.client, self)
+
+    def _import(self, payload):
+        if not self.organization:
+            raise SnykError
+        path = "org/%s/integrations/%s/import" % (self.organization.id, self.id)
+        resp = self.post(path, payload)
+        return resp.json()
+
+    def import_git(
+        self, owner: str, name: str, branch: str = "master", files: List[str] = []
+    ):
+        return self._import(
+            {
+                "target": {"owner": owner, "name": name, "branch": branch},
+                "files": [{"path": x} for x in files],
+            }
+        )
+
+    def import_gitlab(self, id: str, branch: str = "master", files: List[str] = []):
+        return self._import(
+            {
+                "target": {"id": id, "branch": branch},
+                "files": [{"path": x} for x in files],
+            }
+        )
+
+    def import_bitbucket(
+        self, project_key: str, name: str, repo_slug: str, files: List[str] = []
+    ):
+        return self._import(
+            {
+                "target": {
+                    "projectKey": project_key,
+                    "name": name,
+                    "repoSlug": repo_slug,
+                },
+                "files": [{"path": x} for x in files],
+            }
+        )
+
+    def import_heroku(self, app_id: str, slug_id: str, files: List[str] = []):
+        return self._import(
+            {
+                "target": {"appId": app_id, "slugId": slug_id},
+                "files": [{"path": x} for x in files],
+            }
+        )
+
+    def import_lambda(self, function_id: str, files: List[str] = []):
+        return self._import(
+            {
+                "target": {"functionId": function_id},
+                "files": [{"path": x} for x in files],
+            }
+        )
+
+    def import_cloudfoundry(self, app_id: str, files: List[str] = []):
+        return self._import(
+            {"target": {"appId": app_id}, "files": [{"path": x} for x in files]}
+        )
 
 
 @dataclass
