@@ -53,6 +53,8 @@ class Manager(abc.ABC):
                 "JiraIssue": JiraIssueManager,
                 "DependencyGraph": DependencyGraphManager,
                 "IssueSet": IssueSetManager,
+                "Integration": IntegrationManager,
+                "IntegrationSetting": IntegrationSettingManager,
             }[key]
             return manager(klass, client, instance)
         except KeyError:
@@ -238,6 +240,29 @@ class IgnoreManager(DictManager):
 class JiraIssueManager(DictManager):
     def all(self) -> Dict[str, List[object]]:
         path = "org/%s/project/%s/jira-issues" % (
+            self.instance.organization.id,
+            self.instance.id,
+    ***REMOVED***
+        resp = self.client.get(path)
+        return resp.json()
+
+
+class IntegrationManager(Manager):
+    def all(self):
+        path = "org/%s/integrations" % self.instance.id
+        resp = self.client.get(path)
+        integrations = []
+        integrations_data = [{"name": x, "id": resp.json()[x]} for x in resp.json()]
+        for data in integrations_data:
+            integrations.append(self.klass.from_dict(data))
+        for integration in integrations:
+            integration.organization = self.instance
+        return integrations
+
+
+class IntegrationSettingManager(DictManager):
+    def all(self):
+        path = "org/%s/integrations/%s/settings" % (
             self.instance.organization.id,
             self.instance.id,
     ***REMOVED***
