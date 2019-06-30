@@ -14,27 +14,26 @@ class Vulnerability(DataClassJSONMixin):
     id: str
     url: str
     title: str
-    type: str
     description: str
     # TODO decode reserved word
     # from is a reserved word in Python, this will need a custom decoder written based on
     # https://github.com/Fatal1ty/mashumaro/blob/master/examples/json_remapping.py
     # from: List[str]
+    upgradePath: List[str]
     package: str
     version: str
     severity: str
-    language: str
-    packageManager: str
-    semver: Any
-    publicationTime: str
     isUpgradable: bool
+    isPatchable: bool
     identifiers: Any
-    credit: List[str]
-    isPatch: Optional[bool] = False
+    semver: Any
+    language: Optional[str] = None
+    packageManager: Optional[str] = None
+    publicationTime: Optional[str] = None
+    disclosureTime: Optional[str] = None
+    credit: Optional[List[Any]] = field(default_factory=list)
     CVSSv3: Optional[str] = None
     cvssScore: Optional[str] = None
-    upgradePath: Optional[List[str]] = None
-    disclosureTime: Optional[str] = None
 
 
 @dataclass
@@ -332,15 +331,15 @@ class Dependency(DataClassJSONMixin):
     id: str
     name: str
     version: str
-    latestVersion: str
-    latestVersionPublishedDate: str
-    firstPublishedData: str
-    isDeprecated: bool
-    deprecatedVersions: List[str]
     licenses: List[DependencyLicense]
-    dependenciesWithIssues: List[str]
-    packageManager: str
     projects: List[DependencyProject]
+    latestVersion: Optional[str] = None
+    latestVersionPublishedDate: Optional[str] = None
+    firstPublishedDate: Optional[str] = None
+    isDeprecated: Optional[bool] = None
+    packageManager: Optional[str] = None
+    deprecatedVersions: Optional[List[Any]] = field(default_factory=list)
+    dependenciesWithIssues: Optional[List[Any]] = field(default_factory=list)
 
 
 @dataclass
