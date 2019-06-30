@@ -2,6 +2,7 @@
 name = "pysnyk"
 version = "0.1.0"
 description = "A Python client for the Snyk API"
+authors = []
 license = "MIT"
 
 [tool.poetry.dependencies]
