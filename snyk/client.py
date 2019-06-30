@@ -1,3 +1,4 @@
+import logging
 from typing import Any, List, Dict, Optional, Union
 
 import requests
@@ -6,11 +7,15 @@ from .errors import SnykError, SnykNotFoundError, SnykNotImplementedError
 from .managers import Manager
 from .models import Project, Organization
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class SnykClient(object):
     API_URL = "https://snyk.io/api/v1"
 
-    def __init__(self, token: str, url: Optional[str] = None):
+    def __init__(self, token: str, url: Optional[str] = None, debug: bool = False):
         self.api_token = token
         self.api_url = url or self.API_URL
         self.api_headers = {"Authorization": "token %s" % self.api_token}
@@ -19,6 +24,7 @@ class SnykClient(object):
 
     def post(self, path: str, body: Any) -> requests.Response:
         url = "%s/%s" % (self.api_url, path)
+        logger.debug("POST: %s" % url)
         resp = requests.post(url, json=body, headers=self.api_post_headers)
         if not resp:
             raise SnykError(resp)
@@ -26,6 +32,7 @@ class SnykClient(object):
 
     def put(self, path: str, body: Any) -> requests.Response:
         url = "%s/%s" % (self.api_url, path)
+        logger.debug("PUT: %s" % url)
         resp = requests.put(url, json=body, headers=self.api_post_headers)
         if not resp:
             raise SnykError(resp)
@@ -33,6 +40,7 @@ class SnykClient(object):
 
     def get(self, path: str) -> requests.Response:
         url = "%s/%s" % (self.api_url, path)
+        logger.debug("GET: %s" % url)
         resp = requests.get(url, headers=self.api_headers)
         if not resp:
             raise SnykError(resp)
@@ -40,6 +48,7 @@ class SnykClient(object):
 
     def delete(self, path: str) -> requests.Response:
         url = "%s/%s" % (self.api_url, path)
+        logger.debug("DELETE: %s" % url)
         resp = requests.delete(url, headers=self.api_headers)
         if not resp:
             raise SnykError(resp)
