@@ -88,13 +88,13 @@ class SingletonManager(Manager):
         pass  # pragma: no cover
 
     def first(self):
-        raise SnykNotImplementedError
+        raise SnykNotImplementedError  # pragma: no cover
 
     def get(self, id: str):
-        raise SnykNotImplementedError
+        raise SnykNotImplementedError  # pragma: no cover
 
     def filter(self, **kwargs: Any):
-        raise SnykNotImplementedError
+        raise SnykNotImplementedError  # pragma: no cover
 
 
 class OrganizationManager(Manager):
