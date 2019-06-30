@@ -88,6 +88,37 @@ class Organization(DataClassJSONMixin):
     def integrations(self) -> Manager:
         return Manager.factory(Integration, self.client, self)
 
+    """
+    Imports need integrations, but exposing a high-level API that
+    can find the integration from the URL of the thing you want
+    to import should make things simpler. This is currently only
+    supported for GitHub as an example. If this works nicely then
+    extending the list of integrations, adding support for branches
+    and files, and better errors, would be required.
+    """
+
+    def import_project(self, url) -> bool:
+        try:
+            service, owner, name = url.split("/")
+            parts = name.split("@")
+            branch = "master"
+            if len(parts) == 2:
+                name = parts[0]
+                branch = parts[1]
+        except ValueError:
+            raise SnykError
+        try:
+            integrations = {"github.com": "github"}
+            integration_name = integrations[service]
+        except KeyError:
+            raise SnykError
+        try:
+            return self.integrations.filter(name=integration_name)[0].import_git(
+                owner, name, branch
+            )
+        except KeyError:
+            raise SnykError
+
     # https://snyk.docs.apiary.io/#reference/users/user-organisation-notification-settings/modify-org-notification-settings
     # https://snyk.docs.apiary.io/#reference/users/user-organisation-notification-settings/get-org-notification-settings
     def notification_settings(self):
@@ -174,12 +205,11 @@ class Integration(DataClassJSONMixin):
             raise SnykError
         return Manager.factory("IntegrationSetting", self.organization.client, self)
 
-    def _import(self, payload):
+    def _import(self, payload) -> bool:
         if not self.organization:
             raise SnykError
         path = "org/%s/integrations/%s/import" % (self.organization.id, self.id)
-        resp = self.post(path, payload)
-        return resp.json()
+        return bool(self.organization.client.post(path, payload))
 
     def import_git(
         self, owner: str, name: str, branch: str = "master", files: List[str] = []
