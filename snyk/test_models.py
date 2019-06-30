@@ -250,7 +250,19 @@ class TestProject(TestModels):
                 "issues": {"vulnerabilities": [], "licenses": []},
             },
         )
-        assert project.issues().ok
+        assert project.issueset.all().ok
+
+    def test_empty_vulnerabilities(self, project, project_url, requests_mock):
+        requests_mock.post(
+            "%s/issues" % project_url,
+            json={
+                "ok": True,
+                "packageManager": "fake",
+                "dependencyCount": 0,
+                "issues": {"vulnerabilities": [], "licenses": []},
+            },
+        )
+        assert [] == project.vulnerabilities
 
     def test_filtering_empty_issues(self, project, project_url, requests_mock):
         requests_mock.post(
@@ -262,7 +274,7 @@ class TestProject(TestModels):
                 "issues": {"vulnerabilities": [], "licenses": []},
             },
         )
-        assert project.issues(ignored=True).ok
+        assert project.issueset.filter(ignored=True).ok
 
     def test_empty_dependency_graph(self, project, project_url, requests_mock):
         requests_mock.get(
