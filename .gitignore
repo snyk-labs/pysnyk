@@ -3,3 +3,4 @@ __pycache__
 output
 .coverage
 .mypy_cache
+dist
