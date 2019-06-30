@@ -3,7 +3,7 @@ from typing import Any, List, Dict, Optional, Union
 
 import requests
 
-from .errors import SnykError, SnykNotFoundError, SnykNotImplementedError
+from .errors import SnykError, SnykHTTPError, SnykNotFoundError, SnykNotImplementedError
 from .managers import Manager
 from .models import Project, Organization
 
@@ -27,7 +27,7 @@ class SnykClient(object):
         logger.debug("POST: %s" % url)
         resp = requests.post(url, json=body, headers=self.api_post_headers)
         if not resp:
-            raise SnykError(resp)
+            raise SnykHTTPError(resp)
         return resp
 
     def put(self, path: str, body: Any) -> requests.Response:
@@ -35,7 +35,7 @@ class SnykClient(object):
         logger.debug("PUT: %s" % url)
         resp = requests.put(url, json=body, headers=self.api_post_headers)
         if not resp:
-            raise SnykError(resp)
+            raise SnykHTTPError(resp)
         return resp
 
     def get(self, path: str) -> requests.Response:
@@ -43,7 +43,7 @@ class SnykClient(object):
         logger.debug("GET: %s" % url)
         resp = requests.get(url, headers=self.api_headers)
         if not resp:
-            raise SnykError(resp)
+            raise SnykHTTPError(resp)
         return resp
 
     def delete(self, path: str) -> requests.Response:
@@ -51,7 +51,7 @@ class SnykClient(object):
         logger.debug("DELETE: %s" % url)
         resp = requests.delete(url, headers=self.api_headers)
         if not resp:
-            raise SnykError(resp)
+            raise SnykHTTPError(resp)
         return resp
 
     @property
