@@ -89,6 +89,17 @@ Note that the `settings` Manager can also be used to update settings like so, as
 project.settings.update(pull_request_test_enabled=True)
 ```
 
+### Importing new projects
+
+The client supports a high-level `import_project` method on organizations for adding new projects to be monitored by Snyk.
+
+```python
+org = client.organizations.first()
+org.import_project("github.com/user/project@branch")
+```
+
+This method currently only supports importing projects from GitHub. For other integrations you will need to grab the lower-level `snyk.models.Integration` object from the `snyk.models.Organization.integrations` manager noted above. Other services will be added to this API soon.
+
 
 ### Testing for vulnerabilties
 
