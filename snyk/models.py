@@ -386,10 +386,13 @@ class Project(DataClassJSONMixin):
     def dependency_graph(self) -> DependencyGraph:
         return Manager.factory(DependencyGraph, self.organization.client, self).all()
 
-    def issues(self, **kwargs: Any) -> Manager:
-        return Manager.factory(IssueSet, self.organization.client, self).filter(
-            **kwargs
-    ***REMOVED***
+    @property
+    def issueset(self) -> Manager:
+        return Manager.factory(IssueSet, self.organization.client, self)
+
+    @property
+    def vulnerabilities(self) -> List[Vulnerability]:
+        return self.issueset.all().issues.vulnerabilities
 
     # https://snyk.docs.apiary.io/#reference/users/user-project-notification-settings/modify-project-notification-settings
     # https://snyk.docs.apiary.io/#reference/users/user-project-notification-settings/get-project-notification-settings
