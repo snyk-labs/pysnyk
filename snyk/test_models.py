@@ -2,7 +2,7 @@ import re
 
 import pytest  # type: ignore
 
-from snyk.models import Organization, Project, Member
+from snyk.models import Organization, Project, Member, Integration
 from snyk.client import SnykClient
 from snyk.errors import SnykError, SnykNotFoundError, SnykNotImplementedError
 
@@ -71,6 +71,19 @@ class TestOrganization(TestModels):
         output = {"reports": True}
         requests_mock.get(matcher, json=output)
         assert output == organization.entitlements.all()
+
+    def test_empty_integrations(self, organization, requests_mock):
+        matcher = re.compile("integrations$")
+        requests_mock.get(matcher, json=[])
+        assert [] == organization.integrations.all()
+
+    def test_integrations(self, organization, requests_mock):
+        matcher = re.compile("integrations$")
+        output = {"github": "not-a-real-id"}
+        requests_mock.get(matcher, json=output)
+        assert 1 == len(organization.integrations.all())
+        assert all(type(x) is Integration for x in organization.integrations.all())
+        assert "github" == organization.integrations.first().name
 
     def test_empty_licenses(self, organization, requests_mock):
         matcher = re.compile("licenses$")
