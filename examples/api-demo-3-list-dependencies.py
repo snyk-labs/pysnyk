@@ -6,41 +6,37 @@ from utils import get_token
 
 def parse_command_line_args():
     parser = argparse.ArgumentParser(description="Snyk API Examples")
-    parser.add_argument('--orgId', type=str,
-                        help='The Snyk Organisation Id', required=True)
-
-    parser.add_argument('--projectId', type=str,
-                        help='The project ID in Snyk', required=True)
-
-    args = parser.parse_args()
-
-    return args
+    parser.add_argument(
+        "--orgId", type=str, help="The Snyk Organisation Id", required=True
+    )
+    parser.add_argument(
+        "--projectId", type=str, help="The project ID in Snyk", required=True
+    )
+    return parser.parse_args()
 
 
-snyk_token = get_token('snyk-api-token')
+snyk_token = get_token("snyk-api-token")
 args = parse_command_line_args()
 org_id = args.orgId
 project_id = args.projectId
 
 
-# List issues in a project
-client = SnykClient(token=snyk_token)
-lst_licenses = client.snyk_dependencies_list_all_dependencies_by_project(org_id, project_id,1,0)
+client = SnykClient(snyk_token)
+dependencies = (
+    client.organizations.get(org_id).projects.get(project_id).dependencies.all()
+)
 
-for v in lst_licenses:
-    print('\n%s: %s@%s' % (v['type'], v['name'], v['version']))
+for dep in dependencies:
+    print("%s@%s" % (dep.name, dep.version))
 
-    licenses = v['licenses']
+    licenses = dep.licenses
     if len(licenses) > 0:
-        print('  Licenses:')
+        print("  Licenses:")
         for l in licenses:
-            print('   - %s | %s' % (l['license'], l['id']))
+            print("   - %s | %s" % (l.license, l.id))
 
-    deps_with_issues = v['dependenciesWithIssues']
+    deps_with_issues = dep.dependenciesWithIssues
     if len(deps_with_issues) > 0:
-        print('  Deps with Issues:')
+        print("  Deps with Issues:")
         for d in deps_with_issues:
-            print('   - %s' % d)
-
-    # print('  %s@%s' % (v['package'], v['version']))
-    # print('  Severity: %s' % v['severity'])
+            print("   - %s" % d)
