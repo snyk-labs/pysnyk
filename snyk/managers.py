@@ -246,6 +246,20 @@ class JiraIssueManager(DictManager):
         resp = self.client.get(path)
         return resp.json()
 
+    def create(self, issue_id: str, fields: Any) -> Dict[str, str]:
+        path = "org/%s/project/%s/issue/%s/jira-issue" % (
+            self.instance.organization.id,
+            self.instance.id,
+            issue_id,
+    ***REMOVED***
+        post_body = {"fields": fields}
+        resp = self.client.post(path, post_body)
+        response_data = resp.json()
+        if "jiraIssue" in response_data:
+            return response_data["jiraIssue"]
+        else:
+            raise SnykError
+
 
 class IntegrationManager(Manager):
     def all(self):
