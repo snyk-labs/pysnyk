@@ -59,9 +59,11 @@ class LicenseIssue(DataClassJSONMixin):
     ignored: Optional[List[Any]] = field(default_factory=list)
     patched: Optional[List[Any]] = field(default_factory=list)
 
+
 @dataclass
 class LicenseIssue(DataClassJSONMixin):
     id: str
+
 
 @dataclass
 class Issue(DataClassJSONMixin):
