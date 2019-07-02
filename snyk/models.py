@@ -35,9 +35,11 @@ class Vulnerability(DataClassJSONMixin):
     CVSSv3: Optional[str] = None
     cvssScore: Optional[str] = None
 
+
 @dataclass
 class LicenseIssue(DataClassJSONMixin):
     id: str
+
 
 @dataclass
 class Issue(DataClassJSONMixin):
