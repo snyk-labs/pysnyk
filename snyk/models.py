@@ -64,6 +64,9 @@ class LicenseIssue(DataClassJSONMixin):
 class LicenseIssue(DataClassJSONMixin):
     id: str
 
+@dataclass
+class LicenseIssue(DataClassJSONMixin):
+    id: str
 
 @dataclass
 class Issue(DataClassJSONMixin):
