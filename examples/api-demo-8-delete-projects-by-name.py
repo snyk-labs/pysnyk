@@ -6,20 +6,32 @@ from utils import get_token
 
 ***REMOVED***
 ***REMOVED***
-***REMOVED***'--orgId', type=str,
-                        help='The Snyk Organisation Id', required=True)
-***REMOVED***'--projectName', type=str,
-                        help='Put in your project name as it appears in Snyk', required=True)
-***REMOVED***'--projectOrigin', choices=['cli', 'github', 'github-enterprise', 'bitbucket-cloud', 'bitbucket-server',
-                                                    'gitlab'], help=' Set this if you want to make sure the project is from a particular place (repo, CLI, etc)', required=False)
+***REMOVED***
+***REMOVED***
+***REMOVED***
+***REMOVED***
+        "--projectName",
+        type=str,
+        help="Put in your project name as it appears in Snyk",
+        required=True,
+***REMOVED***
+***REMOVED***
+        "--projectOrigin",
+        choices=[
+            "cli",
+            "github",
+            "github-enterprise",
+            "bitbucket-cloud",
+            "bitbucket-server",
+            "gitlab",
+        ],
+        help=" Set this if you want to make sure the project is from a particular place (repo, CLI, etc)",
+        required=False,
+***REMOVED***
+***REMOVED***
 
-    args = parser.parse_args()
-    return args
 
-
-project_ids = []
-
-snyk_token = get_token('snyk-api-token')
+snyk_token = get_token("snyk-api-token")
 ***REMOVED***
 ***REMOVED***
 # For example, for GitHub projects it is `[org]/[repo-name]`
@@ -27,18 +39,10 @@ snyk_token = get_token('snyk-api-token')
 project_name = args.projectName
 project_origin = args.projectOrigin
 
-***REMOVED***
-json_res = client.snyk_projects_projects(org_id)
-for proj in json_res['projects']:
-    if project_name == proj['name'] and (proj['origin'] == project_origin or not project_origin):
-        project_ids.append(proj['id'])
-        # print(proj['name'])
-        # print(proj['id'])
-
-
-print('\nDeleting projects:')
-for id in project_ids:
-    print(id)
-    http_response = client.snyk_projects_delete(org_id, id)
-    if http_response.status_code == 200:
-        print('Project ID %s deleted' % id)
+client = SnykClient(snyk_token)
+for project in client.organizations.get(org_id).projects.all():
+    if project_name == project.name and (
+        project.origin == project_origin or not project_origin
+***REMOVED***:
+        if project.delete():
+            print("Project ID %s deleted" % project.id)

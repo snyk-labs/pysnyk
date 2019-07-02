@@ -2,7 +2,9 @@ dist: xenial   # required for Python >= 3.7
 language: python
 python:
   - "3.7"
+before_install:
+  - pip install poetry
 install:
-  - pipenv install -d
+  - poetry install -v
 script: 
-  - pipenv run pytest -v
+  - poetry run pytest
