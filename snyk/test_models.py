@@ -247,6 +247,26 @@ class TestProject(TestModels):
         assert 1 == len(project.jira_issues.all())
         assert [{}] == project.jira_issues.get("key")
 
+    def test_create_jira_issue(self, project, project_url, requests_mock):
+        issue_id = "npm:qs:20140806-1"
+        return_data = {"jiraIssue": {"id": "10001", "key": "EX-1"}}
+        adapter = requests_mock.post(
+            "%s/issue/%s/jira-issue" % (project_url, issue_id), json=return_data
+        )
+        fields = {"summary": "something's wrong", "issuetype": {"id": "10000"}}
+        out = project.jira_issues.create(issue_id, fields)
+        assert adapter.last_request.json() == {"fields": fields}
+        assert out["id"] == "10001"
+        assert out["key"] == "EX-1"
+
+    def test_create_jira_issue_with_error(self, project, project_url, requests_mock):
+        issue_id = "npm:qs:20140806-1"
+        adapter = requests_mock.post(
+            "%s/issue/%s/jira-issue" % (project_url, issue_id), json={}
+        )
+        with pytest.raises(SnykError):
+            out = project.jira_issues.create(issue_id, {})
+
     def test_empty_dependencies(self, project, organization_url, requests_mock):
         requests_mock.post(
             "%s/dependencies" % organization_url, json={"total": 0, "results": []}
