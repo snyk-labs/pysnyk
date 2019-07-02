@@ -99,23 +99,38 @@ class Organization(DataClassJSONMixin):
 
     def import_project(self, url) -> bool:
         try:
-            service, owner, name = url.split("/")
-            parts = name.split("@")
-            branch = "master"
-            if len(parts) == 2:
-                name = parts[0]
-                branch = parts[1]
+            components = url.split("/")
+            service = components[0]
+            if service == "github.com":
+                owner = components[1]
+                name = components[2]
+                parts = name.split("@")
+                branch = "master"
+                if len(parts) == 2:
+                    name = parts[0]
+                    branch = parts[1]
+            elif service == "docker.io":
+                name = "/".join(components[1:])
+            else:
+                raise SnykNotImplementedError
+
         except ValueError:
             raise SnykError
         try:
-            integrations = {"github.com": "github"}
+            integrations = {"github.com": "github", "docker.io": "docker-hub"}
             integration_name = integrations[service]
         except KeyError:
             raise SnykError
         try:
-            return self.integrations.filter(name=integration_name)[0].import_git(
-                owner, name, branch
-        ***REMOVED***
+            if service == "docker.io":
+                return self.integrations.filter(name=integration_name)[0].import_image(
+                    name
+            ***REMOVED***
+            else:
+                return self.integrations.filter(name=integration_name)[0].import_git(
+                    owner, name, branch
+            ***REMOVED***
+
         except KeyError:
             raise SnykError
 
@@ -220,6 +235,11 @@ class Integration(DataClassJSONMixin):
                 "files": [{"path": x} for x in files],
             }
     ***REMOVED***
+
+    def import_image(self, name: str):
+        if ":" not in name:
+            name = "%s:latest" % name
+        return self._import({"target": {"name": name}})
 
     def import_gitlab(self, id: str, branch: str = "master", files: List[str] = []):
         return self._import(

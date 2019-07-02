@@ -96,9 +96,10 @@ The client supports a high-level `import_project` method on organizations for ad
 ```python
 org = client.organizations.first()
 org.import_project("github.com/user/project@branch")
+org.import_project("docker.io/repository:tag")
 ```
 
-This method currently only supports importing projects from GitHub. For other integrations you will need to grab the lower-level `snyk.models.Integration` object from the `snyk.models.Organization.integrations` manager noted above. Other services will be added to this API soon.
+This method currently only supports importing projects from GitHub and Docker Hub. For other integrations you will need to grab the lower-level `snyk.models.Integration` object from the `snyk.models.Organization.integrations` manager noted above. Other services will be added to this API soon.
 
 
 ### Testing for vulnerabilties
