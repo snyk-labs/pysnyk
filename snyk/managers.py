@@ -294,6 +294,16 @@ class DependencyGraphManager(SingletonManager):
 
 
 class IssueSetManager(SingletonManager):
+    def _convert_reserved_words(self, data):
+        for key in ["vulnerabilities", "licenses"]:
+            if "issues" in data and key in data["issues"]:
+                for i, vuln in enumerate(data["issues"][key]):
+                    if "from" in vuln:
+                        data["issues"][key][i]["fromPackages"] = data["issues"][key][
+                            i
+                        ].pop("from")
+        return data
+
     def all(self) -> Any:
         return self.filter()
 
@@ -313,4 +323,4 @@ class IssueSetManager(SingletonManager):
                 filters[filter_name] = kwargs[filter_name]
         post_body = {"filters": filters}
         resp = self.client.post(path, post_body)
-        return self.klass.from_dict(resp.json())
+        return self.klass.from_dict(self._convert_reserved_words(resp.json()))
