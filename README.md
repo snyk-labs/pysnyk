@@ -1,5 +1,7 @@
 # pysnyk
 
+[![Build Status](https://travis-ci.org/snyk-samples/pysnyk.svg?branch=master)](https://travis-ci.org/snyk-samples/pysnyk)
+
 A Python client for the [Snyk API](https://snyk.docs.apiary.io/#).
 
 ## Client
