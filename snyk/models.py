@@ -15,10 +15,6 @@ class Vulnerability(DataClassJSONMixin):
     url: str
     title: str
     description: str
-    # TODO decode reserved word
-    # from is a reserved word in Python, this will need a custom decoder written based on
-    # https://github.com/Fatal1ty/mashumaro/blob/master/examples/json_remapping.py
-    # from: List[str]
     upgradePath: List[str]
     package: str
     version: str
@@ -27,6 +23,7 @@ class Vulnerability(DataClassJSONMixin):
     isPatchable: bool
     identifiers: Any
     semver: Any
+    fromPackages: List[str]
     language: Optional[str] = None
     packageManager: Optional[str] = None
     publicationTime: Optional[str] = None
@@ -43,10 +40,7 @@ class LicenseIssue(DataClassJSONMixin):
     id: str
     url: str
     title: str
-    # TODO decode reserved word
-    # from is a reserved word in Python, this will need a custom decoder written based on
-    # https://github.com/Fatal1ty/mashumaro/blob/master/examples/json_remapping.py
-    # from: List[str]
+    fromPackages: List[str]
     package: str
     version: str
     severity: str
