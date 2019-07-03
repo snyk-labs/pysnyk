@@ -4,12 +4,14 @@
 The following examples require you to create a file at `~/.ssh/tokens/snyk-api-token` which contains a valid Snyk API token - either your [personal token](https://app.snyk.io/account) or a [service account](https://snyk.io/docs/service-accounts/) token. This file should contain the token alone with no formatting.
 
 ## Running a Script
-The sample scripts are all a bit different, so you should try them each out or look at the code.
+The sample scripts are all a bit different, so you should try them each out or look at the code. 
 
-In general the form is:
-```
-python examples/<script-name.py> --orgId=<your-org_id> ...
-```
+1. The dependencies are managed by [poetry](https://poetry.eustace.io/). Installation is described on the [poetry docs](https://poetry.eustace.io/docs/#introduction)
+1. Install the dependencies using `poetry install`
+1. You can execute an example in general using:
+    ```
+    poetry run python examples/<script-name.py> --orgId=<your-org_id> ...
+    ```
 
 ## List Project Issues
 ```

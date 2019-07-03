@@ -37,10 +37,14 @@ class Vulnerability(DataClassJSONMixin):
 
 
 @dataclass
+class LicenseIssue(DataClassJSONMixin):
+    id: str
+
+
+@dataclass
 class Issue(DataClassJSONMixin):
     vulnerabilities: List[Vulnerability]
-    # TODO: define type for license issue
-    licenses: List[Any]
+    licenses: List[LicenseIssue]
 
 
 @dataclass
