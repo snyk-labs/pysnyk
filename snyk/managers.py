@@ -292,7 +292,7 @@ class DependencyGraphManager(SingletonManager):
         )
         resp = self.client.get(path)
         dependency_data = resp.json()
-        return self.klass.from_dict(dependency_data)
+        return self.klass.from_dict(dependency_data["depGraph"])
 
 
 class IssueSetManager(SingletonManager):

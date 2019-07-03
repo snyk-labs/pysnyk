@@ -24,25 +24,23 @@ def list_of_dictionaries_to_map(input_list, key_field, data_fields_list=None):
 
 def get_project_tree(snyk_token, org_id, project_id):
     client = SnykClient(snyk_token)
-    json_res_dep_graph = client.snyk_projects_get_product_dependency_graph(
-        org_id, project_id
-    )
-    print_json(json_res_dep_graph)
+    res_dep_graph = client.organizations.get(org_id).projects.get(project_id).dependency_graph
+    print(res_dep_graph)
 
     print("\nPackages (Flat List):")
-    for pkg in json_res_dep_graph["depGraph"]["pkgs"]:
-        print("%s | %s" % (pkg["id"], pkg["info"]))
+    for pkg in res_dep_graph.pkgs:
+        print("%s | %s" % (pkg.id, pkg.info))
 
-    all_packages = json_res_dep_graph["depGraph"]["pkgs"]
+    all_packages = res_dep_graph.pkgs
 
     print("\nGraph data:")
-    graph = json_res_dep_graph["depGraph"]["graph"]
-    root_node_id = graph["rootNodeId"]
-    nodes = graph["nodes"]
+    graph = res_dep_graph.graph
+    root_node_id = graph.rootNodeId
+    nodes = graph.nodes
 
     for node in nodes:
-        print("%s | %s" % (node["nodeId"], node["pkgId"]))
-        child_nodes = node["deps"]
+        print("%s | %s" % (node.nodeId, node.pkgId))
+        child_nodes = node.deps
         if len(child_nodes) > 0:
             for child_node in child_nodes:
                 print("  - Child: %s" % child_node)
@@ -52,10 +50,10 @@ def get_project_tree(snyk_token, org_id, project_id):
     packages_lookup_map = {}
     for pkg in all_packages:
         print(pkg)
-        package_id = pkg["id"]
+        package_id = pkg.id
         packages_lookup_map[package_id] = {
-            "package_name": pkg["info"]["name"],
-            "package_version": pkg["info"]["version"],
+            "package_name": pkg.info.name,
+            "package_version": pkg.info.version,
         }
 
     # Get licenses for all dependencies in the project
