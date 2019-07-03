@@ -57,40 +57,36 @@ def get_project_tree(snyk_token, org_id, project_id):
         }
 
     # Get licenses for all dependencies in the project
-    lst_res_license = client.snyk_dependencies_list_all_dependencies_by_project(
-        org_id, project_id
-    )
+    lst_res_license = client.organizations.get(org_id).projects.get(project_id).dependencies.all()
 
     # make into a lookup table by package_id
     package_id_to_license_info_map = {}  # package_id -> { license info }
     for r in lst_res_license:
-        package_id = r["id"]
-        licenses = r["licenses"]
+        package_id = r.id
+        licenses = r.licenses
         package_id_to_license_info_map[package_id] = licenses
 
     print("\n\npackage_id_to_license_info_map:")
-    print_json(package_id_to_license_info_map)
+    print(package_id_to_license_info_map)
 
     # Get the license issues and then enhance package_id_to_license_info_map with the license classification or none
-    get_project_issues_response = client.snyk_projects_project_issues(
-        org_id, project_id
-    )
-    license_issues_list = get_project_issues_response["issues"]["licenses"]
+    issues = client.organizations.get(org_id).projects.get(project_id).issueset.all().issues
+    license_issues_list = issues.licenses
 
     # map to lookup table
-    license_issues_lookup_map = list_of_dictionaries_to_map(license_issues_list, "id")
+    license_issues_lookup_map = {license_issue.id: license_issue.severity for license_issue in license_issues_list}
 
     for pkgId, licensesList in package_id_to_license_info_map.items():
         for l in licensesList:
-            license_id = l["id"]
+            license_id = l.id
             print(license_id)
 
             if license_id in license_issues_lookup_map:
                 print("append additional info")
-                severity = license_issues_lookup_map[license_id]["severity"]
-                l["severity"] = severity
+                severity = license_issues_lookup_map[license_id]
+                l.severity = severity
             else:
-                l["severity"] = "none"
+                l.severity = "none"
 
             # lookup the license id in license_issues_lookup_map and see if there's an issue
             # add a 'classification' to the licenseInfo
@@ -98,14 +94,14 @@ def get_project_tree(snyk_token, org_id, project_id):
     # Convert nodes to a dictionary by nodeId
     node_lookup_map = {}
     for node in nodes:
-        node_id = node["nodeId"]
-        package_id = node["pkgId"]
+        node_id = node.nodeId
+        package_id = node.pkgId
         node_lookup_map[node_id] = {
-            "pkgId": node["pkgId"],
+            "pkgId": node.pkgId,
             # TODO: Pull in the packages_name and package_version from packages_lookup_map
             "package_name": packages_lookup_map[package_id]["package_name"],
             "package_version": packages_lookup_map[package_id]["package_version"],
-            "deps": node["deps"],
+            "deps": node.deps,
         }
 
     print(node_lookup_map)
@@ -124,10 +120,9 @@ def get_project_tree(snyk_token, org_id, project_id):
 
     # Now create a new structure based on node_lookup_map which is a deeply nested structure of the same data
     project_structured_tree = {}
+    
 
-    def get_node_to_append(
-        node_id, base_path
-    ):  # might make sense to rename get_dependencies
+    def get_node_to_append(node_id, base_path):  # might make sense to rename get_dependencies
         obj = node_lookup_map[node_id]
         pkgId = obj["pkgId"]
         print("node_id: %s" % pkgId)
@@ -158,7 +153,6 @@ def get_project_tree(snyk_token, org_id, project_id):
     # print(root_node_package_id)
     project_dependencies_structure = get_node_to_append(root_node_id, "")
     project_structured_tree = {"project": project_dependencies_structure}
-
     return project_structured_tree
 
 
