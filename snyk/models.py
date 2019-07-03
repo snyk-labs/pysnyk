@@ -38,7 +38,7 @@ class Vulnerability(DataClassJSONMixin):
 
 @dataclass
 class LicenseIssue(DataClassJSONMixin):
-    id: str 
+    id: str
     severity: str
 
 

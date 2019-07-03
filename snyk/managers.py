@@ -184,7 +184,7 @@ class DependencyManager(Manager):
             next_results = self.all(page + 1)
             results.extend(next_results)
             return results
-        
+
         return results
 
 
