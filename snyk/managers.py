@@ -183,7 +183,6 @@ class DependencyManager(Manager):
         if total > (page * results_per_page):
             next_results = self.all(page + 1)
             results.extend(next_results)
-            return results
 
         return results
 
