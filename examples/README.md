@@ -73,3 +73,15 @@ To test an npm package, use:
 ```
 python examples/api-demo-5d-test-npm-package.py --orgId=<your-org_id> --packageName=<package-name> --packageVersion=<package-version>
 ```
+
+## Jira Integration
+
+To find all the issues that don't have a Jira issue:
+```
+python examples/api-demo-6-find-issues-without-jira-tickets.py --orgId=<your-snyk-org> --projectId=<snyk-project-id>
+```
+
+To create a Jira Ticket for each project issue:
+```
+python examples/api-demo-6b-create-jira-tickets-for-issues.py --orgId=<your-snyk-org> --projectId=<snyk-project-id> --jiraIssueType=<jira-issue-type-id> --jiraProjectId=<jira-project-id>
+```
