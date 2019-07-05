@@ -50,8 +50,10 @@ class LicenseIssue(DataClassJSONMixin):
     package: str
     version: str
     severity: str
-    isIgnored: Optional[bool] = None # Although mentioned in the schema as required, currently not returned.
-    isPatched: Optional[bool] = None # Although mentioned in the schema as required, currently not returned.
+    # Although mentioned in the schema as required, currently not returned.
+    isIgnored: Optional[bool] = None
+    # Although mentioned in the schema as required, currently not returned.
+    isPatched: Optional[bool] = None
     language: Optional[str] = None
     packageManager: Optional[str] = None
     ignored: Optional[List[Any]] = field(default_factory=list)
