@@ -34,12 +34,28 @@ class Vulnerability(DataClassJSONMixin):
     credit: Optional[List[Any]] = field(default_factory=list)
     CVSSv3: Optional[str] = None
     cvssScore: Optional[str] = None
+    ignored: Optional[List[Any]] = field(default_factory=list)
+    patched: Optional[List[Any]] = field(default_factory=list)
 
 
 @dataclass
 class LicenseIssue(DataClassJSONMixin):
     id: str
+    url: str
+    title: str
+    # TODO decode reserved word
+    # from is a reserved word in Python, this will need a custom decoder written based on
+    # https://github.com/Fatal1ty/mashumaro/blob/master/examples/json_remapping.py
+    # from: List[str]
+    package: str
+    version: str
     severity: str
+    isIgnored: Optional[bool] = None # Although mentioned in the schema as required, currently not returned.
+    isPatched: Optional[bool] = None # Although mentioned in the schema as required, currently not returned.
+    language: Optional[str] = None
+    packageManager: Optional[str] = None
+    ignored: Optional[List[Any]] = field(default_factory=list)
+    patched: Optional[List[Any]] = field(default_factory=list)
 
 
 @dataclass
