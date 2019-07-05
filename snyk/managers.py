@@ -251,10 +251,15 @@ class JiraIssueManager(DictManager):
         post_body = {"fields": fields}
         resp = self.client.post(path, post_body)
         response_data = resp.json()
-        if "jiraIssue" in response_data:
-            return response_data["jiraIssue"]
-        else:
-            raise SnykError
+        # The response we get is not following the schema as specified by the api
+        # https://snyk.docs.apiary.io/#reference/projects/project-jira-issues-/create-jira-issue
+        if (
+            issue_id in response_data
+            and len(response_data[issue_id]) > 0
+            and "jiraIssue" in response_data[issue_id][0]
+        ):
+            return response_data[issue_id][0]["jiraIssue"]
+        raise SnykError
 
 
 class IntegrationManager(Manager):
