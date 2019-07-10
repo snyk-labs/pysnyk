@@ -313,10 +313,12 @@ class TestProject(TestModels):
         requests_mock.get(
             "%s/dep-graph" % project_url,
             json={
-                "schemaVersion": "fake",
-                "pkgManager": {},
-                "pkgs": [],
-                "graph": {"rootNodeId": "fake", "nodes": []},
+                "depGraph": {
+                    "schemaVersion": "fake",
+                    "pkgManager": {},
+                    "pkgs": [],
+                    "graph": {"rootNodeId": "fake", "nodes": []},
+                }
             },
         )
         assert project.dependency_graph
