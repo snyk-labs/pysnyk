@@ -178,17 +178,13 @@ class DependencyManager(Manager):
             "total"
         ]  # contains the total number of results (for pagination use)
 
-        results = dependency_data["results"]
+        results = [self.klass.from_dict(item) for item in dependency_data["results"]]
 
         if total > (page * results_per_page):
             next_results = self.all(page + 1)
             results.extend(next_results)
-            return results
 
-        dependencies = []
-        for dependency_data in results:
-            dependencies.append(self.klass.from_dict(dependency_data))
-        return dependencies
+        return results
 
 
 class EntitlementManager(DictManager):
@@ -292,7 +288,9 @@ class DependencyGraphManager(SingletonManager):
         )
         resp = self.client.get(path)
         dependency_data = resp.json()
-        return self.klass.from_dict(dependency_data)
+        if "depGraph" in dependency_data:
+            return self.klass.from_dict(dependency_data["depGraph"])
+        raise SnykError
 
 
 class IssueSetManager(SingletonManager):
