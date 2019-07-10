@@ -55,7 +55,7 @@ def output_excel(vulns, output_path):
 
 
 client = SnykClient(snyk_token)
-issue_set = client.organizations.get(org_id).projects.get(project_id).issues()
+issue_set = client.organizations.get(org_id).projects.get(project_id).issueset.all()
 
 lst_output = []
 for v in issue_set.issues.vulnerabilities:
