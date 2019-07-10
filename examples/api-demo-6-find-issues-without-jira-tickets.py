@@ -21,13 +21,10 @@ snyk_token = get_token("snyk-api-token")
 project_id = args.projectId
 
 client = SnykClient(snyk_token)
+org = client.organizations.get(org_id)
 project = client.organizations.get(org_id).projects.get(project_id)
-issues = project.issues.issues
+issues = project.issueset.all().issues
 jira_issues = project.jira_issues.all()
-
-all_issue_ids = []
-all_issue_ids.extend([i.id for i in issues.vulnerabilities])
-all_issue_ids.extend([i.id for i in issues.licenses])
 
 snyk_issue_with_jira_issues = list(jira_issues.keys())
 
@@ -36,5 +33,5 @@ for issue in issues.vulnerabilities + issues.licenses:
         print("Found issue without Jira issue: %s" % issue.id)
         print(
             "  https://app.snyk.io/org/%s/project/%s#%s"
-            % (org_id, project_id, issue.id)
+            % (org.name, project_id, issue.id)
     ***REMOVED***

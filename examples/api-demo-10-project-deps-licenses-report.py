@@ -65,10 +65,10 @@ def get_flat_dependencies(dep_list):
         licences = d["licenses"]
         path = d["path"]
 
-        simplified_liceses_list = [l["title"] for l in licences]
+        simplified_liceses_list = [l.title for l in licences]
         licenses_str = ", ".join(simplified_liceses_list)
 
-        license_issues_list = [l["severity"] for l in licences]
+        license_issues_list = [l.severity for l in licences]
         license_issues_str = ", ".join(license_issues_list)
 
         flat_dep_list.append(
