@@ -288,7 +288,9 @@ class DependencyGraphManager(SingletonManager):
         )
         resp = self.client.get(path)
         dependency_data = resp.json()
-        return self.klass.from_dict(dependency_data["depGraph"])
+        if "depGraph" in dependency_data:
+            return self.klass.from_dict(dependency_data["depGraph"])
+        raise SnykError
 
 
 class IssueSetManager(SingletonManager):
