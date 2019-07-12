@@ -41,6 +41,9 @@ manifest_files = args.manifestFiles
 client = SnykClient(snyk_token)
 org = client.organizations.get(org_id)
 integration = org.integrations.get(github_integration_id)
-job = integration.import_git(github_org, repo_name, files=manifest_files)
+if manifest_files:
+    job = integration.import_git(github_org, repo_name, files=manifest_files)
+else:
+    job = integration.import_git(github_org, repo_name)
 
 print(job)
