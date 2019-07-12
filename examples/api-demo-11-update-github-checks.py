@@ -13,7 +13,7 @@ def parse_command_line_args():
         "--orgId", type=str, help="The Snyk Organisation Id", required=True
     )
     parser.add_argument(
-        "--projectId", type=str, help="The project ID in Snyk", required=True
+        "--projectId", type=str, help="The project ID in Snyk, use 'all' to execute for all projects.", required=True
     )
     parser.add_argument(
         "--pullRequestTestEnabled",
@@ -34,26 +34,30 @@ pullRequestTestEnabled = args.pullRequestTestEnabled
 project_settings = {"pullRequestTestEnabled": pullRequestTestEnabled}
 
 client = SnykClient(snyk_token)
-json_res = client.snyk_projects_projects(org_id)
+projects = client.organizations.get(org_id).projects.all()
 
 github_projects = [
-    {"id": p["id"], "name": p["name"]}
-    for p in json_res["projects"]
-    if p["origin"] == "github"
+    {"id": p.id, "name": p.name}
+    for p in projects
+    if p.origin == "github"
 ]
+
+def get_project_by_id(projects, project_id):
+    for project in projects:
+        if project.id == project_id:
+            return project
+
 
 for proj in github_projects:
     if project_id == proj["id"] or project_id == "all":
         print("%s | %s" % (proj["id"], proj["name"]))
         print("  - updating project settings...")
-        resp = client.snyk_projects_update_project_settings(
-            org_id, proj["id"], **project_settings
-        )
+        resp = get_project_by_id(projects, proj["id"]).settings.update(**project_settings)
 
-        if resp.status_code == 200:
-            print("  - success: %s" % (resp.json()))
+        if resp:
+            print("  - success: %s" % (proj["id"]))
         else:
-            print("  - failed: %s %s" % (resp.status_code, resp.reason))
+            print("  - failed: %s" % (proj["id"]))
 
 
 print("done")
