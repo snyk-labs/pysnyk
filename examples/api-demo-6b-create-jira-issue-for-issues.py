@@ -42,6 +42,6 @@ snyk_issue_with_jira_issues = list(jira_issues.keys())
 
 for issue in issues.vulnerabilities + issues.licenses:
     if issue.id not in list(jira_issues.keys()):
-        print("Creating Jira ticket for issue: %s" % issue.id)
+        print("Creating Jira issue for Snyk issue: %s" % issue.id)
         jira_issue = create_jira_issue(project, issue, jira_project_id, jira_issue_type)
         print("Created: [%s] - [%s]" % (jira_issue["id"], jira_issue["key"]))
