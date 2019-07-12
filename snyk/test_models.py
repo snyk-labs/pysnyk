@@ -249,7 +249,9 @@ class TestProject(TestModels):
 
     def test_create_jira_issue(self, project, project_url, requests_mock):
         issue_id = "npm:qs:20140806-1"
-        return_data = {"jiraIssue": {"id": "10001", "key": "EX-1"}}
+        return_data = {
+            "npm:qs:20140806-1": [{"jiraIssue": {"id": "10001", "key": "EX-1"}}]
+        }
         adapter = requests_mock.post(
             "%s/issue/%s/jira-issue" % (project_url, issue_id), json=return_data
     ***REMOVED***
