@@ -66,6 +66,11 @@ class LicenseIssue(DataClassJSONMixin):
 
 
 @dataclass
+class LicenseIssue(DataClassJSONMixin):
+    id: str
+
+
+@dataclass
 class Issue(DataClassJSONMixin):
     vulnerabilities: List[Vulnerability]
     licenses: List[LicenseIssue]
