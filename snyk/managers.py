@@ -1,5 +1,5 @@
 import abc
-from typing import List, Any, Dict
+from typing import Any, Dict, List
 
 from .errors import SnykError, SnykNotFoundError, SnykNotImplementedError
 from .utils import snake_to_camel

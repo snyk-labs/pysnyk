@@ -1,13 +1,13 @@
 ***REMOVED***
-import urllib3
 import json
-import sys
 import re
-import requests
+import sys
 
+import requests
+import urllib3
 
 ***REMOVED***
-from utils import get_token, get_default_token_path
+***REMOVED***
 
 
 ***REMOVED***

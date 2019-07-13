@@ -1,11 +1,11 @@
-import json
+***REMOVED***
 import collections
+import json
 import operator
-***REMOVED***
 from collections import OrderedDict
-***REMOVED***
-from utils import get_token, get_default_token_path
 
+***REMOVED***
+***REMOVED***
 
 # ****Instructions******
 # See README on where to specify snyk-api-token to authorize this example

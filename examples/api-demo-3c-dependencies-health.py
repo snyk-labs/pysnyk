@@ -1,10 +1,10 @@
-import json
 ***REMOVED***
 import datetime
+import json
 from datetime import date
-***REMOVED***
-from utils import get_token, get_default_token_path
 
+***REMOVED***
+***REMOVED***
 
 # *****Instructions****
 # See README on where to specify snyk-api-token to authorize this example

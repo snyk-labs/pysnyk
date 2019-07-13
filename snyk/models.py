@@ -1,6 +1,6 @@
 import base64
-from dataclasses import dataclass, field, InitVar
-from typing import Optional, List, Dict, Any, Union
+from dataclasses import InitVar, dataclass, field
+from typing import Any, Dict, List, Optional, Union
 
 import requests
 from mashumaro import DataClassJSONMixin  # type: ignore
