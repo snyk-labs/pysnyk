@@ -3,9 +3,9 @@ import re
 import pytest  # type: ignore
 
 from snyk import SnykClient
+from snyk.__version__ import __version__
 from snyk.errors import SnykError, SnykNotFoundError
 from snyk.models import Organization, Project
-from snyk.__version__ import __version__
 
 
 class TestSnykClient(object):
