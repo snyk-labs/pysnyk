@@ -9,6 +9,8 @@ license = "MIT"
 packages = [
   { include = "snyk" },
 ]
+readme = "README.md"
+repository = "https://github.com/snyk-labs/pysnyk"
 
 [tool.poetry.dependencies]
 python = "^3.7"
