@@ -1,9 +1,14 @@
 [tool.poetry]
 name = "pysnyk"
-version = "0.1.0"
+version = "0.1.2"
 description = "A Python client for the Snyk API"
-authors = []
+authors = [
+  "Gareth Rushgrove <garethr@snyk.io>",
+]
 license = "MIT"
+packages = [
+  { include = "snyk" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.7"

@@ -1,10 +1,22 @@
-dist: xenial   # required for Python >= 3.7
+dist: xenial
 language: python
 python:
   - "3.7"
-before_install:
-  - pip install poetry
-install:
-  - poetry install -v
-script: 
-  - poetry run pytest
+
+jobs:
+  include:
+    - tests:
+      before_install:
+        - pip install poetry
+      install:
+        - poetry install -v
+      script: poetry run pytest
+    - security:
+      before_install:
+        - pip install dephell
+        - curl -s https://api.github.com/repos/snyk/snyk/releases/latest | grep "browser_download_url" | grep linux | cut -d '"' -f 4 | wget -qi -
+        - sha256sum -c snyk-linux.sha256
+        - mv snyk-linux /usr/local/bin/snyk
+      script:
+        - dephell deps convert --from=pyproject.toml --to=requirements.txt
+        - snyk monitor

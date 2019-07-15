@@ -7,3 +7,4 @@ __pycache__
 dist
 output
 pysnyk.egg-info
+requirements.txt
