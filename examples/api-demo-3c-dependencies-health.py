@@ -4,6 +4,7 @@ import datetime
 from datetime import date
 ***REMOVED***
 from utils import get_token
+from utils import get_default_token_path
 
 
 # *****Instructions****
@@ -234,7 +235,8 @@ project_id = args.projectId
 
 # List issues in a project
 print("----FETCHING DATA----")
-snyk_token = get_token("snyk-api-token")
+***REMOVED***
+***REMOVED***
 client = SnykClient(snyk_token)
 
 deps = client.organizations.get(org_id).projects.get(project_id).dependencies.all()

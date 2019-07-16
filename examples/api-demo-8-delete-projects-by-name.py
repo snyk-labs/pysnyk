@@ -2,6 +2,7 @@
 
 ***REMOVED***
 from utils import get_token
+from utils import get_default_token_path
 
 
 ***REMOVED***
@@ -31,7 +32,8 @@ from utils import get_token
 ***REMOVED***
 
 
-snyk_token = get_token("snyk-api-token")
+***REMOVED***
+***REMOVED***
 ***REMOVED***
 ***REMOVED***
 # For example, for GitHub projects it is `[org]/[repo-name]`
