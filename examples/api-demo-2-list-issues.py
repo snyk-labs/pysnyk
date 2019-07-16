@@ -2,8 +2,7 @@
 import xlsxwriter
 
 ***REMOVED***
-from utils import get_token
-from utils import get_default_token_path
+from utils import get_token, get_default_token_path
 
 
 ***REMOVED***
