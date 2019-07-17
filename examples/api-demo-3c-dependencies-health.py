@@ -3,7 +3,7 @@ import argparse
 import datetime
 from datetime import date
 from snyk import SnykClient
-from utils import get_token
+from utils import get_token, get_default_token_path
 
 
 # *****Instructions****
@@ -234,7 +234,8 @@ project_id = args.projectId
 
 # List issues in a project
 print("----FETCHING DATA----")
-snyk_token = get_token("snyk-api-token")
+snyk_token_path = get_default_token_path()
+snyk_token = get_token(snyk_token_path)
 client = SnykClient(snyk_token)
 
 deps = client.organizations.get(org_id).projects.get(project_id).dependencies.all()

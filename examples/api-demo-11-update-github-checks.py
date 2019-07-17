@@ -4,7 +4,7 @@ import json
 
 
 from snyk import SnykClient
-from utils import get_token
+from utils import get_token, get_default_token_path
 
 
 def parse_command_line_args():
@@ -24,7 +24,8 @@ def parse_command_line_args():
     return parser.parse_args()
 
 
-snyk_token = get_token("snyk-api-token")
+snyk_token_path = get_default_token_path()
+snyk_token = get_token(snyk_token_path)
 args = parse_command_line_args()
 org_id = args.orgId
 project_id = args.projectId

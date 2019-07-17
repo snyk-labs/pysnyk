@@ -1,7 +1,7 @@
 import argparse
 
 from snyk import SnykClient
-from utils import get_token
+from utils import get_token, get_default_token_path
 
 
 def parse_command_line_args():
@@ -25,7 +25,8 @@ def create_jira_issue(project, issue, jira_project, issuetype):
     return project.jira_issues.create(issue.id, {"project": {"id": jira_project}, "issuetype": {"id": issuetype}, "summary": "%s - %s" % (project.name, issue.title)})
 
 
-snyk_token = get_token("snyk-api-token")
+snyk_token_path = get_default_token_path()
+snyk_token = get_token(snyk_token_path)
 args = parse_command_line_args()
 org_id = args.orgId
 project_id = args.projectId

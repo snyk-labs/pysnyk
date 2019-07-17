@@ -4,7 +4,8 @@ import operator
 import argparse
 from collections import OrderedDict
 from snyk import SnykClient
-from utils import get_token
+from utils import get_token, get_default_token_path
+
 
 # ****Instructions******
 # See README on where to specify snyk-api-token to authorize this example
@@ -350,7 +351,8 @@ class analysisLog:
 
 #####ANALYSIS
 ##GET NEXT TWO VALUES FROM COMMANDLINE
-snyk_token = get_token("snyk-api-token")
+snyk_token_path = get_default_token_path()
+snyk_token = get_token(snyk_token_path)
 client = SnykClient(snyk_token)
 issueset = client.organizations.get(org_id).projects.get(project_id).issueset
 
