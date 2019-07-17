@@ -1,7 +1,7 @@
 ***REMOVED***
 
 ***REMOVED***
-from utils import get_token
+from utils import get_token, get_default_token_path
 
 
 ***REMOVED***
@@ -25,7 +25,8 @@ def create_jira_issue(project, issue, jira_project, issuetype):
     return project.jira_issues.create(issue.id, {"project": {"id": jira_project}, "issuetype": {"id": issuetype}, "summary": "%s - %s" % (project.name, issue.title)})
 
 
-snyk_token = get_token("snyk-api-token")
+***REMOVED***
+***REMOVED***
 ***REMOVED***
 ***REMOVED***
 project_id = args.projectId

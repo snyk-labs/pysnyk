@@ -1,7 +1,7 @@
 # Examples
 
 
-The following examples require you to create a file at `~/.ssh/tokens/snyk-api-token` which contains a valid Snyk API token - either your [personal token](https://app.snyk.io/account) or a [service account](https://snyk.io/docs/service-accounts/) token. This file should contain the token alone with no formatting.
+The following examples require you to have a valid Snyk token file on your system. You can create this by running `snyk auth` with your Snyk CLI. This will create a token file at `.config/configstore`. See [Snyk CLI](https://github.com/snyk/snyk#installation). You can use either a [personal token](https://app.snyk.io/account) or a [service account](https://snyk.io/docs/service-accounts/). 
 
 ## Running a Script
 The sample scripts are all a bit different, so you should try them each out or look at the code. 
