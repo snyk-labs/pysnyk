@@ -421,6 +421,7 @@ class Project(DataClassJSONMixin):
     testFrequency: str
     totalDependencies: int
     lastTestedDate: str
+    browseUrl: str
     issueCountsBySeverity: IssueCounts
     imageTag: Optional[str] = None
     imageId: Optional[str] = None
