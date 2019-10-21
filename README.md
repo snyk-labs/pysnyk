@@ -20,6 +20,13 @@ import snyk
 client = snyk.SnykClient("<your-api-token>", "<your-instance-of-snyk>")
 ```
 
+By default the `User-Agent` string for the API requests will be `pysnyk/<version>`. If you would like to send a custom user agent you can do so as follows:
+
+```python
+import snyk
+client = snyk.SnykClient("<your-api-token>", user_agent="<your-instance-of-snyk>")
+```
+
 ## Organizations
 
 With the client we can get a list of Snyk organizations you are a member of:
