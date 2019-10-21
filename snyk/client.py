@@ -6,6 +6,7 @@ import requests
 from .errors import SnykError, SnykHTTPError, SnykNotFoundError, SnykNotImplementedError
 from .managers import Manager
 from .models import Project, Organization
+from .__version__ import __version__
 
 import logging
 
@@ -14,11 +15,21 @@ logger = logging.getLogger(__name__)
 
 class SnykClient(object):
     API_URL = "https://snyk.io/api/v1"
+    USER_AGENT = "pysnyk/%s" % __version__
 
-    def __init__(self, token: str, url: Optional[str] = None, debug: bool = False):
+    def __init__(
+        self,
+        token: str,
+        url: Optional[str] = None,
+        user_agent: Optional[str] = USER_AGENT,
+        debug: bool = False,
+***REMOVED***:
         self.api_token = token
         self.api_url = url or self.API_URL
-        self.api_headers = {"Authorization": "token %s" % self.api_token}
+        self.api_headers = {
+            "Authorization": "token %s" % self.api_token,
+            "User-Agent": user_agent,
+        }
         self.api_post_headers = self.api_headers
         self.api_post_headers["Content-Type"] = "application/json"
 

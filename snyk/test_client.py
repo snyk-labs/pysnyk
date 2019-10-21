@@ -5,6 +5,7 @@ import pytest  # type: ignore
 ***REMOVED***
 from snyk.errors import SnykError, SnykNotFoundError
 from snyk.models import Organization, Project
+from snyk.__version__ import __version__
 
 
 class TestSnykClient(object):
@@ -22,6 +23,14 @@ class TestSnykClient(object):
 
     def test_token_added_to_headers(self, client):
         assert client.api_headers["Authorization"] == "token token"
+
+    def test_user_agent_added_to_headers(self, client):
+        assert client.api_headers["User-Agent"] == "pysnyk/%s" % __version__
+
+    def test_overriding_user_agent(self):
+        ua = "test"
+        client = SnykClient("token", user_agent=ua)
+        assert client.api_headers["User-Agent"] == ua
 
     def test_token_added_to_post_headers(self, client):
         assert client.api_post_headers["Authorization"] == "token token"
