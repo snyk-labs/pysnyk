@@ -16,6 +16,7 @@ repository = "https://github.com/snyk-labs/pysnyk"
 python = "^3.7"
 requests = "^2.22"
 mashumaro = "^1.7"
+poetry-version = "^0.1.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^4.6"
