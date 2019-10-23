@@ -1,8 +1,9 @@
 import argparse
+
 import xlsxwriter
 
 from snyk import SnykClient
-from utils import get_token, get_default_token_path
+from utils import get_default_token_path, get_token
 
 
 def parse_command_line_args():

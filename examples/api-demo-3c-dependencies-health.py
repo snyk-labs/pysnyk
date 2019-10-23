@@ -1,10 +1,10 @@
-import json
 import argparse
 import datetime
+import json
 from datetime import date
-from snyk import SnykClient
-from utils import get_token, get_default_token_path
 
+from snyk import SnykClient
+from utils import get_default_token_path, get_token
 
 # *****Instructions****
 # See README on where to specify snyk-api-token to authorize this example

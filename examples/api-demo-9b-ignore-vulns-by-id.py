@@ -1,13 +1,13 @@
 import argparse
-import urllib3
 import json
-import sys
 import re
-import requests
+import sys
 
+import requests
+import urllib3
 
 from snyk import SnykClient
-from utils import get_token, get_default_token_path
+from utils import get_default_token_path, get_token
 
 
 def parse_command_line_args():

@@ -1,11 +1,11 @@
-import json
-import collections
-import operator
 import argparse
+import collections
+import json
+import operator
 from collections import OrderedDict
-from snyk import SnykClient
-from utils import get_token, get_default_token_path
 
+from snyk import SnykClient
+from utils import get_default_token_path, get_token
 
 # ****Instructions******
 # See README on where to specify snyk-api-token to authorize this example

@@ -1,14 +1,12 @@
 import logging
-from typing import Any, List, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import requests
 
+from .__version__ import __version__
 from .errors import SnykError, SnykHTTPError, SnykNotFoundError, SnykNotImplementedError
 from .managers import Manager
-from .models import Project, Organization
-from .__version__ import __version__
-
-import logging
+from .models import Organization, Project
 
 logger = logging.getLogger(__name__)
 

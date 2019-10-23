@@ -2,8 +2,8 @@ import pytest  # type: ignore
 
 from snyk.client import SnykClient
 from snyk.errors import SnykError
-from snyk.models import Organization, Project
 from snyk.managers import Manager
+from snyk.models import Organization, Project
 
 
 class TestManager(object):

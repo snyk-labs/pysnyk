@@ -1,7 +1,9 @@
-import utils
-import tempfile
 import json
+import tempfile
+
 import pytest  # type: ignore
+
+import utils
 
 
 def test_get_token_fails_if_token_file_not_found():
