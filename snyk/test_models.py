@@ -2,9 +2,9 @@ import re
 
 import pytest  # type: ignore
 
-from snyk.models import Organization, Project, Member, Integration
 from snyk.client import SnykClient
 from snyk.errors import SnykError, SnykNotFoundError, SnykNotImplementedError
+from snyk.models import Integration, Member, Organization, Project
 
 
 class TestModels(object):
