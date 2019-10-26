@@ -114,7 +114,7 @@ class Organization(DataClassJSONMixin):
     and files, and better errors, would be required.
     """
 
-    def import_project(self, url) -> bool:
+    def import_project(self, url, files: Optional[List[str]] = None) -> bool:
         try:
             components = url.split("/")
             service = components[0]
@@ -144,9 +144,12 @@ class Organization(DataClassJSONMixin):
                     name
             ***REMOVED***
             else:
-                return self.integrations.filter(name=integration_name)[0].import_git(
-                    owner, name, branch
-            ***REMOVED***
+                integration = self.integrations.filter(name=integration_name)[0]
+
+                if files:
+                    return integration.import_git(owner, name, branch, files)
+                else:
+                    return integration.import_git(owner, name, branch)
 
         except KeyError:
             raise SnykError

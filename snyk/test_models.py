@@ -165,6 +165,46 @@ class TestOrganization(TestModels):
         with pytest.raises(SnykError):
             organization.test_rubygem("puppet", "4.0.0")
 
+    def test_import_git(self, organization, requests_mock):
+        integration_matcher = re.compile("integrations$")
+        import_matcher = re.compile("import$")
+        output = {"github": "not-a-real-id"}
+        requests_mock.get(integration_matcher, json=output)
+        requests_mock.post(import_matcher)
+        gh = organization.integrations.first()
+        assert gh.import_git("org", "repo", "branch")
+        payload = requests_mock.last_request.json()
+        assert len(payload["files"]) == 0
+        assert payload["target"]["branch"] == "branch"
+        assert payload["target"]["name"] == "repo"
+        assert payload["target"]["owner"] == "org"
+
+    def test_import_project(self, organization, requests_mock):
+        integration_matcher = re.compile("integrations$")
+        import_matcher = re.compile("import$")
+        output = {"github": "not-a-real-id"}
+        requests_mock.get(integration_matcher, json=output)
+        requests_mock.post(import_matcher)
+        assert organization.import_project("github.com/org/repo")
+        payload = requests_mock.last_request.json()
+        assert len(payload["files"]) == 0
+        assert payload["target"]["branch"] == "master"
+        assert payload["target"]["name"] == "repo"
+        assert payload["target"]["owner"] == "org"
+
+    def test_import_project_with_files(self, organization, requests_mock):
+        integration_matcher = re.compile("integrations$")
+        import_matcher = re.compile("import$")
+        output = {"github": "not-a-real-id"}
+        requests_mock.get(integration_matcher, json=output)
+        requests_mock.post(import_matcher)
+        assert organization.import_project(
+            "github.com/org/repo", files=["Gemfile.lock"]
+    ***REMOVED***
+        payload = requests_mock.last_request.json()
+        assert len(payload["files"]) == 1
+        assert payload["files"][0]["path"] == "Gemfile.lock"
+
 
 class TestProject(TestModels):
     @pytest.fixture
