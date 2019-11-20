@@ -113,7 +113,7 @@ This method currently only supports importing projects from GitHub and Docker Hu
 
 ### Testing for vulnerabilties
 
-The API also exposes meythods to discover vulnerability information about individual packages. These methods are found on the Organization object.
+The API also exposes methods to discover vulnerability information about individual packages. These methods are found on the Organization object.
 
 * `test_maven(<package_group_id>, <package_artifact_id>, <version>)` - returns an IssueSet containing vulnerability information for a Maven artifact
 * `test_rubygem(<name>, <version>)` - returns an IssueSet containing vulnerability information for a Ruby Gem
