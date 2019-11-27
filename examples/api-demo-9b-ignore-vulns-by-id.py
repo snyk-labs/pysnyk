@@ -39,7 +39,7 @@ reason = args.reason
 # Regex to check if the date is valid
 datere = "[2-9][0-9][0-9][0-9]-[0-2][0-9]-[0-3][0-9]"
 datetimere = "[2-9][0-9][0-9][0-9]-[0-2][0-9]-[0-3][0-9]T[0-2][0-4]:[0-5][0-9]:[0-6][0-9].[0-9][0-9][0-9]Z"
-
+expires = None
 # Logic to check if a reason and/or time was added
 if time is None:
     confirm = 0
