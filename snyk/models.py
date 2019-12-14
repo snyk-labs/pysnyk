@@ -19,6 +19,7 @@ class Vulnerability(DataClassJSONMixin):
     package: str
     version: str
     severity: str
+    exploitMaturity: str
     isUpgradable: bool
     isPatchable: bool
     identifiers: Any
