@@ -6,11 +6,10 @@ The following examples require you to have a valid Snyk token file on your syste
 ## Running a Script
 The sample scripts are all a bit different, so you should try them each out or look at the code. 
 
-1. The dependencies are managed by [poetry](https://poetry.eustace.io/). Installation is described on the [poetry docs](https://poetry.eustace.io/docs/#introduction)
-1. Install the dependencies using `poetry install`
+1. Install `pysnyk` using `pip install pysnyk`
 1. You can execute an example in general using:
     ```
-    poetry run python examples/<script-name.py> --orgId=<your-org_id> ...
+    python examples/<script-name.py> --orgId=<your-org_id> ...
     ```
 
 ## List Project Issues
