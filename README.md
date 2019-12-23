@@ -108,6 +108,12 @@ org.import_project("github.com/user/project@branch")
 org.import_project("docker.io/repository:tag")
 ```
 
+If you are targetting a specific manifest file or files you can pass those as an optional argument, for instance:
+
+```python
+org.import_project("github.com/user/project@branch", files=["Gemfile.lock"])
+```
+
 This method currently only supports importing projects from GitHub and Docker Hub. For other integrations you will need to grab the lower-level `snyk.models.Integration` object from the `snyk.models.Organization.integrations` manager noted above. Other services will be added to this API soon.
 
 

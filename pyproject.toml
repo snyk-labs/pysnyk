@@ -23,7 +23,7 @@ pytest = "^5.0"
 pytest-black = "^0.3.7"
 pytest-cov = "^2.7"
 pytest-mypy = "^0.4.0"
-requests-mock = "^1.6"
+requests-mock = "^1.7"
 xlsxwriter = "^1.1.8"
 pytest-isort = "^0.3.1"
 
