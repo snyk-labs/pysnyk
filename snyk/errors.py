@@ -29,3 +29,7 @@ class SnykOrganizationNotFoundError(SnykError):
 
 class SnykNotImplementedError(SnykError):
     pass
+
+
+class SnykRunError(SnykError):
+    pass

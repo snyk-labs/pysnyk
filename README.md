@@ -2,11 +2,11 @@
 
 [![Build Status](https://travis-ci.org/snyk-labs/pysnyk.svg?branch=master)](https://travis-ci.org/snyk-labs/pysnyk)
 
-A Python client for the [Snyk API](https://snyk.docs.apiary.io/#).
+A Python client for the [Snyk API](https://snyk.docs.apiary.io/#) and Snyk CLI.
 
-## Client
+## API Client
 
-Using the client requires you to provide your Snyk API token.
+Using the API client requires you to provide your Snyk API token.
 
 ```python
 import snyk
@@ -27,7 +27,7 @@ import snyk
 client = snyk.SnykClient("<your-api-token>", user_agent="<your-instance-of-snyk>")
 ```
 
-## Organizations
+### Organizations
 
 With the client we can get a list of Snyk organizations you are a member of:
 
@@ -170,3 +170,26 @@ client.post("<path>", <data>)
 ```
 
 Most of the time you shouldn't need to use these. They are mainly useful if new methods are added to the API which are not yet supported in the client. This can also be useful if you want to pass very specific parameters, or to parse the raw JSON output from the API.
+
+
+## CLI client
+
+Some features of Snyk are only available via the CLI tool. The `snyk.cli.SnykCLI` class makes it simple to run the SNyk CLI from Python. Note that unlike the API client this requires SNyk to be installed and configurated locally. You can find installation instructions in the [official documentation](https://support.snyk.io/hc/en-us/articles/360003812538#UUID-7ccc55c8-51f7-ff54-5acf-680dc62bc27e).
+
+The CLI client allows for running `test` and `monitor` like so:
+
+```python
+>>> import snyk.cli
+>>> client = snyk.cli.SnykCLI("/the/path/to/your/project")
+>>> resp = client.test()
+>>> resp 
+SnykCLIResult()
+>>> import json
+>>> json.loads(resp.raw)["projectName"]
+'project'
+>>>
+>>> resp = client.monitor()
+>>> json.loads(resp.raw)["uri"]
+'https://app.snyk.io/org/xxx/project/7f1352a7-6911-xxx-8265-48f38bc2b320/history/82505dfc-a37a-4b6b-xxxx-a8cee7f3c375'
+```
+

@@ -10,6 +10,11 @@ from .managers import Manager
 
 
 @dataclass
+class SnykCLIResult(DataClassJSONMixin):
+    raw: str = field(repr=False)
+
+
+@dataclass
 class Vulnerability(DataClassJSONMixin):
     id: str
     url: str
