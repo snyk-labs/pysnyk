@@ -325,6 +325,7 @@ class License(DataClassJSONMixin):
     id: str
     dependencies: List[LicenseDependency]
     projects: List[LicenseProject]
+    severity: str
 
 
 @dataclass
