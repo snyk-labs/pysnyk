@@ -237,6 +237,26 @@ class TestProject(TestModels):
         with pytest.raises(SnykError):
             project.delete()
 
+    def test_add_tag(self, project, project_url, requests_mock):
+        requests_mock.post(
+            "%s/tags" % project_url, json={"key": "key", "value": "value"}
+    ***REMOVED***
+        assert project.tags.add("key", "value")
+
+    def test_delete_tag(self, project, project_url, requests_mock):
+        requests_mock.post(
+            "%s/tags/remove" % project_url, json={"key": "key", "value": "value"}
+    ***REMOVED***
+        assert project.tags.delete("key", "value")
+
+    def test_tags(self, project, project_url, requests_mock):
+        assert [] == project.tags.all()
+
+    def test_tags_cache(self, project, project_url, requests_mock):
+        tags = [{"key": "key", "value": "value"}]
+        project._tags = tags
+        assert tags == project.tags.all()
+
     def test_empty_settings(self, project, project_url, requests_mock):
         requests_mock.get("%s/settings" % project_url, json={})
         assert {} == project.settings.all()
