@@ -164,7 +164,7 @@ class Organization(DataClassJSONMixin):
     def invite(self, email: str, admin: bool = False):
         raise SnykNotImplementedError  # pragma: no cover
 
-    def _test(self, path, contents=None):
+    def _test(self, path, contents=None, additional=None):
         if contents:
             # Check for a file-like object, allows us to support files
             # and strings in the same interface
@@ -176,6 +176,15 @@ class Organization(DataClassJSONMixin):
                 "encoding": "base64",
                 "files": {"target": {"contents": encoded}},
             }
+
+            # Some test methods carry a second file, often a lock file
+            if additional:
+                read = getattr(additional, "read", None)
+                if callable(read):
+                    additional = additional.read()
+                encoded = base64.b64encode(additional.encode()).decode()
+                post_body["files"]["additional"] = {"contents": encoded}
+
             resp = self.client.post(path, post_body)
         else:
             resp = self.client.get(path)
@@ -212,9 +221,9 @@ class Organization(DataClassJSONMixin):
         path = "test/rubygems?org=%s" % self.id
         return self._test(path, contents)
 
-    def test_packagejson(self, contents):
+    def test_packagejson(self, contents, lock=None):
         path = "test/npm?org=%s" % self.id
-        return self._test(path, contents)
+        return self._test(path, contents, lock)
 
     def test_gradlefile(self, contents):
         path = "test/gradle?org=%s" % self.id
@@ -227,6 +236,14 @@ class Organization(DataClassJSONMixin):
     def test_pom(self, contents):
         path = "test/maven?org=%s" % self.id
         return self._test(path, contents)
+
+    def test_composer(self, contents, lock):
+        path = "test/composer?org=%s" % self.id
+        return self._test(path, contents, lock)
+
+    def test_yarn(self, contents, lock):
+        path = "test/yarn?org=%s" % self.id
+        return self._test(path, contents, lock)
 
 
 @dataclass
