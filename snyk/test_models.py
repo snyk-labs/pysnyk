@@ -139,6 +139,13 @@ class TestOrganization(TestModels):
         requests_mock.post("%s/test/npm" % base_url, json=blank_test)
         assert organization.test_packagejson(fake_file)
 
+    def test_packagejson_test_with_files(
+        self, organization, base_url, blank_test, fake_file, requests_mock
+    ):
+
+        requests_mock.post("%s/test/npm" % base_url, json=blank_test)
+        assert organization.test_packagejson(fake_file, fake_file)
+
     def test_gradlefile_test_with_file(
         self, organization, base_url, blank_test, fake_file, requests_mock
     ):
@@ -159,6 +166,20 @@ class TestOrganization(TestModels):
 
         requests_mock.post("%s/test/maven" % base_url, json=blank_test)
         assert organization.test_pom(fake_file)
+
+    def test_composer_with_files(
+        self, organization, base_url, blank_test, fake_file, requests_mock
+    ):
+
+        requests_mock.post("%s/test/composer" % base_url, json=blank_test)
+        assert organization.test_composer(fake_file, fake_file)
+
+    def test_yarn_with_files(
+        self, organization, base_url, blank_test, fake_file, requests_mock
+    ):
+
+        requests_mock.post("%s/test/yarn" % base_url, json=blank_test)
+        assert organization.test_yarn(fake_file, fake_file)
 
     def test_missing_package_test(self, organization, base_url, requests_mock):
         requests_mock.get("%s/test/rubygems/puppet/4.0.0" % base_url, status_code=404)
