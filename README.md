@@ -158,6 +158,23 @@ For example, here we are testing a Python `Pipfile`.
 >>> org.test_pipfile(file)
 ```
 
+### Inviting new users
+
+You can invite new users to the organization via the API.
+
+```python
+>>> org = client.organizations.first()
+>>> org.invite("example@example.com")
+```
+
+You can also invite new users as administrators:
+
+```python
+>>> org = client.organizations.first()
+>>> org.invite("example@example.com", admin=True)
+```
+
+
 ### Low-level client
 
 As well as the high-level API of the Snyk client you can use the HTTP methods directly. For these you simply need to pass the path, and optionally a data payload. The full domain, and the authentication details, are already provided by the client.

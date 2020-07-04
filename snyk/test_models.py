@@ -205,6 +205,20 @@ class TestOrganization(TestModels):
         assert len(payload["files"]) == 1
         assert payload["files"][0]["path"] == "Gemfile.lock"
 
+    def test_invite(self, organization, requests_mock):
+        invite_matcher = re.compile("invite$")
+        requests_mock.post(
+            invite_matcher, json={"email": "example@example.com", "isAdmin": False}
+        )
+        assert organization.invite("example@example.com")
+
+    def test_invite_admin(self, organization, requests_mock):
+        invite_matcher = re.compile("invite$")
+        requests_mock.post(
+            invite_matcher, json={"email": "example@example.com", "isAdmin": True}
+        )
+        assert organization.invite("example@example.com", admin=True)
+
 
 class TestProject(TestModels):
     @pytest.fixture
