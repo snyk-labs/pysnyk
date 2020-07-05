@@ -28,6 +28,7 @@ class Vulnerability(DataClassJSONMixin):
     language: Optional[str] = None
     packageManager: Optional[str] = None
     publicationTime: Optional[str] = None
+    priorityScore: Optional[int] = None
     disclosureTime: Optional[str] = None
     credit: Optional[List[Any]] = field(default_factory=list)
     CVSSv3: Optional[str] = None
@@ -50,6 +51,7 @@ class LicenseIssue(DataClassJSONMixin):
     # Although mentioned in the schema as required, currently not returned.
     isPatched: Optional[bool] = None
     language: Optional[str] = None
+    priorityScore: Optional[int] = None
     packageManager: Optional[str] = None
     ignored: Optional[List[Any]] = field(default_factory=list)
     patched: Optional[List[Any]] = field(default_factory=list)
@@ -430,6 +432,9 @@ class Project(DataClassJSONMixin):
     issueCountsBySeverity: IssueCounts
     imageTag: Optional[str] = None
     imageId: Optional[str] = None
+    hostname: Optional[str] = None
+    remoteRepoUrl: Optional[str] = None
+    branch: Optional[str] = None
 
     def delete(self) -> bool:
         path = "org/%s/project/%s" % (self.organization.id, self.id)
