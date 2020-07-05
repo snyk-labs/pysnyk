@@ -33,6 +33,22 @@ class TestOrganization(TestModels):
         ]
 
     @pytest.fixture
+    def project(self):
+        return {
+            "name": "atokeneduser/goof",
+            "id": "6d5813be-7e6d-4ab8-80c2-1e3e2a454545",
+            "created": "2018-10-29T09:50:54.014Z",
+            "origin": "cli",
+            "type": "npm",
+            "readOnly": "false",
+            "testFrequency": "daily",
+            "totalDependencies": 438,
+            "issueCountsBySeverity": {"low": 8, "high": 13, "medium": 15},
+            "lastTestedDate": "2019-02-05T06:21:00.000Z",
+            "browseUrl": "https://app.snyk.io/org/pysnyk-test-org/project/6d5813be-7e6d-4ab8-80c2-1e3e2a454545",
+        }
+
+    @pytest.fixture
     def blank_test(self):
         return {
             "ok": True,
@@ -204,6 +220,14 @@ class TestOrganization(TestModels):
         payload = requests_mock.last_request.json()
         assert len(payload["files"]) == 1
         assert payload["files"][0]["path"] == "Gemfile.lock"
+
+    def test_get_project(self, organization, project, requests_mock):
+        matcher = re.compile("projects/6d5813be-7e6d-4ab8-80c2-1e3e2a454545$")
+        requests_mock.get(matcher, json=project)
+        assert (
+            "atokeneduser/goof"
+            == organization.projects.get("6d5813be-7e6d-4ab8-80c2-1e3e2a454545").name
+    ***REMOVED***
 
 
 class TestProject(TestModels):
