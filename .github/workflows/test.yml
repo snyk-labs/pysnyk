@@ -1,0 +1,27 @@
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  Tests:
+    name: pysnyk-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code 
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+
+      - name: Install poetry
+        uses: dschep/install-poetry-action@v1.2
+
+      - name: Install dependencies
+        shell: bash
+        run: poetry install -v
+
+      - name: Run pytest
+        shell: bash
+        run: poetry run pytest
