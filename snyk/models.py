@@ -163,8 +163,10 @@ class Organization(DataClassJSONMixin):
         raise SnykNotImplemented  # pragma: no cover
 
     # https://snyk.docs.apiary.io/#reference/organisations/the-snyk-organisation-for-a-request/invite-users
-    def invite(self, email: str, admin: bool = False):
-        raise SnykNotImplementedError  # pragma: no cover
+    def invite(self, email: str, admin: bool = False) -> bool:
+        path = "org/%s/invite" % self.id
+        payload = {"email": email, "isAdmin": admin}
+        return bool(self.client.post(path, payload))
 
     def _test(self, path, contents=None):
         if contents:

@@ -221,6 +221,20 @@ class TestOrganization(TestModels):
         assert len(payload["files"]) == 1
         assert payload["files"][0]["path"] == "Gemfile.lock"
 
+    def test_invite(self, organization, requests_mock):
+        invite_matcher = re.compile("invite$")
+        requests_mock.post(
+            invite_matcher, json={"email": "example@example.com", "isAdmin": False}
+    ***REMOVED***
+        assert organization.invite("example@example.com")
+
+    def test_invite_admin(self, organization, requests_mock):
+        invite_matcher = re.compile("invite$")
+        requests_mock.post(
+            invite_matcher, json={"email": "example@example.com", "isAdmin": True}
+    ***REMOVED***
+        assert organization.invite("example@example.com", admin=True)
+
     def test_get_project(self, organization, project, requests_mock):
         matcher = re.compile("projects/6d5813be-7e6d-4ab8-80c2-1e3e2a454545$")
         requests_mock.get(matcher, json=project)
