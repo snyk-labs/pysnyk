@@ -126,6 +126,16 @@ class ProjectManager(Manager):
                 projects.extend(org.projects.all())
         return projects
 
+    def get(self, id: str):
+        if self.instance:
+            path = "org/%s/projects/%s" % (self.instance.id, id)
+            resp = self.client.get(path)
+            project_data = resp.json()
+            project_data["organization"] = self.instance.to_dict()
+            return self.klass.from_dict(project_data)
+        else:
+            return super().get(id)
+
 
 class MemberManager(Manager):
     def all(self):
