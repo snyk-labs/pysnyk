@@ -98,6 +98,12 @@ You can add and delete tags using the manager:
 * `tags.add(key, value)` - adds a tag with the provided key/value pair to the project
 * `tags.delete(key, value)` - deletes a tag with the provided key/value pair from the project
 
+In the case of Projects, as well as filtering by properties (as mentioned above) you can also filter by tag:
+
+```python
+client.organizations.first().projects.filter(tags = [{"key": "some-key", "value": "some-value"}])
+```
+
 Note that the `settings` Manager can also be used to update settings like so, assuming you have a `snyk.models.Project` object in the variable `project`.
 
 ```python

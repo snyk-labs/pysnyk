@@ -46,6 +46,7 @@ class TestOrganization(TestModels):
             "issueCountsBySeverity": {"low": 8, "high": 13, "medium": 15},
             "lastTestedDate": "2019-02-05T06:21:00.000Z",
             "browseUrl": "https://app.snyk.io/org/pysnyk-test-org/project/6d5813be-7e6d-4ab8-80c2-1e3e2a454545",
+            "tags": [{"key": "some-key", "value": "some-value"}],
         }
 
     @pytest.fixture
@@ -263,6 +264,39 @@ class TestOrganization(TestModels):
             "atokeneduser/goof"
             == organization.projects.get("6d5813be-7e6d-4ab8-80c2-1e3e2a454545").name
         )
+
+    def test_filter_projects_by_tag_missing_value(self, organization, requests_mock):
+        with pytest.raises(SnykError):
+            organization.projects.filter(tags=[{"key": "some-key"}])
+
+    def test_filter_projects_by_tag_missing_key(self, organization, requests_mock):
+        with pytest.raises(SnykError):
+            organization.projects.filter(tags=[{"value": "some-value"}])
+
+    def test_filter_projects_by_tag_with_extra_key(self, organization, requests_mock):
+        with pytest.raises(SnykError):
+            organization.projects.filter(
+                tags=[{"key": "some-key", "value": "some-value", "extra": "extra"}]
+            )
+
+    def test_filter_projects_by_tag(self, organization, requests_mock):
+        tags = [{"key": "some-key", "value": "some-value"}]
+        projects_matcher = re.compile("projects$")
+        requests_mock.post(projects_matcher, json=[])
+        organization.projects.filter(tags=tags)
+        payload = requests_mock.last_request.json()
+        assert payload == {"filters": {"tags": {"includes": tags}}}
+
+    def test_filter_projects_not_by_tag(self, organization, requests_mock):
+        projects_matcher = re.compile("projects$")
+        requests_mock.get(projects_matcher, json=[])
+        assert organization.projects.filter() == []
+
+    def test_tags_cache(self, organization, project, requests_mock):
+        projects_matcher = re.compile("projects$")
+        requests_mock.get(projects_matcher, json={"projects": [project]})
+        projects = organization.projects.all()
+        assert projects[0]._tags == [{"key": "some-key", "value": "some-value"}]
 
 
 class TestProject(TestModels):
