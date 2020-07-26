@@ -24,7 +24,7 @@ class Vulnerability(DataClassJSONMixin):
     isPatchable: bool
     identifiers: Any
     semver: Any
-    fromPackages: List[str]
+    fromPackages: Optional[List[str]] = None
     language: Optional[str] = None
     packageManager: Optional[str] = None
     publicationTime: Optional[str] = None
