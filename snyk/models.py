@@ -42,7 +42,7 @@ class LicenseIssue(DataClassJSONMixin):
     id: str
     url: str
     title: str
-    fromPackages: List[str]
+    fromPackages: Optional[List[str]] = field(default_factory=list)
     package: str
     version: str
     severity: str
