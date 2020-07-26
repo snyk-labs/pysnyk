@@ -42,7 +42,6 @@ class LicenseIssue(DataClassJSONMixin):
     id: str
     url: str
     title: str
-    fromPackages: Optional[List[str]] = field(default_factory=list)
     package: str
     version: str
     severity: str
@@ -53,6 +52,7 @@ class LicenseIssue(DataClassJSONMixin):
     language: Optional[str] = None
     priorityScore: Optional[int] = None
     packageManager: Optional[str] = None
+    fromPackages: Optional[List[str]] = field(default_factory=list)
     ignored: Optional[List[Any]] = field(default_factory=list)
     patched: Optional[List[Any]] = field(default_factory=list)
 
