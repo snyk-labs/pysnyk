@@ -27,12 +27,14 @@ class Manager(abc.ABC):
         except IndexError:
             raise SnykNotFoundError
 
-    def filter(self, **kwargs: Any):
-        data = self.all()
+    def _filter_by_kwargs(self, data, **kwargs: Any):
         if kwargs:
             for key, value in kwargs.items():
                 data = [x for x in data if getattr(x, key) == value]
         return data
+
+    def filter(self, **kwargs: Any):
+        return self._filter_by_kwargs(self.all(), **kwargs)
 
     @staticmethod
     def factory(klass, client, instance=None):
@@ -132,11 +134,18 @@ class TagManager(Manager):
 
 
 class ProjectManager(Manager):
-    def all(self):
+    def _query(self, tags: List[Dict[str, str]] = []):
         projects = []
         if self.instance:
             path = "org/%s/projects" % self.instance.id
-            resp = self.client.get(path)
+            if tags:
+                for tag in tags:
+                    if "key" not in tag or "value" not in tag or len(tag.keys()) != 2:
+                        raise SnykError("Each tag must contain only a key and a value")
+                data = {"filters": {"tags": {"includes": tags}}}
+                resp = self.client.post(path, data)
+            else:
+                resp = self.client.get(path)
             if "projects" in resp.json():
                 for project_data in resp.json()["projects"]:
                     project_data["organization"] = self.instance.to_dict()
@@ -154,6 +163,15 @@ class ProjectManager(Manager):
             for org in self.client.organizations.all():
                 projects.extend(org.projects.all())
         return projects
+
+    def all(self):
+        return self._query()
+
+    def filter(self, tags: List[Dict[str, str]] = [], **kwargs: Any):
+        if tags:
+            return self._filter_by_kwargs(self._query(tags), **kwargs)
+        else:
+            return super().filter(**kwargs)
 
     def get(self, id: str):
         if self.instance:
