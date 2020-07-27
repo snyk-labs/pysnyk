@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pysnyk"
-version = "0.3.0"
+version = "0.4.0"
 description = "A Python client for the Snyk API"
 authors = [
   "Gareth Rushgrove <garethr@snyk.io>",
@@ -26,7 +26,7 @@ pytest-cov = "^2.7"
 pytest-mypy = "^0.4.0"
 requests-mock = "^1.7"
 xlsxwriter = "^1.1.8"
-pytest-isort = "^0.3.1"
+pytest-isort = "^1.1.0"
 black = "^19.10b0"
 
 [tool.isort]
