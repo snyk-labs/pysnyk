@@ -24,7 +24,7 @@ class Vulnerability(DataClassJSONMixin):
     isPatchable: bool
     identifiers: Any
     semver: Any
-    fromPackages: List[str]
+    fromPackages: List[str] = field(default_factory=list)
     language: Optional[str] = None
     packageManager: Optional[str] = None
     publicationTime: Optional[str] = None
@@ -42,10 +42,10 @@ class LicenseIssue(DataClassJSONMixin):
     id: str
     url: str
     title: str
-    fromPackages: List[str]
     package: str
     version: str
     severity: str
+    fromPackages: List[str] = field(default_factory=list)
     # Although mentioned in the schema as required, currently not returned.
     isIgnored: Optional[bool] = None
     # Although mentioned in the schema as required, currently not returned.
