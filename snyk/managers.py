@@ -175,7 +175,7 @@ class ProjectManager(Manager):
 
     def get(self, id: str):
         if self.instance:
-            path = "org/%s/projects/%s" % (self.instance.id, id)
+            path = "org/%s/project/%s" % (self.instance.id, id)
             resp = self.client.get(path)
             project_data = resp.json()
             project_data["organization"] = self.instance.to_dict()
