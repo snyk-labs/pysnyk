@@ -258,7 +258,7 @@ class TestOrganization(TestModels):
         assert organization.invite("example@example.com", admin=True)
 
     def test_get_project(self, organization, project, requests_mock):
-        matcher = re.compile("projects/6d5813be-7e6d-4ab8-80c2-1e3e2a454545$")
+        matcher = re.compile("project/6d5813be-7e6d-4ab8-80c2-1e3e2a454545$")
         requests_mock.get(matcher, json=project)
         assert (
             "atokeneduser/goof"
