@@ -448,9 +448,12 @@ class Project(DataClassJSONMixin):
     totalDependencies: int
     lastTestedDate: str
     browseUrl: str
+    isMonitored: bool
     issueCountsBySeverity: IssueCounts
     imageTag: Optional[str] = None
     imageId: Optional[str] = None
+    imageBaseImage: Optional[str] = None
+    imagePlatform: Optional[str] = None
     hostname: Optional[str] = None
     remoteRepoUrl: Optional[str] = None
     branch: Optional[str] = None
