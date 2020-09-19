@@ -109,6 +109,7 @@ class TestSnykClient(object):
                     "origin": "cli",
                     "type": "npm",
                     "readOnly": "false",
+                    "isMonitored": "true",
                     "testFrequency": "daily",
                     "totalDependencies": 438,
                     "issueCountsBySeverity": {"low": 8, "high": 13, "medium": 15},
