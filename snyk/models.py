@@ -454,6 +454,7 @@ class Project(DataClassJSONMixin):
     imageId: Optional[str] = None
     imageBaseImage: Optional[str] = None
     imagePlatform: Optional[str] = None
+    imageCluster: Optional[str] = None
     hostname: Optional[str] = None
     remoteRepoUrl: Optional[str] = None
     branch: Optional[str] = None
