@@ -430,7 +430,7 @@ class Dependency(DataClassJSONMixin):
     latestVersionPublishedDate: Optional[str] = None
     firstPublishedDate: Optional[str] = None
     isDeprecated: Optional[bool] = None
-    packageManager: Optional[str] = None
+    type: Optional[str] = None
     deprecatedVersions: Optional[List[Any]] = field(default_factory=list)
     dependenciesWithIssues: Optional[List[Any]] = field(default_factory=list)
 
