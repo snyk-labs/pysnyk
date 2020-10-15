@@ -266,6 +266,18 @@ class TestOrganization(TestModels):
             == organization.projects.get("6d5813be-7e6d-4ab8-80c2-1e3e2a454545").name
         )
 
+    def test_get_project_organization_has_client(
+        self, organization, project, requests_mock
+    ):
+        matcher = re.compile("project/6d5813be-7e6d-4ab8-80c2-1e3e2a454545$")
+        requests_mock.get(matcher, json=project)
+        assert (
+            organization.projects.get(
+                "6d5813be-7e6d-4ab8-80c2-1e3e2a454545"
+            ).organization.client
+            is not None
+        )
+
     def test_filter_projects_by_tag_missing_value(self, organization, requests_mock):
         with pytest.raises(SnykError):
             organization.projects.filter(tags=[{"key": "some-key"}])
