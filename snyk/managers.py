@@ -179,7 +179,9 @@ class ProjectManager(Manager):
             resp = self.client.get(path)
             project_data = resp.json()
             project_data["organization"] = self.instance.to_dict()
-            return self.klass.from_dict(project_data)
+            project_klass = self.klass.from_dict(project_data)
+            project_klass.organization = self.instance
+            return project_klass
         else:
             return super().get(id)
 
