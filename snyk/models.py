@@ -376,7 +376,7 @@ class IssueCounts(DataClassJSONMixin):
 @dataclass
 class DependencyGraphPackageInfo(DataClassJSONMixin):
     name: str
-    version: str
+    version: Optional[str] = None
 
 
 @dataclass
