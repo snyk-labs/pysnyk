@@ -496,3 +496,33 @@ class TestProject(TestModels):
     def test_empty_licenses(self, project, organization_url, requests_mock):
         requests_mock.post("%s/licenses" % organization_url, json=[])
         assert [] == project.licenses.all()
+
+    def test_empty_license_severity(
+        self, organization, organization_url, requests_mock
+    ):
+        requests_mock.post(
+            "%s/licenses" % organization_url,
+            json={
+                "results": [
+                    {
+                        "id": "MIT",
+                        "dependencies": [
+                            {
+                                "id": "accepts@1.0.0",
+                                "name": "accepts",
+                                "version": "1.0.0",
+                                "packageManager": "npm",
+                            }
+                        ],
+                        "projects": [
+                            {
+                                "name": "atokeneduser/goof",
+                                "id": "6d5813be-7e6d-4ab8-80c2-1e3e2a454545",
+                            }
+                        ],
+                    }
+                ]
+            },
+        )
+        licenses = next(iter(organization.licenses.all()))
+        assert licenses.severity is None
