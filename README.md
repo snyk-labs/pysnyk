@@ -129,7 +129,7 @@ org.import_project("github.com/user/project@branch", files=["Gemfile.lock"])
 This method currently only supports importing projects from GitHub and Docker Hub. For other integrations you will need to grab the lower-level `snyk.models.Integration` object from the `snyk.models.Organization.integrations` manager noted above. Other services will be added to this API soon.
 
 
-### Testing for vulnerabilties
+### Testing for vulnerabilities
 
 The API also exposes methods to discover vulnerability information about individual packages. These methods are found on the Organization object.
 
