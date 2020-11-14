@@ -526,3 +526,24 @@ class TestProject(TestModels):
     ***REMOVED***
         licenses = next(iter(organization.licenses.all()))
         assert licenses.severity is None
+
+    def test_missing_package_version_in_dep_graph(
+        self, project, project_url, requests_mock
+***REMOVED***:
+        requests_mock.get(
+            "%s/dep-graph" % project_url,
+            json={
+                "depGraph": {
+                    "pkgManager": {"name": "fake-package-manager"},
+                    "pkgs": [
+                        {
+                            "id": "fake-package@x.y.z",
+                            "info": {"name": "fake-package-name"},
+                        }
+                    ],
+                    "schemaVersion": "fake",
+                    "graph": {"rootNodeId": "fake", "nodes": []},
+                }
+            },
+    ***REMOVED***
+        assert next(iter(project.dependency_graph.pkgs)).info.version is None
