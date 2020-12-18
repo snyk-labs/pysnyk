@@ -172,13 +172,14 @@ class AttributeManager(Manager):
         )
         return bool(self.client.post(path, data))
 
-def delete(self,attribute,value) -> bool:
-        data = {"attribute": attribute, "value": value}
-        path = "org/%s/project/%s/attributes/remove" % (
-            self.instance.organization.id,
-            self.instance.id,
-        )
-        return bool(self.client.post(path, data))
+
+def delete(self, attribute, value) -> bool:
+    data = {"attribute": attribute, "value": value}
+    path = "org/%s/project/%s/attributes/remove" % (
+        self.instance.organization.id,
+        self.instance.id,
+    )
+    return bool(self.client.post(path, data))
 
 
 class ProjectManager(Manager):
