@@ -67,6 +67,8 @@ args = parse_command_line_args()
 org_id = args.orgId  # type: str
 org_name = args.orgName  # type: str
 criticality = args.criticality  # type: str
+lifecycle = args.lifecycle # type: str
+environment = args.environment # type: str
 dry = args.dry  # type: bool
 
 re_pattern = re.compile(args.projectPattern)
@@ -84,5 +86,4 @@ for proj in client.organizations.get(org_id).projects.all():
         continue
 
     print(f"\nProject name: {proj.name}")
-    print(proj.attributes.set(criticality="critical"))
-    print(proj.attributes.delete())
+    print(proj.attributes.set(criticality=criticality,lifecycle=lifecycle,environment=environment))

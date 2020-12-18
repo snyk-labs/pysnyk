@@ -136,7 +136,7 @@ class TagManager(Manager):
 
 class AttributeManager(Manager):
     def all(self):
-        return self.instance._attributes
+        return self.instance._attributes.copy()
 
     def criticality(self):
         return self.all()["criticality"]
@@ -147,8 +147,8 @@ class AttributeManager(Manager):
     def lifecycle(self):
         return self.all()["lifecycle"]
 
-    def set(self, criticality: str = None, environment=None, lifecycle=None) -> bool:
-        attributes = self.all().copy()
+    def set(self, criticality: str = None, environment: str = None, lifecycle: str =None) -> bool:
+        attributes = self.all()
         if criticality:
             attributes["criticality"] = [criticality]
 
@@ -164,21 +164,22 @@ class AttributeManager(Manager):
         )
         return bool(self.client.post(path, attributes))
 
-    def add(self, attribute, value) -> bool:
-        data = {"attribute": attribute, "value": value}
-        path = "org/%s/project/%s/attributes" % (
-            self.instance.organization.id,
-            self.instance.id,
-        )
-        return bool(self.client.post(path, data))
-
-    def delete(self, attribute, value) -> bool:
-        data = {"attribute": attribute, "value": value}
-        path = "org/%s/project/%s/attributes/remove" % (
-            self.instance.organization.id,
-            self.instance.id,
-        )
-        return bool(self.client.post(path, data))
+    # TODO: These returns a 404, is it possible that the endpoint only works toward the shotname? Ie backend-g95?
+    # def add(self, attribute, value) -> bool:
+    #     data = {"attribute": attribute, "value": value}
+    #     path = "org/%s/project/%s/attribute/add" % (
+    #         self.instance.organization.id,
+    #         self.instance.id,
+    #     )
+    #     return bool(self.client.post(path, data))
+    #
+    # def delete(self, attribute, value) -> bool:
+    #     data = {"attribute": attribute, "value": value}
+    #     path = "org/%s/project/%s/attribute/remove" % (
+    #         self.instance.organization.id,
+    #         self.instance.id,
+    #     )
+    #     return bool(self.client.post(path, data))
 
 
 class ProjectManager(Manager):
