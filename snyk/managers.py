@@ -58,6 +58,7 @@ class Manager(abc.ABC):
                 "Integration": IntegrationManager,
                 "IntegrationSetting": IntegrationSettingManager,
                 "Tag": TagManager,
+                "Attribute": AttributeManager,
             }[key]
             return manager(klass, client, instance)
         except KeyError:
@@ -133,6 +134,45 @@ class TagManager(Manager):
         return bool(self.client.post(path, tag))
 
 
+class AttributeManager(Manager):
+    def all(self):
+        return self.instance._attributes
+
+    def criticality(self):
+        return self.all()["criticality"]
+
+    def environment(self):
+        return self.all()["environment"]
+
+    def lifecycle(self):
+        return self.all()["lifecycle"]
+
+    def set(self, criticality: str = None, environment=None, lifecycle=None) -> bool:
+        attributes = self.all().copy()
+        if criticality:
+            attributes["criticality"] = [criticality]
+
+        if environment:
+            attributes["environment"] = [environment]
+
+        if lifecycle:
+            attributes["lifecycle"] = [lifecycle]
+
+        path = "org/%s/project/%s/attributes" % (
+            self.instance.organization.id,
+            self.instance.id,
+        )
+        return bool(self.client.post(path, attributes))
+
+    def delete(self,attribute,value) -> bool:
+        data = {"attribute": attribute, "value": value}
+        path = "org/%s/project/%s/attributes/remove" % (
+            self.instance.organization.id,
+            self.instance.id,
+        )
+        return bool(self.client.post(path, data))
+
+
 class ProjectManager(Manager):
     def _query(self, tags: List[Dict[str, str]] = []):
         projects = []
@@ -156,6 +196,13 @@ class ProjectManager(Manager):
                         del project_data["tags"]
                     except KeyError:
                         pass
+
+                    try:
+                        project_data["_attributes"] = project_data["attributes"].copy()
+                        del project_data["attributes"]
+                    except KeyError:
+                        pass
+
                     projects.append(self.klass.from_dict(project_data))
             for x in projects:
                 x.organization = self.instance

@@ -459,6 +459,7 @@ class Project(DataClassJSONMixin):
     remoteRepoUrl: Optional[str] = None
     branch: Optional[str] = None
     _tags: Optional[List[Any]] = field(default_factory=list)
+    _attributes: Optional[Dict[Any,Any]] = field(default_factory=dict)
 
     def delete(self) -> bool:
         path = "org/%s/project/%s" % (self.organization.id, self.id)
@@ -499,6 +500,10 @@ class Project(DataClassJSONMixin):
     @property
     def tags(self) -> Manager:
         return Manager.factory("Tag", self.organization.client, self)
+
+    @property
+    def attributes(self) -> Manager:
+        return Manager.factory("Attribute", self.organization.client, self)
 
     # https://snyk.docs.apiary.io/#reference/users/user-project-notification-settings/modify-project-notification-settings
     # https://snyk.docs.apiary.io/#reference/users/user-project-notification-settings/get-project-notification-settings
