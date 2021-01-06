@@ -34,9 +34,9 @@ import snyk
 client = snyk.SnykClient("<your-api-token>", tries=4, delay=1, backoff=2)
 ```
 
-`tries` - the maximum number of attempts. **Default:** `1` (no retries)
-`delay` - initial delay between attempts. **Default:** `1`
-`backoff` - multiplier applied to delay between attempts. **Default:** `2`
+- `tries` - the maximum number of attempts. **Default:** `1` (no retries)
+- `delay` - initial delay between attempts. **Default:** `1`
+- `backoff` - multiplier applied to delay between attempts. **Default:** `2`
 
 ## Organizations
 
