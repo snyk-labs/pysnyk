@@ -53,26 +53,59 @@ class TestSnykClient(object):
     def test_post_sends_request_to_snyk(self, requests_mock, client):
         requests_mock.post("https://snyk.io/api/v1/sample")
         assert client.post("sample", {})
+        assert requests_mock.call_count == 1
 
     def test_post_raises_error(self, requests_mock, client):
         requests_mock.post("https://snyk.io/api/v1/sample", status_code=500, json={})
         with pytest.raises(SnykError):
             client.post("sample", {})
+        assert requests_mock.call_count == 1
+
+    def test_put_retries_and_raises_error(self, requests_mock, client):
+        requests_mock.put("https://snyk.io/api/v1/sample", status_code=500, json={})
+        client = SnykClient("token", tries=4, delay=1, backoff=2)
+        with pytest.raises(SnykError):
+            client.put("sample", {})
+        assert requests_mock.call_count == 4
+
+    def test_delete_retries_and_raises_error(self, requests_mock, client):
+        requests_mock.delete("https://snyk.io/api/v1/sample", status_code=500, json={})
+        client = SnykClient("token", tries=4, delay=1, backoff=2)
+        with pytest.raises(SnykError):
+            client.delete("sample")
+        assert requests_mock.call_count == 4
+
+    def test_get_retries_and_raises_error(self, requests_mock, client):
+        requests_mock.get("https://snyk.io/api/v1/sample", status_code=500, json={})
+        client = SnykClient("token", tries=4, delay=1, backoff=2)
+        with pytest.raises(SnykError):
+            client.get("sample")
+        assert requests_mock.call_count == 4
+
+    def test_post_retries_and_raises_error(self, requests_mock, client):
+        requests_mock.post("https://snyk.io/api/v1/sample", status_code=500, json={})
+        client = SnykClient("token", tries=4, delay=1, backoff=2)
+        with pytest.raises(SnykError):
+            client.post("sample", {})
+        assert requests_mock.call_count == 4
 
     def test_put_raises_error(self, requests_mock, client):
         requests_mock.put("https://snyk.io/api/v1/sample", status_code=500, json={})
         with pytest.raises(SnykError):
             client.put("sample", {})
+        assert requests_mock.call_count == 1
 
     def test_delete_raises_error(self, requests_mock, client):
         requests_mock.delete("https://snyk.io/api/v1/sample", status_code=500, json={})
         with pytest.raises(SnykError):
             client.delete("sample")
+        assert requests_mock.call_count == 1
 
     def test_get_raises_error(self, requests_mock, client):
         requests_mock.get("https://snyk.io/api/v1/sample", status_code=500, json={})
         with pytest.raises(SnykError):
             client.get("sample")
+        assert requests_mock.call_count == 1
 
     def test_empty_organizations(self, requests_mock, client):
         requests_mock.get("https://snyk.io/api/v1/orgs", json={})
