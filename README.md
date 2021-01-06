@@ -27,6 +27,17 @@ import snyk
 client = snyk.SnykClient("<your-api-token>", user_agent="<your-instance-of-snyk>")
 ```
 
+By default the requests are not retried. If you would like to retry failed requests with `backoff` and `delay` you can do so as follows:
+
+```python
+import snyk
+client = snyk.SnykClient("<your-api-token>", tries=4, delay=1, backoff=2)
+```
+
+`tries` - the maximum number of attempts. **Default:** `1` (no retries)
+`delay` - initial delay between attempts. **Default:** `1`
+`backoff` - multiplier applied to delay between attempts. **Default:** `2`
+
 ## Organizations
 
 With the client we can get a list of Snyk organizations you are a member of:
@@ -90,8 +101,8 @@ The `snyk.models.Project` object has the following useful properties and methods
 * `vulnerabilities` - returns a list of `snyk.models.Vulnerability` objects with information about vulnerabilities in this project
 * `jira_issues` - returns a Manager with access to any associated Jira issues
 * `licenses` - returns a Manager for licenses currently in use by this project
-* `settings` - returns a Manager for interacting with the current project settings  
-* `tags` - returns a Manager for interacting with the current project tags 
+* `settings` - returns a Manager for interacting with the current project settings
+* `tags` - returns a Manager for interacting with the current project tags
 
 You can add and delete tags using the manager:
 
@@ -155,11 +166,11 @@ False
 
 As well as testing individual packages you can also test all packages found in various dependency management manifests. The client currently supports the following methods:
 
-* `test_pipfile(<file-handle-or-string>)` - returns an IssueSet for all Python dependencies in a `Pipfile` 
+* `test_pipfile(<file-handle-or-string>)` - returns an IssueSet for all Python dependencies in a `Pipfile`
 * `test_gemfilelock(<file-handle-or-string>)` - returns an IssueSet for all Ruby dependencies in a `Gemfile`
 * `test_packagejson(<file-handle-or-string>, (<lock-file-handle-or-string>))` - returns an IssueSet for all Javascript dependencies in a `package.json` file. Optionally takes a `package.lock` file
-* `test_gradlefile(<file-handle-or-string>)` - returns an IssueSet for all dependencies in a `Gradlefile` 
-* `test_sbt(<file-handle-or-string>)` - returns an IssueSet for all dependencies defined in a `.sbt` file 
+* `test_gradlefile(<file-handle-or-string>)` - returns an IssueSet for all dependencies in a `Gradlefile`
+* `test_sbt(<file-handle-or-string>)` - returns an IssueSet for all dependencies defined in a `.sbt` file
 * `test_pom(<file-handle-or-string>)` - returns an IssueSet for all dependencies in a Maven `pom.xml` file
 * `test_yarn(<file-handle-or-string>, <lock-file-handle-or-string>)` - returns an IssueSet for all dependencies in Yarn `package.json` and `yarn.lock` files
 * `test_composer(<file-handle-or-string>, <lock-file-handle-or-string>)` - returns an IssueSet for all dependencies in Composer `composer.json` and `composer.lock` files
