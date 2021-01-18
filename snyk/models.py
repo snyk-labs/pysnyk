@@ -22,6 +22,7 @@ class Vulnerability(DataClassJSONMixin):
     exploitMaturity: str
     isUpgradable: bool
     isPatchable: bool
+    isPinnable: bool
     identifiers: Any
     semver: Any
     fromPackages: List[str] = field(default_factory=list)
