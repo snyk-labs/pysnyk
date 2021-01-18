@@ -44,8 +44,7 @@ for v in all_vulnerability_issues:
     print("  severity: %s" % v.severity)
     print("  language: %s" % v.language)
     print("  packageManager: %s" % v.packageManager)
-    print("  isUpgradable: %s" % v.isUpgradable)
-    print("  isPatchable: %s" % v.isPatchable)
+    print("  isPinnable: %s" % v.isPinnable)
 
 print("\nLicense Issues:")
 for l in all_license_issues:
