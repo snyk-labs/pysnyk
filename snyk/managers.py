@@ -270,9 +270,17 @@ class SettingManager(DictManager):
         post_body = {}
 
         settings = [
-            "pull_request_test_enabled",
-            "pull_request_fail_on_vuln",
+            "auto_dep_upgrade_enabled",
+            "auto_dep_upgrade_ignored_dependencies",
+            "auto_dep_upgrade_min_age",
+            "auto_dep_upgrade_limit",
+            "pull_request_fail_on_any_vulns",
             "pull_request_fail_only_for_high_severity",
+            "pull_request_test_enabled",
+            "pull_request_assignment",
+            "pull_request_inheritance",
+            "pull_request_fail_only_for_issues_with_fix",
+            "auto_remediation_prs",
         ]
 
         for setting in settings:
