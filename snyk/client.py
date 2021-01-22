@@ -22,9 +22,9 @@ class SnykClient(object):
         url: Optional[str] = None,
         user_agent: Optional[str] = USER_AGENT,
         debug: bool = False,
-        tries: Optional[int] = 1,
-        delay: Optional[int] = 1,
-        backoff: Optional[int] = 2,
+        tries: int = 1,
+        delay: int = 1,
+        backoff: int = 2,
     ):
         self.api_token = token
         self.api_url = url or self.API_URL
