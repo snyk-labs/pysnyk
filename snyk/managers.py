@@ -2,7 +2,7 @@ import abc
 from typing import Any, Dict, List
 
 from .errors import SnykError, SnykNotFoundError, SnykNotImplementedError
-from .utils import snake_to_camel
+from .utils import snake_to_camel, camel_to_snake, str2bool
 
 
 class Manager(abc.ABC):
@@ -340,7 +340,20 @@ class IntegrationManager(Manager):
         for integration in integrations:
             integration.organization = self.instance
         return integrations
+    
+    def get(self, id_or_name: str):
+        integrations = self.all()
+        
+        if len(id_or_name) < 36:
+            for i in integrations:
+                if i.name == id_or_name:
+                    integration = i
+        else:
+            for i in integrations:
+                if i.id == id_or_name:
+                    integration = i
 
+        return integration
 
 class IntegrationSettingManager(DictManager):
     def all(self):
@@ -350,6 +363,74 @@ class IntegrationSettingManager(DictManager):
         )
         resp = self.client.get(path)
         return resp.json()
+    
+    def get(self, setting):
+        path = "org/%s/integrations/%s/settings" % (
+            self.instance.organization.id,
+            self.instance.id,
+        )
+        resp = self.client.get(path)
+        settings = resp.json()
+
+        auto_remediate_settings = [ 
+            "backlog_prs_enabled",
+            "fresh_prs_enabled",
+            "use_patch_remediation",
+        ]
+
+        if camel_to_snake(setting) in auto_remediate_settings:
+            result = str2bool(settings['autoRemediationPrs'][snake_to_camel(camel_to_snake(setting))])
+        else:
+            result = str2bool(settings[snake_to_camel(camel_to_snake(setting))])
+
+        return result
+    
+    def update(self, **kwargs: str) -> bool:
+        settings = [
+            "auto_dep_upgrade_enabled",
+            "auto_dep_upgrade_ignored_dependencies",
+            "auto_dep_upgrade_min_age",
+            "auto_dep_upgrade_limit",
+            "pull_request_fail_on_any_vulns",
+            "pull_request_fail_only_for_high_severity",
+            "pull_request_test_enabled",
+            "pull_request_assignment",
+            "pull_request_inheritance",
+            "pull_request_fail_only_for_issues_with_fix",
+            "auto_remediation_prs",
+            "dockerfile_s_c_m_enabled",
+        ]
+
+        auto_remediate_settings = [ 
+            "backlog_prs_enabled",
+            "fresh_prs_enabled",
+            "use_patch_remediation",
+            "kjadfkljasdf",
+        ]
+
+        path = "org/%s/integrations/%s/settings" % (
+            self.instance.organization.id,
+            self.instance.id,
+        )
+        post_body = {}
+
+        for setting in settings:
+            if setting in kwargs:
+                post_body[snake_to_camel(setting)] = str2bool(kwargs[setting])
+            elif snake_to_camel(setting) in kwargs:
+                post_body[snake_to_camel(setting)] = str2bool(kwargs[snake_to_camel(setting)])
+
+        for setting in auto_remediate_settings:
+            if setting in kwargs:
+                post_body['autoRemediationPrs'] = {
+                    snake_to_camel(setting) : str2bool(kwargs[setting])
+                }
+            elif snake_to_camel(setting) in kwargs:
+                post_body['autoRemediationPrs'] = {
+                    snake_to_camel(setting) : str2bool(kwargs[snake_to_camel(setting)])
+                }
+        print(post_body)
+        return bool(self.client.put(path, post_body))
 
 
 class DependencyGraphManager(SingletonManager):
