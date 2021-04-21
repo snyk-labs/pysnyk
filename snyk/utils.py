@@ -9,3 +9,9 @@ def snake_to_camel(word):
 
 def lower_case_first_letter(word):
     return word[:1].lower() + word[1:] if word else ""
+
+def camel_to_snake(s):
+    return ''.join(['_'+c.lower() if c.isupper() else c for c in s]).lstrip('_')
+
+def str2bool(string):
+    return bool(str(string).lower() in ("yes", "true", "t", "1"))

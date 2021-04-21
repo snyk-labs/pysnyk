@@ -429,7 +429,7 @@ class IntegrationSettingManager(DictManager):
                 post_body['autoRemediationPrs'] = {
                     snake_to_camel(setting) : str2bool(kwargs[snake_to_camel(setting)])
                 }
-        print(post_body)
+        
         return bool(self.client.put(path, post_body))
 
 
