@@ -55,6 +55,7 @@ class Manager(abc.ABC):
                 "JiraIssue": JiraIssueManager,
                 "DependencyGraph": DependencyGraphManager,
                 "IssueSet": IssueSetManager,
+                "IssueSetAggregated": IssueSetAggregatedManager,
                 "Integration": IntegrationManager,
                 "IntegrationSetting": IntegrationSettingManager,
                 "Tag": TagManager,
@@ -387,7 +388,6 @@ class IssueSetManager(SingletonManager):
         filters = {
             "severities": ["high", "medium", "low"],
             "types": ["vuln", "license"],
-            "ignored": False,
             "patched": False,
         }
         for filter_name in filters.keys():
@@ -396,3 +396,26 @@ class IssueSetManager(SingletonManager):
         post_body = {"filters": filters}
         resp = self.client.post(path, post_body)
         return self.klass.from_dict(self._convert_reserved_words(resp.json()))
+
+
+class IssueSetAggregatedManager(SingletonManager):
+    def all(self) -> Any:
+        return self.filter()
+
+    def filter(self, **kwargs: Any):
+        path = "org/%s/project/%s/aggregated-issues" % (
+            self.instance.organization.id,
+            self.instance.id,
+        )
+        filters = {
+            "severities": ["high", "medium", "low"],
+            "types": ["vuln", "license"],
+            "patched": False,
+        }
+        for filter_name in filters.keys():
+            if kwargs.get(filter_name):
+                filters[filter_name] = kwargs[filter_name]
+        post_body = {"filters": filters}
+        resp = self.client.post(path, post_body)
+        json = resp.json()
+        return self.klass.from_dict(json)

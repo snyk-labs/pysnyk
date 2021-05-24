@@ -13,12 +13,25 @@ The sample scripts are all a bit different, so you should try them each out or l
     ```
 
 ## List Project Issues
+https://snyk.docs.apiary.io/#reference/projects/project-issues/list-all-issues-deprecated
+
 ```
 python examples/api-demo-2-list-issues.py --orgId=<your-snyk-org> --projectId=<snyk-project-id>
 ```
 If you want to catpure the output in an excel spreadsheet:
 ```
 python examples/api-demo-2-list-issues.py --orgId=<your-snyk-org> --projectId=<snyk-project-id> --outputPathExcel=/path/to/output.xlsx
+```
+
+## List Project Issues (Aggregated)
+https://snyk.docs.apiary.io/#reference/projects/aggregated-project-issues/list-all-aggregated-issues
+
+```
+python examples/api-demo-2c-list-issues-aggregated.py --orgId=<your-snyk-org> --projectId=<snyk-project-id>
+```
+If you want to catpure the output in an excel spreadsheet:
+```
+python examples/api-demo-2c-list-issues-aggregated.py --orgId=<your-snyk-org> --projectId=<snyk-project-id> --outputPathExcel=/path/to/output.xlsx
 ```
 
 ## Update GitHub Checks Settings
