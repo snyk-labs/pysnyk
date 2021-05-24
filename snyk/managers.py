@@ -388,6 +388,7 @@ class IssueSetManager(SingletonManager):
         filters = {
             "severities": ["high", "medium", "low"],
             "types": ["vuln", "license"],
+            "ignored": False,
             "patched": False,
         }
         for filter_name in filters.keys():
