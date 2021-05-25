@@ -79,8 +79,6 @@ class IssueData(DataClassJSONMixin):
     severity: Optional[str] = None
     originalSeverity: Optional[str] = None
     url: Optional[str] = None
-    # Mentioned in the schema but not returned
-    # https://snyk.docs.apiary.io/#reference/projects/aggregated-project-issues/list-all-aggregated-issues
     description: Optional[str] = None
     identifiers: Optional[Any] = None
     credit: Optional[str] = None

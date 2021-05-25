@@ -408,15 +408,28 @@ class IssueSetAggregatedManager(SingletonManager):
             self.instance.organization.id,
             self.instance.id,
         )
-        filters = {
+        default_filters = {
             "severities": ["high", "medium", "low"],
+            "exploitMaturity": ["mature", "proof-of-concept", "no-known-exploit", "no-data"],
             "types": ["vuln", "license"],
-            "patched": False,
+            "priority": {
+                "score": {
+                    "min": 0,
+                    "max": 1000
+                }
+            }
         }
-        for filter_name in filters.keys():
-            if kwargs.get(filter_name):
-                filters[filter_name] = kwargs[filter_name]
-        post_body = {"filters": filters}
+
+        post_body = {"filters": default_filters}
+
+        all_filters = list(default_filters.keys()) + ["ignored", "patched"]
+        for filter_name in all_filters:
+            if filter_name in kwargs.keys():
+                post_body["filters"][filter_name] = kwargs[filter_name]
+        
+        for parent_filter in ["includeDescription", "includeIntroducedThrough"]:
+            if parent_filter in kwargs.keys():
+                post_body[parent_filter] = kwargs[parent_filter]
+
         resp = self.client.post(path, post_body)
-        json = resp.json()
-        return self.klass.from_dict(json)
+        return self.klass.from_dict(resp.json())
