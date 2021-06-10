@@ -75,14 +75,13 @@ class IssueSet(DataClassJSONMixin):
 @dataclass
 class IssueData(DataClassJSONMixin):
     id: str
-    title: Optional[str] = None
-    severity: Optional[str] = None
-    originalSeverity: Optional[str] = None
-    url: Optional[str] = None
+    title: str
+    severity: str
+    url: str
+    exploitMaturity: str
     description: Optional[str] = None
     identifiers: Optional[Any] = None
     credit: Optional[str] = None
-    exploitMaturity: Optional[str] = None
     semver: Optional[Any] = None
     publicationTime: Optional[str] = None
     disclosureTime: Optional[str] = None
@@ -96,12 +95,14 @@ class IssueData(DataClassJSONMixin):
 @dataclass
 class AggregatedIssue(DataClassJSONMixin):
     id: str
-    issueType: Optional[str] = None
-    pkgName: Optional[str] = None
-    pkgVersions: Optional[List[str]] = None
-    issueData: Optional[IssueData] = None
-    isPatched: Optional[bool] = None
-    isIgnored: Optional[bool] = None
+    issueType: str
+    pkgName: str
+    pkgVersions: List[str]
+    issueData: IssueData
+    isPatched: bool
+    isIgnored: bool
+    introducedThrough: Optional[List[Any]] = None
+    ignoreReasons: Optional[List[Any]] = None
     fixInfo: Optional[Any] = None
     # Not mentioned in schema but returned
     # https://snyk.docs.apiary.io/#reference/projects/aggregated-project-issues/list-all-aggregated-issues
