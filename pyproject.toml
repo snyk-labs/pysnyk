@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pysnyk"
-version = "0.6.1"
+version = "0.6.2"
 description = "A Python client for the Snyk API"
 authors = [
   "Gareth Rushgrove <garethr@snyk.io>",
