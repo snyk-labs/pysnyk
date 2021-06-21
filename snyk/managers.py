@@ -55,6 +55,7 @@ class Manager(abc.ABC):
                 "JiraIssue": JiraIssueManager,
                 "DependencyGraph": DependencyGraphManager,
                 "IssueSet": IssueSetManager,
+                "IssueSetAggregated": IssueSetAggregatedManager,
                 "Integration": IntegrationManager,
                 "IntegrationSetting": IntegrationSettingManager,
                 "Tag": TagManager,
@@ -396,3 +397,39 @@ class IssueSetManager(SingletonManager):
         post_body = {"filters": filters}
         resp = self.client.post(path, post_body)
         return self.klass.from_dict(self._convert_reserved_words(resp.json()))
+
+
+class IssueSetAggregatedManager(SingletonManager):
+    def all(self) -> Any:
+        return self.filter()
+
+    def filter(self, **kwargs: Any):
+        path = "org/%s/project/%s/aggregated-issues" % (
+            self.instance.organization.id,
+            self.instance.id,
+        )
+        default_filters = {
+            "severities": ["high", "medium", "low"],
+            "exploitMaturity": [
+                "mature",
+                "proof-of-concept",
+                "no-known-exploit",
+                "no-data",
+            ],
+            "types": ["vuln", "license"],
+            "priority": {"score": {"min": 0, "max": 1000}},
+        }
+
+        post_body = {"filters": default_filters}
+
+        all_filters = list(default_filters.keys()) + ["ignored", "patched"]
+        for filter_name in all_filters:
+            if filter_name in kwargs.keys():
+                post_body["filters"][filter_name] = kwargs[filter_name]
+
+        for optional_field in ["includeDescription", "includeIntroducedThrough"]:
+            if optional_field in kwargs.keys():
+                post_body[optional_field] = kwargs[optional_field]
+
+        resp = self.client.post(path, post_body)
+        return self.klass.from_dict(resp.json())
