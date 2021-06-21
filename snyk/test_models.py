@@ -455,6 +455,12 @@ class TestProject(TestModels):
     ***REMOVED***
         assert project.issueset.all().ok
 
+    def test_empty_issues_aggregated(self, project, project_url, requests_mock):
+        requests_mock.post(
+            "%s/aggregated-issues" % project_url, json={"issues": []},
+    ***REMOVED***
+        assert [] == project.issueset_aggregated.all().issues
+
     def test_empty_vulnerabilities(self, project, project_url, requests_mock):
         requests_mock.post(
             "%s/issues" % project_url,
@@ -478,6 +484,15 @@ class TestProject(TestModels):
             },
     ***REMOVED***
         assert project.issueset.filter(ignored=True).ok
+
+    def test_filtering_empty_issues_aggregated(
+        self, project, project_url, requests_mock
+***REMOVED***:
+        requests_mock.post(
+            "%s/aggregated-issues" % project_url, json={"issues": []},
+    ***REMOVED***
+
+        assert [] == project.issueset_aggregated.filter(ignored=True).issues
 
     def test_empty_dependency_graph(self, project, project_url, requests_mock):
         requests_mock.get(
