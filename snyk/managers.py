@@ -386,7 +386,7 @@ class IssueSetManager(SingletonManager):
             self.instance.id,
         )
         filters = {
-            "severities": ["high", "medium", "low"],
+            "severities": ["critical", "high", "medium", "low"],
             "types": ["vuln", "license"],
             "ignored": False,
             "patched": False,
@@ -409,7 +409,7 @@ class IssueSetAggregatedManager(SingletonManager):
             self.instance.id,
         )
         default_filters = {
-            "severities": ["high", "medium", "low"],
+            "severities": ["critical", "high", "medium", "low"],
             "exploitMaturity": [
                 "mature",
                 "proof-of-concept",

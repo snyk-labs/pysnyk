@@ -145,7 +145,12 @@ class TestSnykClient(object):
                     "isMonitored": "true",
                     "testFrequency": "daily",
                     "totalDependencies": 438,
-                    "issueCountsBySeverity": {"low": 8, "high": 13, "medium": 15},
+                    "issueCountsBySeverity": {
+                        "critical": 1,
+                        "low": 8,
+                        "high": 13,
+                        "medium": 15,
+                    },
                     "lastTestedDate": "2019-02-05T06:21:00.000Z",
                     "browseUrl": "https://app.snyk.io/org/pysnyk-test-org/project/6d5813be-7e6d-4ab8-80c2-1e3e2a454545",
                 }
