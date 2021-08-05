@@ -125,6 +125,8 @@ class OrganizationGroup(DataClassJSONMixin):
 class Organization(DataClassJSONMixin):
     name: str
     id: str
+    slug: str
+    url: str
     group: Optional[OrganizationGroup] = None
     client: InitVar[Optional[Any]] = None  # type: ignore
 

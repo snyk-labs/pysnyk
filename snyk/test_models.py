@@ -11,7 +11,10 @@ class TestModels(object):
     @pytest.fixture
     def organization(self):
         org = Organization(
-            name="My Other Org", id="a04d9cbd-ae6e-44af-b573-0556b0ad4bd2"
+            name="My Other Org",
+            id="a04d9cbd-ae6e-44af-b573-0556b0ad4bd2",
+            slug="my-other-org",
+            url="https://api.snyk.io/org/my-other-org",
         )
         org.client = SnykClient("token")
         return org
