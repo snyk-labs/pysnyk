@@ -344,6 +344,24 @@ class TestProject(TestModels):
         with pytest.raises(SnykError):
             project.delete()
 
+    def test_activate(self, project, project_url, requests_mock):
+        requests_mock.post("%s/activate" % project_url, json={})
+        assert project.activate()
+
+    def test_failed_activate(self, project, project_url, requests_mock):
+        requests_mock.post("%s/activate" % project_url, status_code=500, json={})
+        with pytest.raises(SnykError):
+            project.activate()
+
+    def test_deactivate(self, project, project_url, requests_mock):
+        requests_mock.post("%s/deactivate" % project_url, json={})
+        assert project.deactivate()
+
+    def test_failed_deactivate(self, project, project_url, requests_mock):
+        requests_mock.post("%s/deactivate" % project_url, status_code=500, json={})
+        with pytest.raises(SnykError):
+            project.deactivate()
+
     def test_add_tag(self, project, project_url, requests_mock):
         requests_mock.post(
             "%s/tags" % project_url, json={"key": "key", "value": "value"}
