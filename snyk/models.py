@@ -508,6 +508,14 @@ class Project(DataClassJSONMixin):
         path = "org/%s/project/%s" % (self.organization.id, self.id)
         return bool(self.organization.client.delete(path))
 
+    def activate(self) -> bool:
+        path = "org/%s/project/%s/activate" % (self.organization.id, self.id)
+        return bool(self.organization.client.post(path, {}))
+
+    def deactivate(self) -> bool:
+        path = "org/%s/project/%s/deactivate" % (self.organization.id, self.id)
+        return bool(self.organization.client.post(path, {}))
+
     @property
     def settings(self) -> Manager:
         return Manager.factory("Setting", self.organization.client, self)
