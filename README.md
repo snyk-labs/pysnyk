@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/snyk-labs/pysnyk.svg?branch=master)](https://travis-ci.org/snyk-labs/pysnyk)
 
-A Python client for the [Snyk API](https://snyk.docs.apiary.io/#).
+A Python client for the [Snyk API](https://snyk.docs.apiary.io/#). This tool is provided as-is in an effort to help leverage the Snyk API. pysnyk is not an officially supported product.
 
 ## Client
 
