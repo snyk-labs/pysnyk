@@ -128,7 +128,7 @@ class Organization(DataClassJSONMixin):
     slug: str
     url: str
     group: Optional[OrganizationGroup] = None
-    client: InitVar[Optional[Any]] = None  # type: ignore
+    client: Optional[Any] = None
 
     @property
     def projects(self) -> Manager:
@@ -212,6 +212,10 @@ class Organization(DataClassJSONMixin):
     def invite(self, email: str, admin: bool = False) -> bool:
         path = "org/%s/invite" % self.id
         payload = {"email": email, "isAdmin": admin}
+
+        if self.client is None:
+            raise SnykError
+
         return bool(self.client.post(path, payload))
 
     def _test(self, path, contents=None, additional=None):
@@ -312,6 +316,10 @@ class Integration(DataClassJSONMixin):
         if not self.organization:
             raise SnykError
         path = "org/%s/integrations/%s/import" % (self.organization.id, self.id)
+
+        if self.organization.client is None:
+            raise SnykError
+
         return bool(self.organization.client.post(path, payload))
 
     def import_git(
@@ -510,14 +518,26 @@ class Project(DataClassJSONMixin):
 
     def delete(self) -> bool:
         path = "org/%s/project/%s" % (self.organization.id, self.id)
+
+        if self.organization.client is None:
+            raise SnykError
+
         return bool(self.organization.client.delete(path))
 
     def activate(self) -> bool:
         path = "org/%s/project/%s/activate" % (self.organization.id, self.id)
+
+        if self.organization.client is None:
+            raise SnykError
+
         return bool(self.organization.client.post(path, {}))
 
     def deactivate(self) -> bool:
         path = "org/%s/project/%s/deactivate" % (self.organization.id, self.id)
+
+        if self.organization.client is None:
+            raise SnykError
+
         return bool(self.organization.client.post(path, {}))
 
     @property
