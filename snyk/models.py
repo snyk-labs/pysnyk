@@ -3,7 +3,7 @@ from dataclasses import InitVar, dataclass, field
 from typing import Any, Dict, List, Optional, Union
 
 import requests
-from mashumaro import DataClassJSONMixin  # type: ignore
+from mashumaro.mixins.json import DataClassJSONMixin  # type: ignore
 
 from .errors import SnykError, SnykNotImplementedError
 from .managers import Manager
@@ -167,11 +167,13 @@ class Organization(DataClassJSONMixin):
         try:
             components = url.split("/")
             service = components[0]
+
             if service == "github.com":
                 owner = components[1]
                 name = components[2]
                 parts = name.split("@")
                 branch = "master"
+
                 if len(parts) == 2:
                     name = parts[0]
                     branch = parts[1]
@@ -223,6 +225,7 @@ class Organization(DataClassJSONMixin):
             # Check for a file-like object, allows us to support files
             # and strings in the same interface
             read = getattr(contents, "read", None)
+
             if callable(read):
                 contents = contents.read()
             encoded = base64.b64encode(contents.encode()).decode()
@@ -232,8 +235,10 @@ class Organization(DataClassJSONMixin):
             }
 
             # Some test methods carry a second file, often a lock file
+
             if additional:
                 read = getattr(additional, "read", None)
+
                 if callable(read):
                     additional = additional.read()
                 encoded = base64.b64encode(additional.encode()).decode()
@@ -242,6 +247,7 @@ class Organization(DataClassJSONMixin):
             resp = self.client.post(path, post_body)
         else:
             resp = self.client.get(path)
+
         return IssueSet.from_dict(resp.json())
 
     def test_maven(
@@ -253,50 +259,62 @@ class Organization(DataClassJSONMixin):
             version,
             self.id,
         )
+
         return self._test(path)
 
     def test_rubygem(self, name: str, version: str) -> IssueSet:
         path = "test/rubygems/%s/%s?org=%s" % (name, version, self.id)
+
         return self._test(path)
 
     def test_python(self, name: str, version: str) -> bool:
         path = "test/pip/%s/%s?org=%s" % (name, version, self.id)
+
         return self._test(path)
 
     def test_npm(self, name: str, version: str) -> bool:
         path = "test/npm/%s/%s?org=%s" % (name, version, self.id)
+
         return self._test(path)
 
     def test_pipfile(self, contents):
         path = "test/pip?org=%s" % self.id
+
         return self._test(path, contents)
 
     def test_gemfilelock(self, contents):
         path = "test/rubygems?org=%s" % self.id
+
         return self._test(path, contents)
 
     def test_packagejson(self, contents, lock=None):
         path = "test/npm?org=%s" % self.id
+
         return self._test(path, contents, lock)
 
     def test_gradlefile(self, contents):
         path = "test/gradle?org=%s" % self.id
+
         return self._test(path, contents)
 
     def test_sbt(self, contents):
         path = "test/sbt?org=%s" % self.id
+
         return self._test(path, contents)
 
     def test_pom(self, contents):
         path = "test/maven?org=%s" % self.id
+
         return self._test(path, contents)
 
     def test_composer(self, contents, lock):
         path = "test/composer?org=%s" % self.id
+
         return self._test(path, contents, lock)
 
     def test_yarn(self, contents, lock):
         path = "test/yarn?org=%s" % self.id
+
         return self._test(path, contents, lock)
 
 
@@ -310,6 +328,7 @@ class Integration(DataClassJSONMixin):
     def settings(self):
         if not self.organization:
             raise SnykError
+
         return Manager.factory("IntegrationSetting", self.organization.client, self)
 
     def _import(self, payload) -> bool:
@@ -335,6 +354,7 @@ class Integration(DataClassJSONMixin):
     def import_image(self, name: str):
         if ":" not in name:
             name = "%s:latest" % name
+
         return self._import({"target": {"name": name}})
 
     def import_gitlab(self, id: str, branch: str = "master", files: List[str] = []):
