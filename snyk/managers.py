@@ -1,6 +1,8 @@
 import abc
 from typing import Any, Dict, List
 
+from deprecation import deprecated  # type: ignore
+
 from .errors import SnykError, SnykNotFoundError, SnykNotImplementedError
 from .utils import snake_to_camel
 
@@ -366,6 +368,7 @@ class DependencyGraphManager(SingletonManager):
         raise SnykError
 
 
+@deprecated("API has been removed, use IssueSetAggregatedManager instead")
 class IssueSetManager(SingletonManager):
     def _convert_reserved_words(self, data):
         for key in ["vulnerabilities", "licenses"]:

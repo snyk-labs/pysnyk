@@ -3,6 +3,7 @@ from dataclasses import InitVar, dataclass, field
 from typing import Any, Dict, List, Optional, Union
 
 import requests
+from deprecation import deprecated  # type: ignore
 from mashumaro.mixins.json import DataClassJSONMixin  # type: ignore
 
 from .errors import SnykError, SnykNotImplementedError
@@ -584,7 +585,9 @@ class Project(DataClassJSONMixin):
     def dependency_graph(self) -> DependencyGraph:
         return Manager.factory(DependencyGraph, self.organization.client, self).all()
 
-    @property
+    # mypy doesn't support decorated properties
+    @property  # type: ignore
+    @deprecated("Use issueset_aggregated")
     def issueset(self) -> Manager:
         return Manager.factory(IssueSet, self.organization.client, self)
 
