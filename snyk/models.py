@@ -82,7 +82,7 @@ class IssueData(DataClassJSONMixin):
     exploitMaturity: str
     description: Optional[str] = None
     identifiers: Optional[Any] = None
-    credit: Optional[str] = None
+    credit: Optional[List[str]] = None
     semver: Optional[Any] = None
     publicationTime: Optional[str] = None
     disclosureTime: Optional[str] = None
@@ -91,6 +91,18 @@ class IssueData(DataClassJSONMixin):
     language: Optional[str] = None
     patches: Optional[Any] = None
     nearestFixedInVersion: Optional[str] = None
+    ignoreReasons: Optional[List[Any]] = None
+
+
+@dataclass
+class FixInfo(DataClassJSONMixin):
+    isUpgradable: bool
+    isPinnable: bool
+    isPatchable: bool
+    isFixable: bool
+    isPartiallyFixable: bool
+    nearestFixedInVersion: str
+    fixedIn: List[str]
 
 
 @dataclass
@@ -102,9 +114,9 @@ class AggregatedIssue(DataClassJSONMixin):
     issueData: IssueData
     isPatched: bool
     isIgnored: bool
+    fixInfo: FixInfo
     introducedThrough: Optional[List[Any]] = None
     ignoreReasons: Optional[List[Any]] = None
-    fixInfo: Optional[Any] = None
     # Not mentioned in schema but returned
     # https://snyk.docs.apiary.io/#reference/projects/aggregated-project-issues/list-all-aggregated-issues
     priorityScore: Optional[int] = None
