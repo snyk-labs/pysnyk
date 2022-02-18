@@ -135,6 +135,27 @@ class OrganizationGroup(DataClassJSONMixin):
 
 
 @dataclass
+class Package(DataClassJSONMixin):
+    name: str
+    version: str
+    fixVersion: Optional[str] = None
+
+
+@dataclass
+class IssuePaths(DataClassJSONMixin):
+    snapshotId: str
+    paths: List[List[Package]]
+    total: int
+
+
+@dataclass
+class IssueRelations:
+    id: str
+    organization_id: str
+    project_id: str
+
+
+@dataclass
 class Organization(DataClassJSONMixin):
     name: str
     id: str
