@@ -489,13 +489,7 @@ class TestProject(TestModels):
 
     def test_empty_vulnerabilities(self, project, project_url, requests_mock):
         requests_mock.post(
-            "%s/issues" % project_url,
-            json={
-                "ok": True,
-                "packageManager": "fake",
-                "dependencyCount": 0,
-                "issues": {"vulnerabilities": [], "licenses": []},
-            },
+            "%s/aggregated-issues" % project_url, json={"issues": []},
         )
         assert [] == project.vulnerabilities
 

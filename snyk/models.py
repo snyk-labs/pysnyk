@@ -8,6 +8,7 @@ from mashumaro.mixins.json import DataClassJSONMixin  # type: ignore
 
 from .errors import SnykError, SnykNotImplementedError
 from .managers import Manager
+from .utils import flat_map, format_package
 
 
 @dataclass
@@ -630,7 +631,15 @@ class Project(DataClassJSONMixin):
 
     @property
     def vulnerabilities(self) -> List[Vulnerability]:
-        return self.issueset.all().issues.vulnerabilities
+        vuln_filter = {
+            "severities": ["critical", "high", "medium", "low"],
+            "types": ["vuln"],
+            "ignored": False,
+            "patched": False,
+        }
+        aggregated_vulns = self.issueset_aggregated.filter(**vuln_filter).issues
+        foo = flat_map(self._aggregated_issue_to_vulnerabily, aggregated_vulns)
+        return foo
 
     @property
     def tags(self) -> Manager:
@@ -640,3 +649,54 @@ class Project(DataClassJSONMixin):
     # https://snyk.docs.apiary.io/#reference/users/user-project-notification-settings/get-project-notification-settings
     def notification_settings(self):
         raise SnykNotImplementedError  # pragma: no cover
+
+    def _aggregated_issue_to_vulnerabily(
+        self, issue: AggregatedIssue
+    ) -> List[Vulnerability]:
+        issue_paths = Manager.factory(
+            IssuePaths,
+            self.organization.client,
+            IssueRelations(
+                id=issue.id, organization_id=self.organization.id, project_id=self.id
+            ),
+        ).all()
+
+        try:
+            upgrade_path = next(
+                filter(lambda path: path[0].fixVersion is not None, issue_paths.paths)
+            ).map(format_package)
+        except StopIteration:
+            upgrade_path = []
+
+        return [
+            Vulnerability(
+                id=issue.issueData.id,
+                url=issue.issueData.url,
+                title=issue.issueData.title,
+                description=issue.issueData.description or "",
+                upgradePath=upgrade_path,
+                package=issue.pkgName,
+                version=version,
+                severity=issue.issueData.severity,
+                exploitMaturity=issue.issueData.exploitMaturity,
+                isUpgradable=issue.fixInfo.isUpgradable,
+                isPatchable=issue.fixInfo.isPatchable,
+                isPinnable=issue.fixInfo.isPinnable,
+                identifiers=issue.issueData.identifiers,
+                semver=issue.issueData.semver,
+                fromPackages=issue.introducedThrough or [],
+                language=issue.issueData.language,
+                packageManager=self.type,
+                publicationTime=issue.issueData.publicationTime,
+                priorityScore=issue.priorityScore,
+                disclosureTime=issue.issueData.disclosureTime,
+                credit=issue.issueData.credit,
+                CVSSv3=issue.issueData.CVSSv3,
+                cvssScore=issue.issueData.cvssScore,
+                ignored=issue.issueData.ignoreReasons,
+                patched=issue.issueData.patches if issue.isPatched else [],
+            )
+            # Old endpoint returned a new issue if it appeared in multiple
+            # versions, emulate that here to preserve upstream api
+            for version in issue.pkgVersions
+        ]
