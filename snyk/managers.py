@@ -1,6 +1,8 @@
 import abc
 from typing import Any, Dict, List
 
+from deprecation import deprecated  # type: ignore
+
 from .errors import SnykError, SnykNotFoundError, SnykNotImplementedError
 from .utils import snake_to_camel
 
@@ -59,6 +61,7 @@ class Manager(abc.ABC):
                 "Integration": IntegrationManager,
                 "IntegrationSetting": IntegrationSettingManager,
                 "Tag": TagManager,
+                "IssuePaths": IssuePathsManager,
             }[key]
             return manager(klass, client, instance)
         except KeyError:
@@ -366,6 +369,7 @@ class DependencyGraphManager(SingletonManager):
         raise SnykError
 
 
+@deprecated("API has been removed, use IssueSetAggregatedManager instead")
 class IssueSetManager(SingletonManager):
     def _convert_reserved_words(self, data):
         for key in ["vulnerabilities", "licenses"]:
@@ -432,4 +436,15 @@ class IssueSetAggregatedManager(SingletonManager):
                 post_body[optional_field] = kwargs[optional_field]
 
         resp = self.client.post(path, post_body)
+        return self.klass.from_dict(resp.json())
+
+
+class IssuePathsManager(SingletonManager):
+    def all(self):
+        path = "org/%s/project/%s/issue/%s/paths" % (
+            self.instance.organization_id,
+            self.instance.project_id,
+            self.instance.id,
+        )
+        resp = self.client.get(path)
         return self.klass.from_dict(resp.json())
