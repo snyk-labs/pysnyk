@@ -8,3 +8,5 @@ __pycache__
 dist
 output
 pysnyk.egg-info
+
+.venv
