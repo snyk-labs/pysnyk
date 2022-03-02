@@ -29,10 +29,10 @@ def cleanup_path(path: str, logger: logging.Logger) -> str:
     """
 
     if path[0] == "/":
-        logger.warn(f"WARNING: removing unneccessary leading / from {path}")
+        logger.warn(f"removing unneccessary leading / from {path}")
         path = path[1:]
     if path[-1] == "/":
-        logger.warn(f"WARNING: removing unneccessary trailing / from {path}")
+        logger.warn(f"removing unneccessary trailing / from {path}")
         path = path.rstrip("/")
 
     return path
