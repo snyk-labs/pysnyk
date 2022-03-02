@@ -483,13 +483,15 @@ class TestProject(TestModels):
 
     def test_empty_issues_aggregated(self, project, project_url, requests_mock):
         requests_mock.post(
-            "%s/aggregated-issues" % project_url, json={"issues": []},
+            "%s/aggregated-issues" % project_url,
+            json={"issues": []},
     ***REMOVED***
         assert [] == project.issueset_aggregated.all().issues
 
     def test_empty_vulnerabilities(self, project, project_url, requests_mock):
         requests_mock.post(
-            "%s/aggregated-issues" % project_url, json={"issues": []},
+            "%s/aggregated-issues" % project_url,
+            json={"issues": []},
     ***REMOVED***
         assert [] == project.vulnerabilities
 
@@ -644,7 +646,8 @@ class TestProject(TestModels):
         self, project, project_url, requests_mock
 ***REMOVED***:
         requests_mock.post(
-            "%s/aggregated-issues" % project_url, json={"issues": []},
+            "%s/aggregated-issues" % project_url,
+            json={"issues": []},
     ***REMOVED***
 
         assert [] == project.issueset_aggregated.filter(ignored=True).issues

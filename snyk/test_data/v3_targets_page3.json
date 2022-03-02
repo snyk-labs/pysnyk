@@ -1,0 +1,120 @@
+{
+  "jsonapi": {
+    "version": "1.0"
+  },
+  "data": [
+    {
+      "type": "target",
+      "id": "44948be7-561c-4e03-80af-27232eaea006",
+      "attributes": {
+        "isPrivate": true,
+        "origin": "cli",
+        "displayName": "snyk-playground/maven-multi-with-gh-prevent",
+        "remoteUrl": "http://github.com/snyk-playground/maven-multi-with-gh-prevent.git"
+      },
+      "relationships": {}
+    },
+    {
+      "type": "target",
+      "id": "c3035b3b-9416-4d00-9e49-bdb561560ea8",
+      "attributes": {
+        "isPrivate": true,
+        "origin": "github-enterprise",
+        "displayName": "snyk-playground/maven-multi-with-gh-prevent",
+        "remoteUrl": null
+      },
+      "relationships": {}
+    },
+    {
+      "type": "target",
+      "id": "b17a13c7-25f4-4360-bba5-d1098efb579c",
+      "attributes": {
+        "isPrivate": false,
+        "origin": "github-enterprise",
+        "displayName": "snyk-tech-services/snyk-project-tldr",
+        "remoteUrl": null
+      },
+      "relationships": {}
+    },
+    {
+      "type": "target",
+      "id": "d3ce9715-6cd8-4940-b326-5fa7d35988f2",
+      "attributes": {
+        "isPrivate": true,
+        "origin": "cli",
+        "displayName": "snyk-tech-services/snyk-bulk-yarn",
+        "remoteUrl": "http://github.com/snyk-tech-services/snyk-bulk-yarn"
+      },
+      "relationships": {}
+    },
+    {
+      "type": "target",
+      "id": "3d8fd759-1fdf-4827-91a7-8706d54462de",
+      "attributes": {
+        "isPrivate": false,
+        "origin": "github-enterprise",
+        "displayName": "snyk-playground/sync-aws-deploy",
+        "remoteUrl": null
+      },
+      "relationships": {}
+    },
+    {
+      "type": "target",
+      "id": "f26b4ae2-59e5-4be9-978d-0b2157d04d7c",
+      "attributes": {
+        "isPrivate": false,
+        "origin": "github-enterprise",
+        "displayName": "snyk-playground/bazel-examples",
+        "remoteUrl": null
+      },
+      "relationships": {}
+    },
+    {
+      "type": "target",
+      "id": "1aae46bd-13e1-4c6c-9cbe-8849732ec00e",
+      "attributes": {
+        "isPrivate": false,
+        "origin": "github-enterprise",
+        "displayName": "snyk-playground/example-bazel-monorepo",
+        "remoteUrl": null
+      },
+      "relationships": {}
+    },
+    {
+      "type": "target",
+      "id": "f6017bfd-e441-4482-b060-78e56daff65c",
+      "attributes": {
+        "isPrivate": true,
+        "origin": "github-enterprise",
+        "displayName": "snyk-playground/docker-goof",
+        "remoteUrl": null
+      },
+      "relationships": {}
+    },
+    {
+      "type": "target",
+      "id": "84519645-6a5a-4b0f-9132-a65e76d3aa03",
+      "attributes": {
+        "isPrivate": true,
+        "origin": "github-enterprise",
+        "displayName": "snyk-playground/monorepo-kotlin",
+        "remoteUrl": null
+      },
+      "relationships": {}
+    },
+    {
+      "type": "target",
+      "id": "dc2aa733-550d-43dd-9066-e9a35b6f3982",
+      "attributes": {
+        "isPrivate": true,
+        "origin": "github-enterprise",
+        "displayName": "snyk-playground/org-import-branch-override",
+        "remoteUrl": null
+      },
+      "relationships": {}
+    }
+  ],
+  "links": {
+    "prev": "/orgs/39ddc762-b1b9-41ce-ab42-defbe4575bd6/targets?limit=10&version=2022-02-16~experimental&excludeEmpty=true&ending_before=v1.eyJpZCI6IjMyODE4ODAifQ%3D%3D"
+  }
+}
