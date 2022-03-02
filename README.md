@@ -211,17 +211,18 @@ client.post("<path>", <data>)
 
 Most of the time you shouldn't need to use these. They are mainly useful if new methods are added to the API which are not yet supported in the client. This can also be useful if you want to pass very specific parameters, or to parse the raw JSON output from the API.
 
-## Experimental V3 Low Level Client
+## Experimental v3 low-level client
 
-pysnyk >= 0.9.0 now includes support for basic V3 compatibility. To switch to use a V3 client, pass the V3 API url and version when initializing a client. Right now it supports the `GET` method. Refer to the [V3 API docs](https://apidocs.snyk.io/) for more information and examples.
+pysnyk >= 0.9.0 now includes support for basic v3 compatibility. To switch to use a v3 client, pass the v3 API url and version when initializing a client. Right now it supports the `GET` method. Refer to the [v3 API docs](https://apidocs.snyk.io/) for more information and examples.
 
-Getting the V3 information of an organization:
+Getting the v3 information of an organization:
 
 ```python
+# To get this value, get it from a Snyk organizations settings page
+snyk_org = "df734bed-d75c-4f11-bb47-1d119913bcc7"
 
-snyk_org = "39ddc762-b1b9-41ce-ab42-defbe4575bd6"
-
-v3client = SnykClient(snyk_token,version="2022-02-16~experimental",url="https://api.snyk.io/v3")
+# to use the v3 endpoint you MUST include a version value and the url of the v3 api endpoint as shown below
+v3client = SnykClient(snyk_token, version="2022-02-16~experimental", url="https://api.snyk.io/v3")
 
 print(v3client.get(f"/orgs/{snyk_org}").json())
 
@@ -229,30 +230,29 @@ print(v3client.get(f"/orgs/{snyk_org}").json())
 user = v3client.get(f"orgs/{snyk_org}/users/{snyk_user}", version="2022-02-01~experimental").json()
 
 # pass parameters such as how many results per page
-
 params = {"limit": 10}
 
 targets = v3client.get(f"orgs/{snyk_org}/targets", params=params)
 ```
 
-V1 and V3 can work at the same time by instantiating two clients:
+V1 and v3 can work at the same time by instantiating two clients:
 
 ```python
-snyk_org = "39ddc762-b1b9-41ce-ab42-defbe4575bd6"
+snyk_org = "df734bed-d75c-4f11-bb47-1d119913bcc7"
 
 v1client = SnykClient(snyk_token)
 
-v3client = SnykClient(snyk_token,version="2022-02-16~experimental",url="https://api.snyk.io/v3")
+v3client = SnykClient(snyk_token, version="2022-02-16~experimental", url="https://api.snyk.io/v3")
 
 v1_org = v1client.organizations.get(snyk_org)
 
 v3_org = v3client.get(f"/orgs/{snyk_org}").json()
 ```
 
-The V3 API introduces consistent pagination across all endpoints. The v3 client includes a helper method `.get_v3_pages` which collects the paginated responses and returns a single list combining the contents of the "data" key from all pages. It takes the same values as the get method.
+The v3 API introduces consistent pagination across all endpoints. The v3 client includes a helper method `.get_v3_pages` which collects the paginated responses and returns a single list combining the contents of the "data" key from all pages. It takes the same values as the get method.
 
 ```python
-v3client = SnykClient(snyk_token,version="2022-02-16~experimental",url="https://api.snyk.io/v3")
+v3client = SnykClient(snyk_token, version="2022-02-16~experimental", url="https://api.snyk.io/v3")
 
 params = {"limit": 10}
 

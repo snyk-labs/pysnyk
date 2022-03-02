@@ -1,6 +1,5 @@
 import logging
 import urllib.parse
-from types import NoneType
 from typing import Any, List, Optional
 
 import requests
