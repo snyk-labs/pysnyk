@@ -1,0 +1,22 @@
+{
+  "jsonapi": {
+    "version": "1.0"
+  },
+  "data": [
+    {
+      "type": "group",
+      "id": "36863d40-ba29-491f-af63-7a1a7d79e411",
+      "attributes": {
+        "name": "Customer Success Engineering"
+      }
+    },
+    {
+      "type": "group",
+      "id": "164f8e6d-ea58-45ef-a638-259cc0fe90d4",
+      "attributes": {
+        "name": "Goof Ltd (Enterprise)"
+      }
+    }
+  ],
+  "links": {}
+}

@@ -1,3 +1,4 @@
+import os
 import re
 
 import pytest  # type: ignore
@@ -6,6 +7,13 @@ from snyk import SnykClient
 from snyk.__version__ import __version__
 from snyk.errors import SnykError, SnykNotFoundError
 from snyk.models import Organization, Project
+from snyk.utils import load_test_data
+
+TEST_DATA = os.path.join(os.path.dirname(__file__), "test_data")
+
+V3_ORG = "39ddc762-b1b9-41ce-ab42-defbe4575bd6"
+V3_URL = "https://api.snyk.io/v3"
+V3_VERSION = "2022-02-16~experimental"
 
 
 class TestSnykClient(object):
@@ -113,53 +121,11 @@ class TestSnykClient(object):
 
     @pytest.fixture
     def organizations(self):
-        return {
-            "orgs": [
-                {
-                    "name": "defaultOrg",
-                    "id": "689ce7f9-7943-4a71-b704-2ba575f01089",
-                    "group": None,
-                    "slug": "default-org",
-                    "url": "https://api.snyk.io/org/default-org",
-                },
-                {
-                    "name": "My Other Org",
-                    "id": "a04d9cbd-ae6e-44af-b573-0556b0ad4bd2",
-                    "group": {
-                        "name": "ACME Inc.",
-                        "id": "a060a49f-636e-480f-9e14-38e773b2a97f",
-                    },
-                    "slug": "my-other-org",
-                    "url": "https://api.snyk.io/org/my-other-org",
-                },
-            ]
-        }
+        return load_test_data(TEST_DATA, "organizations")
 
     @pytest.fixture
     def projects(self):
-        return {
-            "projects": [
-                {
-                    "name": "atokeneduser/goof",
-                    "id": "6d5813be-7e6d-4ab8-80c2-1e3e2a454545",
-                    "created": "2018-10-29T09:50:54.014Z",
-                    "origin": "cli",
-                    "type": "npm",
-                    "readOnly": "false",
-                    "isMonitored": "true",
-                    "testFrequency": "daily",
-                    "totalDependencies": 438,
-                    "issueCountsBySeverity": {
-                        "critical": 1,
-                        "low": 8,
-                        "high": 13,
-                        "medium": 15,
-                    },
-                    "lastTestedDate": "2019-02-05T06:21:00.000Z",
-                    "browseUrl": "https://app.snyk.io/org/pysnyk-test-org/project/6d5813be-7e6d-4ab8-80c2-1e3e2a454545",
-                }
-            ]
-        }
+        return load_test_data(TEST_DATA, "projects")
 
     def test_loads_organizations(self, requests_mock, client, organizations):
         requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
@@ -234,3 +200,62 @@ class TestSnykClient(object):
         requests_mock.get(matcher, json=projects)
         with pytest.raises(SnykNotFoundError):
             client.projects.get("not-present")
+
+    @pytest.fixture
+    def v3client(self):
+        return SnykClient(
+            "token", version="2022-02-16~experimental", url="https://api.snyk.io/v3"
+        )
+
+    @pytest.fixture
+    def v3_groups(self):
+        return load_test_data(TEST_DATA, "v3_groups")
+
+    @pytest.fixture
+    def v3_targets_page1(self):
+        return load_test_data(TEST_DATA, "v3_targets_page1")
+
+    @pytest.fixture
+    def v3_targets_page2(self):
+        return load_test_data(TEST_DATA, "v3_targets_page2")
+
+    @pytest.fixture
+    def v3_targets_page3(self):
+        return load_test_data(TEST_DATA, "v3_targets_page3")
+
+    def test_v3get(self, requests_mock, v3client, v3_targets_page1):
+        requests_mock.get(
+            f"{V3_URL}/orgs/{V3_ORG}/targets?limit=10&version={V3_VERSION}",
+            json=v3_targets_page1,
+        )
+        t_params = {"limit": 10}
+
+        targets = v3client.get(f"orgs/{V3_ORG}/targets", t_params).json()
+
+        assert len(targets["data"]) == 10
+
+    def test_get_v3_pages(
+        self,
+        requests_mock,
+        v3client,
+        v3_targets_page1,
+        v3_targets_page2,
+        v3_targets_page3,
+    ):
+        requests_mock.get(
+            f"{V3_URL}/orgs/{V3_ORG}/targets?limit=10&version={V3_VERSION}",
+            json=v3_targets_page1,
+        )
+        requests_mock.get(
+            f"{V3_URL}/orgs/{V3_ORG}/targets?limit=10&version={V3_VERSION}&excludeEmpty=true&starting_after=v1.eyJpZCI6IjMyODE4ODAifQ%3D%3D",
+            json=v3_targets_page2,
+        )
+        requests_mock.get(
+            f"{V3_URL}/orgs/{V3_ORG}/targets?limit=10&version={V3_VERSION}&excludeEmpty=true&starting_after=v1.eyJpZCI6IjI5MTk1NjgifQ%3D%3D",
+            json=v3_targets_page3,
+        )
+        t_params = {"limit": 10}
+
+        data = v3client.get_v3_pages(f"orgs/{V3_ORG}/targets", t_params)
+
+        assert len(data) == 30
