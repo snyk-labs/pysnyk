@@ -662,9 +662,11 @@ class Project(DataClassJSONMixin):
     ***REMOVED***.all()
 
         try:
-            upgrade_path = next(
-                filter(lambda path: path[0].fixVersion is not None, issue_paths.paths)
-        ***REMOVED***.map(format_package)
+            upgradable_paths = filter(
+                lambda path: path[0].fixVersion is not None, issue_paths.paths,
+        ***REMOVED***
+            first_path = next(upgradable_paths)
+            upgrade_path = list(map(format_package, first_path))
         except StopIteration:
             upgrade_path = []
 

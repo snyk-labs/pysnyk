@@ -4,7 +4,7 @@ import pytest  # type: ignore
 
 from snyk.client import SnykClient
 from snyk.errors import SnykError, SnykNotFoundError, SnykNotImplementedError
-from snyk.models import Integration, Member, Organization, Project
+from snyk.models import Integration, Member, Organization, Project, Vulnerability
 
 
 class TestModels(object):
@@ -492,6 +492,141 @@ class TestProject(TestModels):
             "%s/aggregated-issues" % project_url, json={"issues": []},
     ***REMOVED***
         assert [] == project.vulnerabilities
+
+    def test_vulnerabilities(self, project, project_url, requests_mock):
+        issue_id = "npm:ms:20170412"
+        requests_mock.post(
+            "%s/aggregated-issues" % project_url,
+            json={
+                "issues": [
+                    {
+                        "id": issue_id,
+                        "issueType": "vuln",
+                        "pkgName": "ms",
+                        "pkgVersions": ["1.0.0"],
+                        "issueData": {
+                            "id": "npm:ms:20170412",
+                            "title": "Regular Expression Denial of Service (ReDoS)",
+                            "severity": "low",
+                            "originalSeverity": "high",
+                            "url": "https://snyk.io/vuln/npm:ms:20170412",
+                            "description": "`## Overview\\r\\n[`ms`](https://www.npmjs.com/package/ms) is a tiny millisecond conversion utility.\\r\\n\\r\\nAffected versions of this package are vulnerable to Regular Expression Denial of Service (ReDoS) due to an incomplete fix for previously reported vulnerability [npm:ms:20151024](https://snyk.io/vuln/npm:ms:20151024). The fix limited the length of accepted input string to 10,000 characters, and turned to be insufficient making it possible to block the event loop for 0.3 seconds (on a typical laptop) with a specially crafted string passed to `ms",
+                            "identifiers": {"CVE": [], "CWE": ["CWE-400"], "OSVDB": []},
+                            "credit": ["Snyk Security Research Team"],
+                            "exploitMaturity": "no-known-exploit",
+                            "semver": {
+                                "vulnerable": ">=0.7.1 <2.0.0",
+                                "unaffected": "",
+                            },
+                            "publicationTime": "2017-05-15T06:02:45Z",
+                            "disclosureTime": "2017-04-11T21:00:00Z",
+                            "CVSSv3": "CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:L",
+                            "cvssScore": "3.7",
+                            "language": "js",
+                            "patches": [
+                                {
+                                    "id": "patch:npm:ms:20170412:0",
+                                    "urls": [
+                                        "https://snyk-patches.s3.amazonaws.com/npm/ms/20170412/ms_100.patch"
+                                    ],
+                                    "version": "=1.0.0",
+                                    "comments": [],
+                                    "modificationTime": "2019-12-03T11:40:45.863964Z",
+                                }
+                            ],
+                            "nearestFixedInVersion": "2.0.0",
+                            "path": "[DocId: 1].input.spec.template.spec.containers[snyk2].securityContext.privileged",
+                            "violatedPolicyPublicId": "SNYK-CC-K8S-1",
+                            "isMaliciousPackage": True,
+                        },
+                        "introducedThrough": [{"kind": "imageLayer", "data": {}}],
+                        "isPatched": False,
+                        "isIgnored": False,
+                        "ignoreReasons": [
+                            {"reason": "", "expires": "", "source": "cli"}
+                        ],
+                        "fixInfo": {
+                            "isUpgradable": False,
+                            "isPinnable": False,
+                            "isPatchable": False,
+                            "isFixable": False,
+                            "isPartiallyFixable": False,
+                            "nearestFixedInVersion": "2.0.0",
+                            "fixedIn": ["2.0.0"],
+                        },
+                        "priority": {
+                            "score": 399,
+                            "factors": [
+                                {},
+                                "name: `isFixable`",
+                                "description: `Has a fix available`",
+                            ],
+                        },
+                        "links": {"paths": ""},
+                    }
+                ]
+            },
+    ***REMOVED***
+        requests_mock.get(
+            "{}/issue/{}/paths".format(project_url, issue_id),
+            json={
+                "snapshotId": "bb00717d-4618-4ceb-bebd-ec268a563e98",
+                "paths": [
+                    [
+                        {"name": "tap", "version": "11.1.5",},
+                        {"name": "nyc", "version": "11.9.0"},
+                        {"name": "istanbul-lib-instrument", "version": "1.10.1"},
+                        {"name": "babel-traverse", "version": "6.26.0"},
+                        {"name": "lodash", "version": "4.17.10"},
+                    ],
+                    [
+                        {"name": "tap", "version": "11.1.5", "fixVersion": "11.1.5"},
+                        {"name": "nyc", "version": "11.9.0"},
+                        {"name": "istanbul-lib-instrument", "version": "1.10.1"},
+                        {"name": "babel-template", "version": "6.26.0"},
+                        {"name": "lodash", "version": "4.17.10"},
+                    ],
+                ],
+                "total": 1,
+            },
+    ***REMOVED***
+
+        expected = [
+            Vulnerability(
+                id="npm:ms:20170412",
+                url="https://snyk.io/vuln/npm:ms:20170412",
+                title="Regular Expression Denial of Service (ReDoS)",
+                description="`## Overview\\r\\n[`ms`](https://www.npmjs.com/package/ms) is a tiny millisecond conversion utility.\\r\\n\\r\\nAffected versions of this package are vulnerable to Regular Expression Denial of Service (ReDoS) due to an incomplete fix for previously reported vulnerability [npm:ms:20151024](https://snyk.io/vuln/npm:ms:20151024). The fix limited the length of accepted input string to 10,000 characters, and turned to be insufficient making it possible to block the event loop for 0.3 seconds (on a typical laptop) with a specially crafted string passed to `ms",
+                upgradePath=[
+                    "tap@11.1.5",
+                    "nyc@11.9.0",
+                    "istanbul-lib-instrument@1.10.1",
+                    "babel-template@6.26.0",
+                    "lodash@4.17.10",
+                ],
+                package="ms",
+                version="1.0.0",
+                severity="low",
+                exploitMaturity="no-known-exploit",
+                isUpgradable=False,
+                isPatchable=False,
+                isPinnable=False,
+                identifiers={"CVE": [], "CWE": ["CWE-400"], "OSVDB": []},
+                semver={"vulnerable": ">=0.7.1 <2.0.0", "unaffected": ""},
+                fromPackages=[{"kind": "imageLayer", "data": {}}],
+                language="js",
+                packageManager="npm",
+                publicationTime="2017-05-15T06:02:45Z",
+                priorityScore=None,
+                disclosureTime="2017-04-11T21:00:00Z",
+                credit=["Snyk Security Research Team"],
+                CVSSv3="CVSS:3.0/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:L",
+                cvssScore="3.7",
+                ignored=None,
+                patched=[],
+        ***REMOVED***
+        ]
+        assert expected == project.vulnerabilities
 
     def test_filtering_empty_issues(self, project, project_url, requests_mock):
         requests_mock.post(
