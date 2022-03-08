@@ -483,13 +483,15 @@ class TestProject(TestModels):
 
     def test_empty_issues_aggregated(self, project, project_url, requests_mock):
         requests_mock.post(
-            "%s/aggregated-issues" % project_url, json={"issues": []},
+            "%s/aggregated-issues" % project_url,
+            json={"issues": []},
         )
         assert [] == project.issueset_aggregated.all().issues
 
     def test_empty_vulnerabilities(self, project, project_url, requests_mock):
         requests_mock.post(
-            "%s/aggregated-issues" % project_url, json={"issues": []},
+            "%s/aggregated-issues" % project_url,
+            json={"issues": []},
         )
         assert [] == project.vulnerabilities
 
@@ -573,7 +575,10 @@ class TestProject(TestModels):
                 "snapshotId": "bb00717d-4618-4ceb-bebd-ec268a563e98",
                 "paths": [
                     [
-                        {"name": "tap", "version": "11.1.5",},
+                        {
+                            "name": "tap",
+                            "version": "11.1.5",
+                        },
                         {"name": "nyc", "version": "11.9.0"},
                         {"name": "istanbul-lib-instrument", "version": "1.10.1"},
                         {"name": "babel-traverse", "version": "6.26.0"},
@@ -644,7 +649,8 @@ class TestProject(TestModels):
         self, project, project_url, requests_mock
     ):
         requests_mock.post(
-            "%s/aggregated-issues" % project_url, json={"issues": []},
+            "%s/aggregated-issues" % project_url,
+            json={"issues": []},
         )
 
         assert [] == project.issueset_aggregated.filter(ignored=True).issues

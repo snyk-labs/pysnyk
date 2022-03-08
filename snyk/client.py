@@ -1,13 +1,15 @@
 import logging
-from typing import Any, Optional
+import urllib.parse
+from typing import Any, List, Optional
 
 import requests
-from retry.api import retry_call  # type: ignore
+from retry.api import retry_call
 
 from .__version__ import __version__
 from .errors import SnykHTTPError, SnykNotImplementedError
 from .managers import Manager
 from .models import Organization, Project
+from .utils import cleanup_path
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +27,7 @@ class SnykClient(object):
         tries: int = 1,
         delay: int = 1,
         backoff: int = 2,
+        version: Optional[str] = None,
     ):
         self.api_token = token
         self.api_url = url or self.API_URL
@@ -37,16 +40,40 @@ class SnykClient(object):
         self.tries = tries
         self.backoff = backoff
         self.delay = delay
+        self.version = version
 
-    def request(self, method, url: str, headers: object, json={},) -> requests.Response:
-        resp = method(url, json=json, headers=headers,)
+        # Ensure we don't have a trailing /
+        if self.api_url[-1] == "/":
+            self.api_url = self.api_url.rstrip("/")
+
+        if debug:
+            logging.basicConfig(level=logging.DEBUG)
+
+    def request(
+        self,
+        method,
+        url: str,
+        headers: object,
+        params: object = None,
+        json: object = None,
+    ) -> requests.Response:
+
+        if params and json:
+            resp = method(url, headers=headers, params=params, json=json)
+        elif params and not json:
+            resp = method(url, headers=headers, params=params)
+        elif json and not params:
+            resp = method(url, headers=headers, json=json)
+        else:
+            resp = method(url, headers=headers)
+
         if not resp or resp.status_code >= requests.codes.server_error:
             raise SnykHTTPError(resp)
         return resp
 
     def post(self, path: str, body: Any) -> requests.Response:
-        url = "%s/%s" % (self.api_url, path)
-        logger.debug("POST: %s" % url)
+        url = f"{self.api_url}/{path}"
+        logger.debug(f"POST: {url}")
         resp = retry_call(
             self.request,
             fargs=[requests.post, url],
@@ -76,25 +103,65 @@ class SnykClient(object):
             raise SnykHTTPError(resp)
         return resp
 
-    def get(self, path: str) -> requests.Response:
-        url = "%s/%s" % (self.api_url, path)
-        logger.debug("GET: %s" % url)
+    def get(
+        self, path: str, params: dict = None, version: str = None
+    ) -> requests.Response:
+        """
+        V3 Compatible Snyk Client, assumes the presence of Version, either set in the client
+        or called in this method means that we're talking to a V3 endpoint and will ensure the
+        params are encoded properly with the version.
+
+        Since certain endpoints can exist only in certain versions, being able to override the
+        client version with each GET is necessary
+
+        Returns a standard requests Response object
+        """
+
+        path = cleanup_path(path, logger)
+
+        url = f"{self.api_url}/{path}"
+
+        if params or self.version:
+
+            if not params:
+                params = {}
+
+            # we use the presence of version to determine if we are v3 or not
+            if "version" not in params.keys() and self.version:
+                params["version"] = version or self.version
+
+            # Python Bools are True/False, JS Bools are true/false
+            # Snyk v3 API is strictly case sensitive at the moment
+
+            for k, v in params.items():
+                if isinstance(v, bool):
+                    params[k] = str(v).lower()
+
+            debug_url = f"{url}&{urllib.parse.urlencode(params)}"
+            fkwargs = {"headers": self.api_headers, "params": params}
+        else:
+            debug_url = url
+            fkwargs = {"headers": self.api_headers}
+
+        logger.debug(f"GET: {debug_url}")
+
         resp = retry_call(
             self.request,
             fargs=[requests.get, url],
-            fkwargs={"headers": self.api_headers},
+            fkwargs=fkwargs,
             tries=self.tries,
             delay=self.delay,
             backoff=self.backoff,
             logger=logger,
         )
+
         if not resp:
             raise SnykHTTPError(resp)
         return resp
 
     def delete(self, path: str) -> requests.Response:
-        url = "%s/%s" % (self.api_url, path)
-        logger.debug("DELETE: %s" % url)
+        url = f"{self.api_url}/{path}"
+        logger.debug(f"DELETE: {url}")
         resp = retry_call(
             self.request,
             fargs=[requests.delete, url],
@@ -107,6 +174,47 @@ class SnykClient(object):
         if not resp:
             raise SnykHTTPError(resp)
         return resp
+
+    def get_v3_pages(self, path: str, params: dict = {}) -> List:
+        """
+        Helper function to collect paginated responses from the V3 API into a single
+        list.
+
+        This collects the "data" list from the first reponse and then appends the
+        any further "data" lists if a next link is found in the links field.
+        """
+
+        # this is a raw primative but a higher level module might want something that does an
+        # arbitrary path + origin=foo + limit=100 url construction instead before being sent here
+
+        limit = params["limit"]
+
+        data = list()
+
+        page = self.get(path, params).json()
+
+        data.extend(page["data"])
+
+        while "next" in page["links"].keys():
+            logger.debug(f"GET_V3_PAGES: Another link exists: {page['links']['next']}")
+
+            next_url = urllib.parse.urlsplit(page["links"]["next"])
+            query = urllib.parse.parse_qs(next_url.query)
+
+            for k, v in query.items():
+                params[k] = v
+
+            params["limit"] = limit
+
+            page = self.get(next_url.path, params).json()
+
+            data.extend(page["data"])
+
+            logger.debug(
+                f"GET_V3_PAGES: Added another {len(page['data'])} items to the response"
+            )
+
+        return data
 
     @property
     def organizations(self) -> Manager:
