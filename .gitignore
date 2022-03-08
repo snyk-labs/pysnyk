@@ -1,6 +1,7 @@
 .coverage
 .idea
 .mypy_cache
+.pytest_cache
 
 __pycache__
 *.pyc
@@ -8,3 +9,5 @@ __pycache__
 dist
 output
 pysnyk.egg-info
+
+.venv
