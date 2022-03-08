@@ -575,7 +575,10 @@ class TestProject(TestModels):
                 "snapshotId": "bb00717d-4618-4ceb-bebd-ec268a563e98",
                 "paths": [
                     [
-                        {"name": "tap", "version": "11.1.5",},
+                        {
+                            "name": "tap",
+                            "version": "11.1.5",
+                        },
                         {"name": "nyc", "version": "11.9.0"},
                         {"name": "istanbul-lib-instrument", "version": "1.10.1"},
                         {"name": "babel-traverse", "version": "6.26.0"},
