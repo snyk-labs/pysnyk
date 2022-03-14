@@ -1,0 +1,121 @@
+{
+  "jsonapi": {
+    "version": "1.0"
+  },
+  "data": [
+    {
+      "type": "target",
+      "id": "9a181724-d17d-4a92-a85c-72594c0df5e1",
+      "attributes": {
+        "isPrivate": false,
+        "origin": "github-enterprise",
+        "displayName": "snyk-playground/org-import-instance",
+        "remoteUrl": null
+      },
+      "relationships": {}
+    },
+    {
+      "type": "target",
+      "id": "9aafc91d-76c1-4279-aa27-6e648130f003",
+      "attributes": {
+        "isPrivate": true,
+        "origin": "github-enterprise",
+        "displayName": "snyk-playground/pygithub-import-parser",
+        "remoteUrl": null
+      },
+      "relationships": {}
+    },
+    {
+      "type": "target",
+      "id": "bcb30f5f-ae18-4d32-ac62-1459b10050ae",
+      "attributes": {
+        "isPrivate": false,
+        "origin": "github-enterprise",
+        "displayName": "snyk-playground/org-project-import",
+        "remoteUrl": null
+      },
+      "relationships": {}
+    },
+    {
+      "type": "target",
+      "id": "08beb7e6-ccdf-437a-95dd-9f3c8ad66cd8",
+      "attributes": {
+        "isPrivate": false,
+        "origin": "github-enterprise",
+        "displayName": "snyk-playground/repo-with-jira-config",
+        "remoteUrl": null
+      },
+      "relationships": {}
+    },
+    {
+      "type": "target",
+      "id": "e29608d3-75dc-46ad-8ef4-3bf3c0331f35",
+      "attributes": {
+        "isPrivate": true,
+        "origin": "github",
+        "displayName": "snyk-playground/multi-project-code",
+        "remoteUrl": null
+      },
+      "relationships": {}
+    },
+    {
+      "type": "target",
+      "id": "f94abd6f-d436-4aa8-b4d0-51523a7224c5",
+      "attributes": {
+        "isPrivate": true,
+        "origin": "github",
+        "displayName": "scotte-snyk/example-yarn",
+        "remoteUrl": null
+      },
+      "relationships": {}
+    },
+    {
+      "type": "target",
+      "id": "b248a8b5-98a6-4a08-831c-748776ebc1d9",
+      "attributes": {
+        "isPrivate": true,
+        "origin": "github",
+        "displayName": "scotte-snyk/test-ruby-project",
+        "remoteUrl": null
+      },
+      "relationships": {}
+    },
+    {
+      "type": "target",
+      "id": "53c9a6b1-a46c-44a3-a11f-296b9bd88e1e",
+      "attributes": {
+        "isPrivate": true,
+        "origin": "github",
+        "displayName": "scotte-snyk/demo-sonarr-renamed",
+        "remoteUrl": null
+      },
+      "relationships": {}
+    },
+    {
+      "type": "target",
+      "id": "0e8f2413-af32-45a2-92f5-b9f8ada48374",
+      "attributes": {
+        "isPrivate": true,
+        "origin": "github",
+        "displayName": "scotte-snyk/vulnerable-php-app",
+        "remoteUrl": null
+      },
+      "relationships": {}
+    },
+    {
+      "type": "target",
+      "id": "e52ec5a2-6b11-457e-a8fc-4d86e6fbfab1",
+      "attributes": {
+        "isPrivate": true,
+        "origin": "cli",
+        "displayName": "kozmer/log4j-shell-poc",
+        "remoteUrl": "http://github.com/kozmer/log4j-shell-poc.git"
+      },
+      "relationships": {}
+    }
+  ],
+  "links": {
+    "next": "/orgs/39ddc762-b1b9-41ce-ab42-defbe4575bd6/targets?limit=10&version=2022-02-16~experimental&excludeEmpty=true&starting_after=v1.eyJpZCI6IjI5MTk1NjgifQ%3D%3D",
+    "prev": "/orgs/39ddc762-b1b9-41ce-ab42-defbe4575bd6/targets?limit=10&version=2022-02-16~experimental&excludeEmpty=true&ending_before=v1.eyJpZCI6IjMyODE4NzkifQ%3D%3D"
+  }
+}

@@ -211,59 +211,61 @@ client.post("<path>", <data>)
 
 Most of the time you shouldn't need to use these. They are mainly useful if new methods are added to the API which are not yet supported in the client. This can also be useful if you want to pass very specific parameters, or to parse the raw JSON output from the API.
 
-## Experimental v3 low-level client
+## Experimental rest low-level client
 
-pysnyk >= 0.9.0 now includes support for basic v3 compatibility. To switch to use a v3 client, pass the v3 API url and version when initializing a client. Right now it supports the `GET` method. Refer to the [v3 API docs](https://apidocs.snyk.io/) for more information and examples.
+pysnyk >= 0.9.0 now includes support for basic rest (formerly referred to as v3) compatibility. To switch to use a rest client, pass the rest API url and version when initializing a client. Right now it supports the `GET` method. Refer to the [rest API docs](https://apidocs.snyk.io/) for more information and examples.
 
-Getting the v3 information of an organization:
+Getting the rest information of an organization:
 
 ```python
 # To get this value, get it from a Snyk organizations settings page
 snyk_org = "df734bed-d75c-4f11-bb47-1d119913bcc7"
 
-# to use the v3 endpoint you MUST include a version value and the url of the v3 api endpoint as shown below
-v3client = SnykClient(snyk_token, version="2022-02-16~experimental", url="https://api.snyk.io/v3")
+# to use the rest endpoint you MUST include a version value and the url of the v3 api endpoint as shown below
+rest_client = SnykClient(snyk_token, version="2022-02-16~experimental", url="https://api.snyk.io/rest")
 
-print(v3client.get(f"/orgs/{snyk_org}").json())
+print(rest_client.get(f"/orgs/{snyk_org}").json())
 
-# this supports overriding v3 versions for a specific GET requests:
-user = v3client.get(f"orgs/{snyk_org}/users/{snyk_user}", version="2022-02-01~experimental").json()
+# this supports overriding rest versions for a specific GET requests:
+user = rest_client.get(f"orgs/{snyk_org}/users/{snyk_user}", version="2022-02-01~experimental").json()
 
 # pass parameters such as how many results per page
 params = {"limit": 10}
 
-targets = v3client.get(f"orgs/{snyk_org}/targets", params=params)
+targets = rest_client.get(f"orgs/{snyk_org}/targets", params=params)
 ```
 
-V1 and v3 can work at the same time by instantiating two clients:
+V1 and rest can work at the same time by instantiating two clients:
 
 ```python
 snyk_org = "df734bed-d75c-4f11-bb47-1d119913bcc7"
 
 v1client = SnykClient(snyk_token)
 
-v3client = SnykClient(snyk_token, version="2022-02-16~experimental", url="https://api.snyk.io/v3")
+rest_client = SnykClient(snyk_token, version="2022-02-16~experimental", url="https://api.snyk.io/rest")
 
 v1_org = v1client.organizations.get(snyk_org)
 
-v3_org = v3client.get(f"/orgs/{snyk_org}").json()
+rest_org = rest_client.get(f"/orgs/{snyk_org}").json()
 ```
 
-The v3 API introduces consistent pagination across all endpoints. The v3 client includes a helper method `.get_v3_pages` which collects the paginated responses and returns a single list combining the contents of the "data" key from all pages. It takes the same values as the get method.
+The rest API introduces consistent pagination across all endpoints. The v3 client includes a helper method `.get_rest_pages` which collects the paginated responses and returns a single list combining the contents of the "data" key from all pages. It takes the same values as the get method.
 
 ```python
-v3client = SnykClient(snyk_token, version="2022-02-16~experimental", url="https://api.snyk.io/v3")
+rest_client = SnykClient(snyk_token, version="2022-02-16~experimental", url="https://api.snyk.io/rest")
 
 params = {"limit": 10}
 
-targets = v3client.get(f"orgs/{snyk_org}/targets", params=params).json()
+targets = rest_client.get(f"orgs/{snyk_org}/targets", params=params).json()
 
 print(len(targets["data"]))
 # returns 10 targets
 
-all_targets = v3client.get_v3_pages(f"orgs/{snyk_org}/targets", params=params)
+all_targets = rest_client.get_rest_pages(f"orgs/{snyk_org}/targets", params=params)
 
 print(len(all_targets))
-# returns 33 targets, note we don't have to add .json() to the call or access the "data" key, get_v3_pages does that for us
+# returns 33 targets, note we don't have to add .json() to the call or access the "data" key, get_rest_pages does that for us
 
 ```
+
+For backwards compatibility the get_rest_pages method has an alternative name of get_v3_pages to not break code already rewritten replatformed to the 0.9.0 pysnyk module.
