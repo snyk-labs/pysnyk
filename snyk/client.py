@@ -107,8 +107,8 @@ class SnykClient(object):
         self, path: str, params: dict = None, version: str = None
 ***REMOVED*** -> requests.Response:
         """
-        V3 Compatible Snyk Client, assumes the presence of Version, either set in the client
-        or called in this method means that we're talking to a V3 endpoint and will ensure the
+        Rest (formerly v3) Compatible Snyk Client, assumes the presence of Version, either set in the client
+        or called in this method means that we're talking to a rest API endpoint and will ensure the
         params are encoded properly with the version.
 
         Since certain endpoints can exist only in certain versions, being able to override the
@@ -126,12 +126,12 @@ class SnykClient(object):
             if not params:
                 params = {}
 
-            # we use the presence of version to determine if we are v3 or not
+            # we use the presence of version to determine if we are REST or not
             if "version" not in params.keys() and self.version:
                 params["version"] = version or self.version
 
             # Python Bools are True/False, JS Bools are true/false
-            # Snyk v3 API is strictly case sensitive at the moment
+            # Snyk REST API is strictly case sensitive at the moment
 
             for k, v in params.items():
                 if isinstance(v, bool):
@@ -175,9 +175,9 @@ class SnykClient(object):
             raise SnykHTTPError(resp)
         return resp
 
-    def get_v3_pages(self, path: str, params: dict = {}) -> List:
+    def get_rest_pages(self, path: str, params: dict = {}) -> List:
         """
-        Helper function to collect paginated responses from the V3 API into a single
+        Helper function to collect paginated responses from the rest API into a single
         list.
 
         This collects the "data" list from the first reponse and then appends the
@@ -196,7 +196,9 @@ class SnykClient(object):
         data.extend(page["data"])
 
         while "next" in page["links"].keys():
-            logger.debug(f"GET_V3_PAGES: Another link exists: {page['links']['next']}")
+            logger.debug(
+                f"GET_REST_PAGES: Another link exists: {page['links']['next']}"
+        ***REMOVED***
 
             next_url = urllib.parse.urlsplit(page["links"]["next"])
             query = urllib.parse.parse_qs(next_url.query)
@@ -211,10 +213,13 @@ class SnykClient(object):
             data.extend(page["data"])
 
             logger.debug(
-                f"GET_V3_PAGES: Added another {len(page['data'])} items to the response"
+                f"GET_REST_PAGES: Added another {len(page['data'])} items to the response"
         ***REMOVED***
 
         return data
+
+    # alias for backwards compatibility where V3 was the old name
+    get_v3_pages = get_rest_pages
 
     @property
     def organizations(self) -> Manager:
