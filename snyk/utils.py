@@ -22,17 +22,15 @@ def format_package(pkg):
     return "{name}@{version}".format(name=pkg.name, version=pkg.version or "*")
 
 
-def cleanup_path(path: str, logger: logging.Logger) -> str:
+def cleanup_path(path: str) -> str:
     """
     Strings '/' from the start and end of strings if present to ensure that a '//' doesn't
     occur in an API request due to copy/paste error
     """
 
     if path[0] == "/":
-        logger.warn(f"removing unneccessary leading / from {path}")
         path = path[1:]
     if path[-1] == "/":
-        logger.warn(f"removing unneccessary trailing / from {path}")
         path = path.rstrip("/")
 
     return path
