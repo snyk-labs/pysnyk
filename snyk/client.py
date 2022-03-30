@@ -117,7 +117,7 @@ class SnykClient(object):
         Returns a standard requests Response object
         """
 
-        path = cleanup_path(path, logger)
+        path = cleanup_path(path)
 
         url = f"{self.api_url}/{path}"
 
