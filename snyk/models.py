@@ -359,6 +359,21 @@ class Integration(DataClassJSONMixin):
     id: str
     organization: Optional[Organization] = None
 
+    def clone(self, target_organization_id) -> bool:
+        if not self.organization:
+            raise SnykError
+
+        path = "org/%s/integrations/%s/clone" % (self.organization.id, self.id)
+
+        if self.organization.client is None:
+            raise SnykError
+
+        return bool(
+            self.organization.client.post(
+                path, {"destinationOrgPublicId": target_organization_id}
+        ***REMOVED***
+    ***REMOVED***
+
     @property
     def settings(self):
         if not self.organization:
