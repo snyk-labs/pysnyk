@@ -3,10 +3,12 @@ from dataclasses import InitVar, dataclass, field
 from typing import Any, Dict, List, Optional, Union
 
 import requests
-from mashumaro import DataClassJSONMixin  # type: ignore
+from deprecation import deprecated  # type: ignore
+from mashumaro.mixins.json import DataClassJSONMixin  # type: ignore
 
 from .errors import SnykError, SnykNotImplementedError
 from .managers import Manager
+from .utils import flat_map, format_package
 
 
 @dataclass
@@ -22,9 +24,10 @@ class Vulnerability(DataClassJSONMixin):
     exploitMaturity: str
     isUpgradable: bool
     isPatchable: bool
+    isPinnable: bool
     identifiers: Any
     semver: Any
-    fromPackages: List[str]
+    fromPackages: List[str] = field(default_factory=list)
     language: Optional[str] = None
     packageManager: Optional[str] = None
     publicationTime: Optional[str] = None
@@ -42,10 +45,10 @@ class LicenseIssue(DataClassJSONMixin):
     id: str
     url: str
     title: str
-    fromPackages: List[str]
     package: str
     version: str
     severity: str
+    fromPackages: List[str] = field(default_factory=list)
     # Although mentioned in the schema as required, currently not returned.
     isIgnored: Optional[bool] = None
     # Although mentioned in the schema as required, currently not returned.
@@ -72,17 +75,95 @@ class IssueSet(DataClassJSONMixin):
 
 
 @dataclass
+class IssueData(DataClassJSONMixin):
+    id: str
+    title: str
+    severity: str
+    url: str
+    exploitMaturity: str
+    description: Optional[str] = None
+    identifiers: Optional[Any] = None
+    credit: Optional[List[str]] = None
+    semver: Optional[Any] = None
+    publicationTime: Optional[str] = None
+    disclosureTime: Optional[str] = None
+    CVSSv3: Optional[str] = None
+    cvssScore: Optional[str] = None
+    language: Optional[str] = None
+    patches: Optional[Any] = None
+    nearestFixedInVersion: Optional[str] = None
+    ignoreReasons: Optional[List[Any]] = None
+
+
+@dataclass
+class FixInfo(DataClassJSONMixin):
+    isUpgradable: bool
+    isPinnable: bool
+    isPatchable: bool
+    isFixable: bool
+    isPartiallyFixable: bool
+    nearestFixedInVersion: str
+    fixedIn: List[str]
+
+
+@dataclass
+class AggregatedIssue(DataClassJSONMixin):
+    id: str
+    issueType: str
+    pkgName: str
+    pkgVersions: List[str]
+    issueData: IssueData
+    isPatched: bool
+    isIgnored: bool
+    fixInfo: FixInfo
+    introducedThrough: Optional[List[Any]] = None
+    ignoreReasons: Optional[List[Any]] = None
+    # Not mentioned in schema but returned
+    # https://snyk.docs.apiary.io/#reference/projects/aggregated-project-issues/list-all-aggregated-issues
+    priorityScore: Optional[int] = None
+    priority: Optional[Any] = None
+
+
+@dataclass
+class IssueSetAggregated(DataClassJSONMixin):
+    issues: List[AggregatedIssue]
+
+
+@dataclass
 class OrganizationGroup(DataClassJSONMixin):
     name: str
     id: str
 
 
 @dataclass
+class Package(DataClassJSONMixin):
+    name: str
+    version: str
+    fixVersion: Optional[str] = None
+
+
+@dataclass
+class IssuePaths(DataClassJSONMixin):
+    snapshotId: str
+    paths: List[List[Package]]
+    total: int
+
+
+@dataclass
+class IssueRelations:
+    id: str
+    organization_id: str
+    project_id: str
+
+
+@dataclass
 class Organization(DataClassJSONMixin):
     name: str
     id: str
+    slug: str
+    url: str
     group: Optional[OrganizationGroup] = None
-    client: InitVar[Optional[Any]] = None  # type: ignore
+    client: Optional[Any] = None
 
     @property
     def projects(self) -> Manager:
@@ -121,11 +202,13 @@ class Organization(DataClassJSONMixin):
         try:
             components = url.split("/")
             service = components[0]
+
             if service == "github.com":
                 owner = components[1]
                 name = components[2]
                 parts = name.split("@")
                 branch = "master"
+
                 if len(parts) == 2:
                     name = parts[0]
                     branch = parts[1]
@@ -166,6 +249,10 @@ class Organization(DataClassJSONMixin):
     def invite(self, email: str, admin: bool = False) -> bool:
         path = "org/%s/invite" % self.id
         payload = {"email": email, "isAdmin": admin}
+
+        if self.client is None:
+            raise SnykError
+
         return bool(self.client.post(path, payload))
 
     def _test(self, path, contents=None, additional=None):
@@ -173,6 +260,7 @@ class Organization(DataClassJSONMixin):
             # Check for a file-like object, allows us to support files
             # and strings in the same interface
             read = getattr(contents, "read", None)
+
             if callable(read):
                 contents = contents.read()
             encoded = base64.b64encode(contents.encode()).decode()
@@ -182,8 +270,10 @@ class Organization(DataClassJSONMixin):
             }
 
             # Some test methods carry a second file, often a lock file
+
             if additional:
                 read = getattr(additional, "read", None)
+
                 if callable(read):
                     additional = additional.read()
                 encoded = base64.b64encode(additional.encode()).decode()
@@ -192,6 +282,7 @@ class Organization(DataClassJSONMixin):
             resp = self.client.post(path, post_body)
         else:
             resp = self.client.get(path)
+
         return IssueSet.from_dict(resp.json())
 
     def test_maven(
@@ -203,50 +294,62 @@ class Organization(DataClassJSONMixin):
             version,
             self.id,
         )
+
         return self._test(path)
 
     def test_rubygem(self, name: str, version: str) -> IssueSet:
         path = "test/rubygems/%s/%s?org=%s" % (name, version, self.id)
+
         return self._test(path)
 
     def test_python(self, name: str, version: str) -> bool:
         path = "test/pip/%s/%s?org=%s" % (name, version, self.id)
+
         return self._test(path)
 
     def test_npm(self, name: str, version: str) -> bool:
         path = "test/npm/%s/%s?org=%s" % (name, version, self.id)
+
         return self._test(path)
 
     def test_pipfile(self, contents):
         path = "test/pip?org=%s" % self.id
+
         return self._test(path, contents)
 
     def test_gemfilelock(self, contents):
         path = "test/rubygems?org=%s" % self.id
+
         return self._test(path, contents)
 
     def test_packagejson(self, contents, lock=None):
         path = "test/npm?org=%s" % self.id
+
         return self._test(path, contents, lock)
 
     def test_gradlefile(self, contents):
         path = "test/gradle?org=%s" % self.id
+
         return self._test(path, contents)
 
     def test_sbt(self, contents):
         path = "test/sbt?org=%s" % self.id
+
         return self._test(path, contents)
 
     def test_pom(self, contents):
         path = "test/maven?org=%s" % self.id
+
         return self._test(path, contents)
 
     def test_composer(self, contents, lock):
         path = "test/composer?org=%s" % self.id
+
         return self._test(path, contents, lock)
 
     def test_yarn(self, contents, lock):
         path = "test/yarn?org=%s" % self.id
+
         return self._test(path, contents, lock)
 
 
@@ -260,12 +363,17 @@ class Integration(DataClassJSONMixin):
     def settings(self):
         if not self.organization:
             raise SnykError
+
         return Manager.factory("IntegrationSetting", self.organization.client, self)
 
     def _import(self, payload) -> bool:
         if not self.organization:
             raise SnykError
         path = "org/%s/integrations/%s/import" % (self.organization.id, self.id)
+
+        if self.organization.client is None:
+            raise SnykError
+
         return bool(self.organization.client.post(path, payload))
 
     def import_git(
@@ -281,6 +389,7 @@ class Integration(DataClassJSONMixin):
     def import_image(self, name: str):
         if ":" not in name:
             name = "%s:latest" % name
+
         return self._import({"target": {"name": name}})
 
     def import_gitlab(self, id: str, branch: str = "master", files: List[str] = []):
@@ -346,7 +455,7 @@ class License(DataClassJSONMixin):
     id: str
     dependencies: List[LicenseDependency]
     projects: List[LicenseProject]
-    severity: str
+    severity: Optional[str] = None
 
 
 @dataclass
@@ -369,14 +478,16 @@ class Member(DataClassJSONMixin):
 @dataclass
 class IssueCounts(DataClassJSONMixin):
     low: int
-    high: int
     medium: int
+    high: int
+    # https://updates.snyk.io/critical-severity-level-195891, critical severity is optional since it is still under Snyk preview
+    critical: Optional[int] = 0
 
 
 @dataclass
 class DependencyGraphPackageInfo(DataClassJSONMixin):
     name: str
-    version: str
+    version: Optional[str] = None
 
 
 @dataclass
@@ -430,7 +541,7 @@ class Dependency(DataClassJSONMixin):
     latestVersionPublishedDate: Optional[str] = None
     firstPublishedDate: Optional[str] = None
     isDeprecated: Optional[bool] = None
-    packageManager: Optional[str] = None
+    type: Optional[str] = None
     deprecatedVersions: Optional[List[Any]] = field(default_factory=list)
     dependenciesWithIssues: Optional[List[Any]] = field(default_factory=list)
 
@@ -448,9 +559,13 @@ class Project(DataClassJSONMixin):
     totalDependencies: int
     lastTestedDate: str
     browseUrl: str
+    isMonitored: bool
     issueCountsBySeverity: IssueCounts
     imageTag: Optional[str] = None
     imageId: Optional[str] = None
+    imageBaseImage: Optional[str] = None
+    imagePlatform: Optional[str] = None
+    imageCluster: Optional[str] = None
     hostname: Optional[str] = None
     remoteRepoUrl: Optional[str] = None
     branch: Optional[str] = None
@@ -458,7 +573,27 @@ class Project(DataClassJSONMixin):
 
     def delete(self) -> bool:
         path = "org/%s/project/%s" % (self.organization.id, self.id)
+
+        if self.organization.client is None:
+            raise SnykError
+
         return bool(self.organization.client.delete(path))
+
+    def activate(self) -> bool:
+        path = "org/%s/project/%s/activate" % (self.organization.id, self.id)
+
+        if self.organization.client is None:
+            raise SnykError
+
+        return bool(self.organization.client.post(path, {}))
+
+    def deactivate(self) -> bool:
+        path = "org/%s/project/%s/deactivate" % (self.organization.id, self.id)
+
+        if self.organization.client is None:
+            raise SnykError
+
+        return bool(self.organization.client.post(path, {}))
 
     @property
     def settings(self) -> Manager:
@@ -484,13 +619,27 @@ class Project(DataClassJSONMixin):
     def dependency_graph(self) -> DependencyGraph:
         return Manager.factory(DependencyGraph, self.organization.client, self).all()
 
-    @property
+    # mypy doesn't support decorated properties
+    @property  # type: ignore
+    @deprecated("Use issueset_aggregated")
     def issueset(self) -> Manager:
         return Manager.factory(IssueSet, self.organization.client, self)
 
     @property
+    def issueset_aggregated(self) -> Manager:
+        return Manager.factory(IssueSetAggregated, self.organization.client, self)
+
+    @property
     def vulnerabilities(self) -> List[Vulnerability]:
-        return self.issueset.all().issues.vulnerabilities
+        vuln_filter = {
+            "severities": ["critical", "high", "medium", "low"],
+            "types": ["vuln"],
+            "ignored": False,
+            "patched": False,
+        }
+        aggregated_vulns = self.issueset_aggregated.filter(**vuln_filter).issues
+        foo = flat_map(self._aggregated_issue_to_vulnerabily, aggregated_vulns)
+        return foo
 
     @property
     def tags(self) -> Manager:
@@ -500,3 +649,57 @@ class Project(DataClassJSONMixin):
     # https://snyk.docs.apiary.io/#reference/users/user-project-notification-settings/get-project-notification-settings
     def notification_settings(self):
         raise SnykNotImplementedError  # pragma: no cover
+
+    def _aggregated_issue_to_vulnerabily(
+        self, issue: AggregatedIssue
+    ) -> List[Vulnerability]:
+        issue_paths = Manager.factory(
+            IssuePaths,
+            self.organization.client,
+            IssueRelations(
+                id=issue.id, organization_id=self.organization.id, project_id=self.id
+            ),
+        ).all()
+
+        try:
+            upgradable_paths = filter(
+                lambda path: path[0].fixVersion is not None,
+                issue_paths.paths,
+            )
+            first_path = next(upgradable_paths)
+            upgrade_path = list(map(format_package, first_path))
+        except StopIteration:
+            upgrade_path = []
+
+        return [
+            Vulnerability(
+                id=issue.issueData.id,
+                url=issue.issueData.url,
+                title=issue.issueData.title,
+                description=issue.issueData.description or "",
+                upgradePath=upgrade_path,
+                package=issue.pkgName,
+                version=version,
+                severity=issue.issueData.severity,
+                exploitMaturity=issue.issueData.exploitMaturity,
+                isUpgradable=issue.fixInfo.isUpgradable,
+                isPatchable=issue.fixInfo.isPatchable,
+                isPinnable=issue.fixInfo.isPinnable,
+                identifiers=issue.issueData.identifiers,
+                semver=issue.issueData.semver,
+                fromPackages=issue.introducedThrough or [],
+                language=issue.issueData.language,
+                packageManager=self.type,
+                publicationTime=issue.issueData.publicationTime,
+                priorityScore=issue.priorityScore,
+                disclosureTime=issue.issueData.disclosureTime,
+                credit=issue.issueData.credit,
+                CVSSv3=issue.issueData.CVSSv3,
+                cvssScore=issue.issueData.cvssScore,
+                ignored=issue.issueData.ignoreReasons,
+                patched=issue.issueData.patches if issue.isPatched else [],
+            )
+            # Old endpoint returned a new issue if it appeared in multiple
+            # versions, emulate that here to preserve upstream api
+            for version in issue.pkgVersions
+        ]

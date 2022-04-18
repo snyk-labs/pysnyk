@@ -1,6 +1,8 @@
 import abc
 from typing import Any, Dict, List
 
+from deprecation import deprecated  # type: ignore
+
 from .errors import SnykError, SnykNotFoundError, SnykNotImplementedError
 from .utils import snake_to_camel
 
@@ -55,9 +57,11 @@ class Manager(abc.ABC):
                 "JiraIssue": JiraIssueManager,
                 "DependencyGraph": DependencyGraphManager,
                 "IssueSet": IssueSetManager,
+                "IssueSetAggregated": IssueSetAggregatedManager,
                 "Integration": IntegrationManager,
                 "IntegrationSetting": IntegrationSettingManager,
                 "Tag": TagManager,
+                "IssuePaths": IssuePathsManager,
             }[key]
             return manager(klass, client, instance)
         except KeyError:
@@ -175,11 +179,13 @@ class ProjectManager(Manager):
 
     def get(self, id: str):
         if self.instance:
-            path = "org/%s/projects/%s" % (self.instance.id, id)
+            path = "org/%s/project/%s" % (self.instance.id, id)
             resp = self.client.get(path)
             project_data = resp.json()
             project_data["organization"] = self.instance.to_dict()
-            return self.klass.from_dict(project_data)
+            project_klass = self.klass.from_dict(project_data)
+            project_klass.organization = self.instance
+            return project_klass
         else:
             return super().get(id)
 
@@ -268,9 +274,17 @@ class SettingManager(DictManager):
         post_body = {}
 
         settings = [
-            "pull_request_test_enabled",
-            "pull_request_fail_on_vuln",
+            "auto_dep_upgrade_enabled",
+            "auto_dep_upgrade_ignored_dependencies",
+            "auto_dep_upgrade_min_age",
+            "auto_dep_upgrade_limit",
+            "pull_request_fail_on_any_vulns",
             "pull_request_fail_only_for_high_severity",
+            "pull_request_test_enabled",
+            "pull_request_assignment",
+            "pull_request_inheritance",
+            "pull_request_fail_only_for_issues_with_fix",
+            "auto_remediation_prs",
         ]
 
         for setting in settings:
@@ -355,6 +369,7 @@ class DependencyGraphManager(SingletonManager):
         raise SnykError
 
 
+@deprecated("API has been removed, use IssueSetAggregatedManager instead")
 class IssueSetManager(SingletonManager):
     def _convert_reserved_words(self, data):
         for key in ["vulnerabilities", "licenses"]:
@@ -375,7 +390,7 @@ class IssueSetManager(SingletonManager):
             self.instance.id,
         )
         filters = {
-            "severities": ["high", "medium", "low"],
+            "severities": ["critical", "high", "medium", "low"],
             "types": ["vuln", "license"],
             "ignored": False,
             "patched": False,
@@ -386,3 +401,50 @@ class IssueSetManager(SingletonManager):
         post_body = {"filters": filters}
         resp = self.client.post(path, post_body)
         return self.klass.from_dict(self._convert_reserved_words(resp.json()))
+
+
+class IssueSetAggregatedManager(SingletonManager):
+    def all(self) -> Any:
+        return self.filter()
+
+    def filter(self, **kwargs: Any):
+        path = "org/%s/project/%s/aggregated-issues" % (
+            self.instance.organization.id,
+            self.instance.id,
+        )
+        default_filters = {
+            "severities": ["critical", "high", "medium", "low"],
+            "exploitMaturity": [
+                "mature",
+                "proof-of-concept",
+                "no-known-exploit",
+                "no-data",
+            ],
+            "types": ["vuln", "license"],
+            "priority": {"score": {"min": 0, "max": 1000}},
+        }
+
+        post_body = {"filters": default_filters}
+
+        all_filters = list(default_filters.keys()) + ["ignored", "patched"]
+        for filter_name in all_filters:
+            if filter_name in kwargs.keys():
+                post_body["filters"][filter_name] = kwargs[filter_name]
+
+        for optional_field in ["includeDescription", "includeIntroducedThrough"]:
+            if optional_field in kwargs.keys():
+                post_body[optional_field] = kwargs[optional_field]
+
+        resp = self.client.post(path, post_body)
+        return self.klass.from_dict(resp.json())
+
+
+class IssuePathsManager(SingletonManager):
+    def all(self):
+        path = "org/%s/project/%s/issue/%s/paths" % (
+            self.instance.organization_id,
+            self.instance.project_id,
+            self.instance.id,
+        )
+        resp = self.client.get(path)
+        return self.klass.from_dict(resp.json())

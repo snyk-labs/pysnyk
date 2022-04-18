@@ -1,9 +1,13 @@
 .coverage
 .idea
 .mypy_cache
+.pytest_cache
 
 __pycache__
+*.pyc
 
 dist
 output
 pysnyk.egg-info
+
+.venv
