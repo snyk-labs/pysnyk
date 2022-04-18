@@ -19,6 +19,7 @@ class Vulnerability(DataClassJSONMixin):
     package: str
     version: str
     severity: str
+    exploitMaturity: str
     isUpgradable: bool
     isPatchable: bool
     identifiers: Any
@@ -27,6 +28,7 @@ class Vulnerability(DataClassJSONMixin):
     language: Optional[str] = None
     packageManager: Optional[str] = None
     publicationTime: Optional[str] = None
+    priorityScore: Optional[int] = None
     disclosureTime: Optional[str] = None
     credit: Optional[List[Any]] = field(default_factory=list)
     CVSSv3: Optional[str] = None
@@ -49,6 +51,7 @@ class LicenseIssue(DataClassJSONMixin):
     # Although mentioned in the schema as required, currently not returned.
     isPatched: Optional[bool] = None
     language: Optional[str] = None
+    priorityScore: Optional[int] = None
     packageManager: Optional[str] = None
     ignored: Optional[List[Any]] = field(default_factory=list)
     patched: Optional[List[Any]] = field(default_factory=list)
@@ -114,7 +117,7 @@ class Organization(DataClassJSONMixin):
     and files, and better errors, would be required.
     """
 
-    def import_project(self, url) -> bool:
+    def import_project(self, url, files: Optional[List[str]] = None) -> bool:
         try:
             components = url.split("/")
             service = components[0]
@@ -144,9 +147,12 @@ class Organization(DataClassJSONMixin):
                     name
                 )
             else:
-                return self.integrations.filter(name=integration_name)[0].import_git(
-                    owner, name, branch
-                )
+                integration = self.integrations.filter(name=integration_name)[0]
+
+                if files:
+                    return integration.import_git(owner, name, branch, files)
+                else:
+                    return integration.import_git(owner, name, branch)
 
         except KeyError:
             raise SnykError
@@ -157,10 +163,12 @@ class Organization(DataClassJSONMixin):
         raise SnykNotImplemented  # pragma: no cover
 
     # https://snyk.docs.apiary.io/#reference/organisations/the-snyk-organisation-for-a-request/invite-users
-    def invite(self, email: str, admin: bool = False):
-        raise SnykNotImplementedError  # pragma: no cover
+    def invite(self, email: str, admin: bool = False) -> bool:
+        path = "org/%s/invite" % self.id
+        payload = {"email": email, "isAdmin": admin}
+        return bool(self.client.post(path, payload))
 
-    def _test(self, path, contents=None):
+    def _test(self, path, contents=None, additional=None):
         if contents:
             # Check for a file-like object, allows us to support files
             # and strings in the same interface
@@ -172,6 +180,15 @@ class Organization(DataClassJSONMixin):
                 "encoding": "base64",
                 "files": {"target": {"contents": encoded}},
             }
+
+            # Some test methods carry a second file, often a lock file
+            if additional:
+                read = getattr(additional, "read", None)
+                if callable(read):
+                    additional = additional.read()
+                encoded = base64.b64encode(additional.encode()).decode()
+                post_body["files"]["additional"] = {"contents": encoded}
+
             resp = self.client.post(path, post_body)
         else:
             resp = self.client.get(path)
@@ -208,9 +225,9 @@ class Organization(DataClassJSONMixin):
         path = "test/rubygems?org=%s" % self.id
         return self._test(path, contents)
 
-    def test_packagejson(self, contents):
+    def test_packagejson(self, contents, lock=None):
         path = "test/npm?org=%s" % self.id
-        return self._test(path, contents)
+        return self._test(path, contents, lock)
 
     def test_gradlefile(self, contents):
         path = "test/gradle?org=%s" % self.id
@@ -223,6 +240,14 @@ class Organization(DataClassJSONMixin):
     def test_pom(self, contents):
         path = "test/maven?org=%s" % self.id
         return self._test(path, contents)
+
+    def test_composer(self, contents, lock):
+        path = "test/composer?org=%s" % self.id
+        return self._test(path, contents, lock)
+
+    def test_yarn(self, contents, lock):
+        path = "test/yarn?org=%s" % self.id
+        return self._test(path, contents, lock)
 
 
 @dataclass
@@ -321,6 +346,7 @@ class License(DataClassJSONMixin):
     id: str
     dependencies: List[LicenseDependency]
     projects: List[LicenseProject]
+    severity: str
 
 
 @dataclass
@@ -425,6 +451,10 @@ class Project(DataClassJSONMixin):
     issueCountsBySeverity: IssueCounts
     imageTag: Optional[str] = None
     imageId: Optional[str] = None
+    hostname: Optional[str] = None
+    remoteRepoUrl: Optional[str] = None
+    branch: Optional[str] = None
+    _tags: Optional[List[Any]] = field(default_factory=list)
 
     def delete(self) -> bool:
         path = "org/%s/project/%s" % (self.organization.id, self.id)
@@ -461,6 +491,10 @@ class Project(DataClassJSONMixin):
     @property
     def vulnerabilities(self) -> List[Vulnerability]:
         return self.issueset.all().issues.vulnerabilities
+
+    @property
+    def tags(self) -> Manager:
+        return Manager.factory("Tag", self.organization.client, self)
 
     # https://snyk.docs.apiary.io/#reference/users/user-project-notification-settings/modify-project-notification-settings
     # https://snyk.docs.apiary.io/#reference/users/user-project-notification-settings/get-project-notification-settings

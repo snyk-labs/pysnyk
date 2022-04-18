@@ -33,6 +33,23 @@ class TestOrganization(TestModels):
         ]
 
     @pytest.fixture
+    def project(self):
+        return {
+            "name": "atokeneduser/goof",
+            "id": "6d5813be-7e6d-4ab8-80c2-1e3e2a454545",
+            "created": "2018-10-29T09:50:54.014Z",
+            "origin": "cli",
+            "type": "npm",
+            "readOnly": "false",
+            "testFrequency": "daily",
+            "totalDependencies": 438,
+            "issueCountsBySeverity": {"low": 8, "high": 13, "medium": 15},
+            "lastTestedDate": "2019-02-05T06:21:00.000Z",
+            "browseUrl": "https://app.snyk.io/org/pysnyk-test-org/project/6d5813be-7e6d-4ab8-80c2-1e3e2a454545",
+            "tags": [{"key": "some-key", "value": "some-value"}],
+        }
+
+    @pytest.fixture
     def blank_test(self):
         return {
             "ok": True,
@@ -139,6 +156,13 @@ class TestOrganization(TestModels):
         requests_mock.post("%s/test/npm" % base_url, json=blank_test)
         assert organization.test_packagejson(fake_file)
 
+    def test_packagejson_test_with_files(
+        self, organization, base_url, blank_test, fake_file, requests_mock
+    ):
+
+        requests_mock.post("%s/test/npm" % base_url, json=blank_test)
+        assert organization.test_packagejson(fake_file, fake_file)
+
     def test_gradlefile_test_with_file(
         self, organization, base_url, blank_test, fake_file, requests_mock
     ):
@@ -160,10 +184,119 @@ class TestOrganization(TestModels):
         requests_mock.post("%s/test/maven" % base_url, json=blank_test)
         assert organization.test_pom(fake_file)
 
+    def test_composer_with_files(
+        self, organization, base_url, blank_test, fake_file, requests_mock
+    ):
+
+        requests_mock.post("%s/test/composer" % base_url, json=blank_test)
+        assert organization.test_composer(fake_file, fake_file)
+
+    def test_yarn_with_files(
+        self, organization, base_url, blank_test, fake_file, requests_mock
+    ):
+
+        requests_mock.post("%s/test/yarn" % base_url, json=blank_test)
+        assert organization.test_yarn(fake_file, fake_file)
+
     def test_missing_package_test(self, organization, base_url, requests_mock):
         requests_mock.get("%s/test/rubygems/puppet/4.0.0" % base_url, status_code=404)
         with pytest.raises(SnykError):
             organization.test_rubygem("puppet", "4.0.0")
+
+    def test_import_git(self, organization, requests_mock):
+        integration_matcher = re.compile("integrations$")
+        import_matcher = re.compile("import$")
+        output = {"github": "not-a-real-id"}
+        requests_mock.get(integration_matcher, json=output)
+        requests_mock.post(import_matcher)
+        gh = organization.integrations.first()
+        assert gh.import_git("org", "repo", "branch")
+        payload = requests_mock.last_request.json()
+        assert len(payload["files"]) == 0
+        assert payload["target"]["branch"] == "branch"
+        assert payload["target"]["name"] == "repo"
+        assert payload["target"]["owner"] == "org"
+
+    def test_import_project(self, organization, requests_mock):
+        integration_matcher = re.compile("integrations$")
+        import_matcher = re.compile("import$")
+        output = {"github": "not-a-real-id"}
+        requests_mock.get(integration_matcher, json=output)
+        requests_mock.post(import_matcher)
+        assert organization.import_project("github.com/org/repo")
+        payload = requests_mock.last_request.json()
+        assert len(payload["files"]) == 0
+        assert payload["target"]["branch"] == "master"
+        assert payload["target"]["name"] == "repo"
+        assert payload["target"]["owner"] == "org"
+
+    def test_import_project_with_files(self, organization, requests_mock):
+        integration_matcher = re.compile("integrations$")
+        import_matcher = re.compile("import$")
+        output = {"github": "not-a-real-id"}
+        requests_mock.get(integration_matcher, json=output)
+        requests_mock.post(import_matcher)
+        assert organization.import_project(
+            "github.com/org/repo", files=["Gemfile.lock"]
+        )
+        payload = requests_mock.last_request.json()
+        assert len(payload["files"]) == 1
+        assert payload["files"][0]["path"] == "Gemfile.lock"
+
+    def test_invite(self, organization, requests_mock):
+        invite_matcher = re.compile("invite$")
+        requests_mock.post(
+            invite_matcher, json={"email": "example@example.com", "isAdmin": False}
+        )
+        assert organization.invite("example@example.com")
+
+    def test_invite_admin(self, organization, requests_mock):
+        invite_matcher = re.compile("invite$")
+        requests_mock.post(
+            invite_matcher, json={"email": "example@example.com", "isAdmin": True}
+        )
+        assert organization.invite("example@example.com", admin=True)
+
+    def test_get_project(self, organization, project, requests_mock):
+        matcher = re.compile("projects/6d5813be-7e6d-4ab8-80c2-1e3e2a454545$")
+        requests_mock.get(matcher, json=project)
+        assert (
+            "atokeneduser/goof"
+            == organization.projects.get("6d5813be-7e6d-4ab8-80c2-1e3e2a454545").name
+        )
+
+    def test_filter_projects_by_tag_missing_value(self, organization, requests_mock):
+        with pytest.raises(SnykError):
+            organization.projects.filter(tags=[{"key": "some-key"}])
+
+    def test_filter_projects_by_tag_missing_key(self, organization, requests_mock):
+        with pytest.raises(SnykError):
+            organization.projects.filter(tags=[{"value": "some-value"}])
+
+    def test_filter_projects_by_tag_with_extra_key(self, organization, requests_mock):
+        with pytest.raises(SnykError):
+            organization.projects.filter(
+                tags=[{"key": "some-key", "value": "some-value", "extra": "extra"}]
+            )
+
+    def test_filter_projects_by_tag(self, organization, requests_mock):
+        tags = [{"key": "some-key", "value": "some-value"}]
+        projects_matcher = re.compile("projects$")
+        requests_mock.post(projects_matcher, json=[])
+        organization.projects.filter(tags=tags)
+        payload = requests_mock.last_request.json()
+        assert payload == {"filters": {"tags": {"includes": tags}}}
+
+    def test_filter_projects_not_by_tag(self, organization, requests_mock):
+        projects_matcher = re.compile("projects$")
+        requests_mock.get(projects_matcher, json=[])
+        assert organization.projects.filter() == []
+
+    def test_tags_cache(self, organization, project, requests_mock):
+        projects_matcher = re.compile("projects$")
+        requests_mock.get(projects_matcher, json={"projects": [project]})
+        projects = organization.projects.all()
+        assert projects[0]._tags == [{"key": "some-key", "value": "some-value"}]
 
 
 class TestProject(TestModels):
@@ -196,6 +329,26 @@ class TestProject(TestModels):
         requests_mock.delete(project_url, status_code=500)
         with pytest.raises(SnykError):
             project.delete()
+
+    def test_add_tag(self, project, project_url, requests_mock):
+        requests_mock.post(
+            "%s/tags" % project_url, json={"key": "key", "value": "value"}
+        )
+        assert project.tags.add("key", "value")
+
+    def test_delete_tag(self, project, project_url, requests_mock):
+        requests_mock.post(
+            "%s/tags/remove" % project_url, json={"key": "key", "value": "value"}
+        )
+        assert project.tags.delete("key", "value")
+
+    def test_tags(self, project, project_url, requests_mock):
+        assert [] == project.tags.all()
+
+    def test_tags_cache(self, project, project_url, requests_mock):
+        tags = [{"key": "key", "value": "value"}]
+        project._tags = tags
+        assert tags == project.tags.all()
 
     def test_empty_settings(self, project, project_url, requests_mock):
         requests_mock.get("%s/settings" % project_url, json={})

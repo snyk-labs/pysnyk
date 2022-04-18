@@ -83,7 +83,7 @@ client.projects.all()
 
 The `snyk.models.Project` object has the following useful properties and methods:
 
-* `delete()` - deletes the project in question. We careful as this will delete all associated data too
+* `delete()` - deletes the project in question. Be careful as this will delete all associated data too
 * `dependencies` - returns a Manager for packages in use in this project
 * `dependency_graph` - returns a `snyk.models.DependencyGraph` object which represents the full dependency graph of package dependencies
 * `ignores` - returns a Manager for ignore rules set on the project
@@ -91,8 +91,20 @@ The `snyk.models.Project` object has the following useful properties and methods
 * `jira_issues` - returns a Manager with access to any associated Jira issues
 * `licenses` - returns a Manager for licenses currently in use by this project
 * `settings` - returns a Manager for interacting with the current project settings  
+* `tags` - returns a Manager for interacting with the current project tags 
 
-Note that the `settings` Manager can also be used to update settings like so, assumibg you have a `snyk.models.Project` object in the variable `project`.
+You can add and delete tags using the manager:
+
+* `tags.add(key, value)` - adds a tag with the provided key/value pair to the project
+* `tags.delete(key, value)` - deletes a tag with the provided key/value pair from the project
+
+In the case of Projects, as well as filtering by properties (as mentioned above) you can also filter by tag:
+
+```python
+client.organizations.first().projects.filter(tags = [{"key": "some-key", "value": "some-value"}])
+```
+
+Note that the `settings` Manager can also be used to update settings like so, assuming you have a `snyk.models.Project` object in the variable `project`.
 
 ```python
 project.settings.update(pull_request_test_enabled=True)
@@ -106,6 +118,12 @@ The client supports a high-level `import_project` method on organizations for ad
 org = client.organizations.first()
 org.import_project("github.com/user/project@branch")
 org.import_project("docker.io/repository:tag")
+```
+
+If you are targetting a specific manifest file or files you can pass those as an optional argument, for instance:
+
+```python
+org.import_project("github.com/user/project@branch", files=["Gemfile.lock"])
 ```
 
 This method currently only supports importing projects from GitHub and Docker Hub. For other integrations you will need to grab the lower-level `snyk.models.Integration` object from the `snyk.models.Organization.integrations` manager noted above. Other services will be added to this API soon.
@@ -139,10 +157,12 @@ As well as testing individual packages you can also test all packages found in v
 
 * `test_pipfile(<file-handle-or-string>)` - returns an IssueSet for all Python dependencies in a `Pipfile` 
 * `test_gemfilelock(<file-handle-or-string>)` - returns an IssueSet for all Ruby dependencies in a `Gemfile`
-* `test_packagejson(<file-handle-or-string>)` - returns an IssueSet for all Javascript dependencies in a `package.json` file 
+* `test_packagejson(<file-handle-or-string>, (<lock-file-handle-or-string>))` - returns an IssueSet for all Javascript dependencies in a `package.json` file. Optionally takes a `package.lock` file
 * `test_gradlefile(<file-handle-or-string>)` - returns an IssueSet for all dependencies in a `Gradlefile` 
 * `test_sbt(<file-handle-or-string>)` - returns an IssueSet for all dependencies defined in a `.sbt` file 
 * `test_pom(<file-handle-or-string>)` - returns an IssueSet for all dependencies in a Maven `pom.xml` file
+* `test_yarn(<file-handle-or-string>, <lock-file-handle-or-string>)` - returns an IssueSet for all dependencies in Yarn `package.json` and `yarn.lock` files
+* `test_composer(<file-handle-or-string>, <lock-file-handle-or-string>)` - returns an IssueSet for all dependencies in Composer `composer.json` and `composer.lock` files
 
 For example, here we are testing a Python `Pipfile`.
 
@@ -151,6 +171,23 @@ For example, here we are testing a Python `Pipfile`.
 >>> file = open("Pipfile")
 >>> org.test_pipfile(file)
 ```
+
+### Inviting new users
+
+You can invite new users to the organization via the API.
+
+```python
+>>> org = client.organizations.first()
+>>> org.invite("example@example.com")
+```
+
+You can also invite new users as administrators:
+
+```python
+>>> org = client.organizations.first()
+>>> org.invite("example@example.com", admin=True)
+```
+
 
 ### Low-level client
 
