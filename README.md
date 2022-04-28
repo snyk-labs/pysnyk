@@ -96,6 +96,7 @@ client.projects.all()
 The `snyk.models.Project` object has the following useful properties and methods:
 
 - `delete()` - deletes the project in question. Be careful as this will delete all associated data too
+- `move(new_org_id)` - moves the project to a new organization
 - `dependencies` - returns a Manager for packages in use in this project
 - `dependency_graph` - returns a `snyk.models.DependencyGraph` object which represents the full dependency graph of package dependencies
 - `ignores` - returns a Manager for ignore rules set on the project

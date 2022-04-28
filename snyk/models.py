@@ -595,6 +595,16 @@ class Project(DataClassJSONMixin):
 
         return bool(self.organization.client.post(path, {}))
 
+    def move(self, new_org_id) -> bool:
+        path = "org/%s/project/%s/move" % (self.organization.id, self.id)
+
+        payload = {"targetOrgId": new_org_id}
+
+        if self.organization.client is None:
+            raise SnykError
+
+        return bool(self.organization.client.put(path, payload))
+
     @property
     def settings(self) -> Manager:
         return Manager.factory("Setting", self.organization.client, self)
