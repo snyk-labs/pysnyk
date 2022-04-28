@@ -595,7 +595,7 @@ class Project(DataClassJSONMixin):
 
         return bool(self.organization.client.post(path, {}))
 
-    def move(self, new_org_id) -> bool:
+    def move(self, new_org_id: str) -> bool:
         path = "org/%s/project/%s/move" % (self.organization.id, self.id)
 
         payload = {"targetOrgId": new_org_id}
