@@ -103,7 +103,7 @@ class FixInfo(DataClassJSONMixin):
     isFixable: bool
     isPartiallyFixable: bool
     nearestFixedInVersion: str
-    fixedIn: List[str]
+    fixedIn: Optional[List[str]] = None
 
 
 @dataclass
