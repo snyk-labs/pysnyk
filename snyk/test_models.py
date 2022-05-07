@@ -633,6 +633,96 @@ class TestProject(TestModels):
         ]
         assert expected == project.vulnerabilities
 
+    def test_aggregated_issues_missing_optional_fields(
+        self, project, project_url, requests_mock
+    ):
+        requests_mock.post(
+            "%s/aggregated-issues" % project_url,
+            json={
+                "issues": [
+                    {
+                        "id": "test",
+                        "issueType": "vuln",
+                        "pkgName": "test",
+                        "pkgVersions": ["1.0.0"],
+                        "issueData": {
+                            "id": "test",
+                            "title": "test",
+                            "severity": "test",
+                            "url": "https://example.com/test",
+                            "exploitMaturity": "test",
+                        },
+                        "isPatched": False,
+                        "isIgnored": False,
+                        "fixInfo": {
+                            "isUpgradable": False,
+                            "isPinnable": False,
+                            "isPatchable": False,
+                            "isFixable": False,
+                            "isPartiallyFixable": False,
+                            "nearestFixedInVersion": "2.0.0",
+                        },
+                    }
+                ]
+            },
+        )
+        requests_mock.get(
+            "{}/issue/test/paths".format(project_url),
+            json={
+                "snapshotId": "bb00717d-4618-4ceb-bebd-ec268a563e98",
+                "paths": [
+                    [
+                        {
+                            "name": "tap",
+                            "version": "11.1.5",
+                        },
+                        {"name": "nyc", "version": "11.9.0"},
+                        {"name": "istanbul-lib-instrument", "version": "1.10.1"},
+                        {"name": "babel-traverse", "version": "6.26.0"},
+                        {"name": "lodash", "version": "4.17.10"},
+                    ],
+                    [
+                        {"name": "tap", "version": "11.1.5", "fixVersion": "11.1.5"},
+                        {"name": "nyc", "version": "11.9.0"},
+                        {"name": "istanbul-lib-instrument", "version": "1.10.1"},
+                        {"name": "babel-template", "version": "6.26.0"},
+                        {"name": "lodash", "version": "4.17.10"},
+                    ],
+                ],
+                "total": 1,
+            },
+        )
+
+        expected = [
+            Vulnerability(
+                id="test",
+                url="https://example.com/test",
+                title="test",
+                description="",
+                upgradePath=[
+                    "tap@11.1.5",
+                    "nyc@11.9.0",
+                    "istanbul-lib-instrument@1.10.1",
+                    "babel-template@6.26.0",
+                    "lodash@4.17.10",
+                ],
+                package="test",
+                version="1.0.0",
+                severity="test",
+                exploitMaturity="test",
+                isUpgradable=False,
+                isPatchable=False,
+                isPinnable=False,
+                identifiers=None,
+                semver=None,
+                packageManager="npm",
+                credit=None,
+                ignored=None,
+                patched=[],
+            )
+        ]
+        assert expected == project.vulnerabilities
+
     def test_filtering_empty_issues(self, project, project_url, requests_mock):
         requests_mock.post(
             "%s/issues" % project_url,
