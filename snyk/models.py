@@ -570,6 +570,7 @@ class Project(DataClassJSONMixin):
     remoteRepoUrl: Optional[str] = None
     branch: Optional[str] = None
     _tags: Optional[List[Any]] = field(default_factory=list)
+    remediation: Optional[Dict[Any, Any]] = field(default_factory=dict)
 
     def delete(self) -> bool:
         path = "org/%s/project/%s" % (self.organization.id, self.id)
