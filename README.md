@@ -266,6 +266,8 @@ all_targets = rest_client.get_rest_pages(f"orgs/{snyk_org}/targets", params=para
 print(len(all_targets))
 # returns 33 targets, note we don't have to add .json() to the call or access the "data" key, get_rest_pages does that for us
 
+# Override Content-Type header (or others) as needed for 
+response = rest_client.post(f"orgs/{snyk_org}/invites", body={"email": "some.body@snyk.io", "role": "f8223479-01a9-4774-8e29-06ce9a0513d6", headers={"Content-Type": "application/vnd.api+json"}})
 ```
 
 For backwards compatibility the get_rest_pages method has an alternative name of get_v3_pages to not break code already rewritten replatformed to the 0.9.0 pysnyk module.

@@ -14,7 +14,7 @@ class SnykHTTPError(SnykError):
                 data = resp.json()
                 self.code = data.get("code")
                 self.message = data.get("message")
-                self.error = data.get("error")
+                self.error = data.get("error") or data.get("errors")
             except json.decoder.JSONDecodeError:
                 self.code = resp.status_code
 
