@@ -103,7 +103,7 @@ class FixInfo(DataClassJSONMixin):
     isFixable: bool
     isPartiallyFixable: bool
     nearestFixedInVersion: str
-    fixedIn: List[str]
+    fixedIn: Optional[List[str]] = None
 
 
 @dataclass
@@ -584,7 +584,9 @@ class Project(DataClassJSONMixin):
     hostname: Optional[str] = None
     remoteRepoUrl: Optional[str] = None
     branch: Optional[str] = None
+    attributes: Optional[Dict[str, List[str]]] = None
     _tags: Optional[List[Any]] = field(default_factory=list)
+    remediation: Optional[Dict[Any, Any]] = field(default_factory=dict)
 
     def delete(self) -> bool:
         path = "org/%s/project/%s" % (self.organization.id, self.id)
