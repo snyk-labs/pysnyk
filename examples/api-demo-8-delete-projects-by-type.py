@@ -43,6 +43,6 @@ project_origin = args.projectOrigin
 client = SnykClient(snyk_token)
 for project in client.organizations.get(org_id).projects.all():
     if project_origin == project.origin:
-        if project.type != "dockerfile":
+        if project.type == "sast":
             if project.delete():
                 print("Project ID %s deleted" % project.id)
