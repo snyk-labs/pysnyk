@@ -219,8 +219,8 @@ class LicenseManager(Manager):
 
 
 class DependencyManager(Manager):
-    def all(self, page: int = 1):
-        results_per_page = 50
+
+    def _fetch(self, results_per_page, page):
         if hasattr(self.instance, "organization"):
             org_id = self.instance.organization.id
             post_body = {"filters": {"projects": [self.instance.id]}}
@@ -236,6 +236,24 @@ class DependencyManager(Manager):
 
         resp = self.client.post(path, post_body)
         dependency_data = resp.json()
+
+        return dependency_data
+
+    def first(self):
+        try:
+            results_per_page = 1
+            page = 1
+            dependency_data = self._fetch(results_per_page, page)
+            result = self.klass.from_dict(dependency_data["results"][0])
+
+            return result
+        except IndexError:
+            raise SnykNotFoundError
+
+    def all(self, page: int = 1):
+        results_per_page = 50
+
+        dependency_data = self._fetch(results_per_page, page)
 
         total = dependency_data[
             "total"
