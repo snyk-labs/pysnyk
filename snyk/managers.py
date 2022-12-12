@@ -160,6 +160,8 @@ class ProjectManager(Manager):
                         del project_data["tags"]
                     except KeyError:
                         pass
+                    if project_data['totalDependencies'] is None:
+                        project_data['totalDependencies'] = 0
                     projects.append(self.klass.from_dict(project_data))
             for x in projects:
                 x.organization = self.instance
