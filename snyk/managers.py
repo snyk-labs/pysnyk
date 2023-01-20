@@ -222,7 +222,7 @@ class LicenseManager(Manager):
 
 class DependencyManager(Manager):
     def all(self, page: int = 1):
-        results_per_page = 50
+        results_per_page = 1000
         if hasattr(self.instance, "organization"):
             org_id = self.instance.organization.id
             post_body = {"filters": {"projects": [self.instance.id]}}
