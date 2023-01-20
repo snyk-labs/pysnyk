@@ -328,6 +328,15 @@ class TestOrganization(TestModels):
         projects = organization.projects.all()
         assert projects[0]._tags == [{"key": "some-key", "value": "some-value"}]
 
+    def test_get_organization_project_has_tags(
+        self, organization, project, requests_mock
+    ):
+        matcher = re.compile("project/6d5813be-7e6d-4ab8-80c2-1e3e2a454545$")
+        requests_mock.get(matcher, json=project)
+        assert organization.projects.get(
+            "6d5813be-7e6d-4ab8-80c2-1e3e2a454545"
+        ).tags.all() == [{"key": "some-key", "value": "some-value"}]
+
 
 class TestProject(TestModels):
     @pytest.fixture
