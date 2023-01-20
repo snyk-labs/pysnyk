@@ -1,6 +1,8 @@
 # pysnyk
 
-[![Build Status](https://travis-ci.org/snyk-labs/pysnyk.svg?branch=master)](https://travis-ci.org/snyk-labs/pysnyk)
+
+[![Build status](https://github.com/snyk-labs/pysnyk/actions/workflows/test.yml/badge.svg)](https://github.com/snyk-labs/pysnyk/actions/workflows/test.yml)
+
 
 A Python client for the [Snyk API](https://snyk.docs.apiary.io/#).
 
