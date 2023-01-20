@@ -212,6 +212,15 @@ class TestOrganization(TestModels):
         with pytest.raises(SnykError):
             organization.test_rubygem("puppet", "4.0.0")
 
+    def test_clone_integration(self, organization, organization_url, requests_mock):
+        output = {"github": "not-a-real-id"}
+        requests_mock.get("%s/integrations" % organization_url, json=output)
+        requests_mock.post("%s/integrations/not-a-real-id/clone" % organization_url)
+        gh = organization.integrations.first()
+        assert gh.clone("target-org-id")
+        payload = requests_mock.last_request.json()
+        assert payload["destinationOrgPublicId"] == "target-org-id"
+
     def test_import_git(self, organization, requests_mock):
         integration_matcher = re.compile("integrations$")
         import_matcher = re.compile("import$")
