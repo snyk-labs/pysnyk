@@ -27,6 +27,7 @@ class SnykClient(object):
         tries: int = 1,
         delay: int = 1,
         backoff: int = 2,
+        verify: bool = True,
         version: Optional[str] = None,
 ***REMOVED***:
         self.api_token = token
@@ -40,6 +41,7 @@ class SnykClient(object):
         self.tries = tries
         self.backoff = backoff
         self.delay = delay
+        self.verify = verify
         self.version = version
 
         # Ensure we don't have a trailing /
@@ -59,13 +61,15 @@ class SnykClient(object):
 ***REMOVED*** -> requests.Response:
 
         if params and json:
-            resp = method(url, headers=headers, params=params, json=json)
+            resp = method(
+                url, headers=headers, params=params, json=json, verify=self.verify
+        ***REMOVED***
         elif params and not json:
-            resp = method(url, headers=headers, params=params)
+            resp = method(url, headers=headers, params=params, verify=self.verify)
         elif json and not params:
-            resp = method(url, headers=headers, json=json)
+            resp = method(url, headers=headers, json=json, verify=self.verify)
         else:
-            resp = method(url, headers=headers)
+            resp = method(url, headers=headers, verify=self.verify)
 
         if not resp or resp.status_code >= requests.codes.server_error:
             raise SnykHTTPError(resp)
