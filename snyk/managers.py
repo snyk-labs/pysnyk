@@ -185,6 +185,13 @@ class ProjectManager(Manager):
             resp = self.client.get(path)
             project_data = resp.json()
             project_data["organization"] = self.instance.to_dict()
+            # We move tags to _tags as a cache, to avoid the need for additional requests
+            # when working with tags. We want tags to be the manager
+            try:
+                project_data["_tags"] = project_data["tags"]
+                del project_data["tags"]
+            except KeyError:
+                pass
             project_klass = self.klass.from_dict(project_data)
             project_klass.organization = self.instance
             return project_klass
