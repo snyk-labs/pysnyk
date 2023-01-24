@@ -27,6 +27,7 @@ class SnykClient(object):
         tries: int = 1,
         delay: int = 1,
         backoff: int = 2,
+        verify: bool = True,
         version: Optional[str] = None,
     ):
         self.api_token = token
@@ -40,6 +41,7 @@ class SnykClient(object):
         self.tries = tries
         self.backoff = backoff
         self.delay = delay
+        self.verify = verify
         self.version = version
 
         # Ensure we don't have a trailing /
@@ -59,48 +61,59 @@ class SnykClient(object):
     ) -> requests.Response:
 
         if params and json:
-            resp = method(url, headers=headers, params=params, json=json)
+            resp = method(
+                url, headers=headers, params=params, json=json, verify=self.verify
+            )
         elif params and not json:
-            resp = method(url, headers=headers, params=params)
+            resp = method(url, headers=headers, params=params, verify=self.verify)
         elif json and not params:
-            resp = method(url, headers=headers, json=json)
+            resp = method(url, headers=headers, json=json, verify=self.verify)
         else:
-            resp = method(url, headers=headers)
+            resp = method(url, headers=headers, verify=self.verify)
 
         if not resp or resp.status_code >= requests.codes.server_error:
+            logger.warning(f"Retrying: {resp.text}")
             raise SnykHTTPError(resp)
         return resp
 
-    def post(self, path: str, body: Any) -> requests.Response:
+    def post(self, path: str, body: Any, headers: dict = {}) -> requests.Response:
         url = f"{self.api_url}/{path}"
         logger.debug(f"POST: {url}")
+
         resp = retry_call(
             self.request,
             fargs=[requests.post, url],
-            fkwargs={"json": body, "headers": self.api_post_headers},
+            fkwargs={"json": body, "headers": {**self.api_post_headers, **headers}},
             tries=self.tries,
             delay=self.delay,
             backoff=self.backoff,
+            exceptions=SnykHTTPError,
             logger=logger,
         )
-        if not resp:
+
+        if not resp.ok:
+            logger.error(resp.text)
             raise SnykHTTPError(resp)
+
         return resp
 
-    def put(self, path: str, body: Any) -> requests.Response:
+    def put(self, path: str, body: Any, headers: dict = {}) -> requests.Response:
         url = "%s/%s" % (self.api_url, path)
         logger.debug("PUT: %s" % url)
+
         resp = retry_call(
             self.request,
             fargs=[requests.put, url],
-            fkwargs={"json": body, "headers": self.api_post_headers},
+            fkwargs={"json": body, "headers": {**self.api_post_headers, **headers}},
             tries=self.tries,
             delay=self.delay,
             backoff=self.backoff,
             logger=logger,
         )
-        if not resp:
+        if not resp.ok:
+            logger.error(resp.text)
             raise SnykHTTPError(resp)
+
         return resp
 
     def get(
@@ -154,14 +167,16 @@ class SnykClient(object):
             backoff=self.backoff,
             logger=logger,
         )
-
-        if not resp:
+        if not resp.ok:
+            logger.error(resp.text)
             raise SnykHTTPError(resp)
+
         return resp
 
     def delete(self, path: str) -> requests.Response:
         url = f"{self.api_url}/{path}"
         logger.debug(f"DELETE: {url}")
+
         resp = retry_call(
             self.request,
             fargs=[requests.delete, url],
@@ -171,8 +186,10 @@ class SnykClient(object):
             backoff=self.backoff,
             logger=logger,
         )
-        if not resp:
+        if not resp.ok:
+            logger.error(resp.text)
             raise SnykHTTPError(resp)
+
         return resp
 
     def get_rest_pages(self, path: str, params: dict = {}) -> List:

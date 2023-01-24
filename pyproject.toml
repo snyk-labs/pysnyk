@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pysnyk"
-version = "0.9.3"
+version = "0.9.5"
 description = "A Python client for the Snyk API"
 authors = [
   "Gareth Rushgrove <garethr@snyk.io>",
@@ -21,10 +21,11 @@ retry = "^0.9.2"
 deprecation = "^2.1.0"
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.2.5"
+pytest = "^7.0.0"
 pytest-black = "^0.3.12"
 pytest-cov = "^3.0.0"
 pytest-mypy = "^0.9.1"
+mypy = "0.940"
 requests-mock = "^1.9.3"
 xlsxwriter = "^3.0.3"
 pytest-isort = "^3"

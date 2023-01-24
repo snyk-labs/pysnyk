@@ -160,6 +160,8 @@ class ProjectManager(Manager):
                         del project_data["tags"]
                     except KeyError:
                         pass
+                    if project_data["totalDependencies"] is None:
+                        project_data["totalDependencies"] = 0
                     projects.append(self.klass.from_dict(project_data))
             for x in projects:
                 x.organization = self.instance
@@ -183,6 +185,13 @@ class ProjectManager(Manager):
             resp = self.client.get(path)
             project_data = resp.json()
             project_data["organization"] = self.instance.to_dict()
+            # We move tags to _tags as a cache, to avoid the need for additional requests
+            # when working with tags. We want tags to be the manager
+            try:
+                project_data["_tags"] = project_data["tags"]
+                del project_data["tags"]
+            except KeyError:
+                pass
             project_klass = self.klass.from_dict(project_data)
             project_klass.organization = self.instance
             return project_klass
@@ -219,7 +228,6 @@ class LicenseManager(Manager):
 
 
 class DependencyManager(Manager):
-
     def _fetch(self, results_per_page, page):
         if hasattr(self.instance, "organization"):
             org_id = self.instance.organization.id
@@ -251,7 +259,7 @@ class DependencyManager(Manager):
             raise SnykNotFoundError
 
     def all(self, page: int = 1):
-        results_per_page = 50
+        results_per_page = 1000
 
         dependency_data = self._fetch(results_per_page, page)
 

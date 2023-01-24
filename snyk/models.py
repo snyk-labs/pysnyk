@@ -359,6 +359,21 @@ class Integration(DataClassJSONMixin):
     id: str
     organization: Optional[Organization] = None
 
+    def clone(self, target_organization_id) -> bool:
+        if not self.organization:
+            raise SnykError
+
+        path = "org/%s/integrations/%s/clone" % (self.organization.id, self.id)
+
+        if self.organization.client is None:
+            raise SnykError
+
+        return bool(
+            self.organization.client.post(
+                path, {"destinationOrgPublicId": target_organization_id}
+            )
+        )
+
     @property
     def settings(self):
         if not self.organization:
@@ -596,6 +611,16 @@ class Project(DataClassJSONMixin):
             raise SnykError
 
         return bool(self.organization.client.post(path, {}))
+
+    def move(self, new_org_id: str) -> bool:
+        path = "org/%s/project/%s/move" % (self.organization.id, self.id)
+
+        payload = {"targetOrgId": new_org_id}
+
+        if self.organization.client is None:
+            raise SnykError
+
+        return bool(self.organization.client.put(path, payload))
 
     @property
     def settings(self) -> Manager:

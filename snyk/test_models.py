@@ -212,6 +212,15 @@ class TestOrganization(TestModels):
         with pytest.raises(SnykError):
             organization.test_rubygem("puppet", "4.0.0")
 
+    def test_clone_integration(self, organization, organization_url, requests_mock):
+        output = {"github": "not-a-real-id"}
+        requests_mock.get("%s/integrations" % organization_url, json=output)
+        requests_mock.post("%s/integrations/not-a-real-id/clone" % organization_url)
+        gh = organization.integrations.first()
+        assert gh.clone("target-org-id")
+        payload = requests_mock.last_request.json()
+        assert payload["destinationOrgPublicId"] == "target-org-id"
+
     def test_import_git(self, organization, requests_mock):
         integration_matcher = re.compile("integrations$")
         import_matcher = re.compile("import$")
@@ -318,6 +327,15 @@ class TestOrganization(TestModels):
         requests_mock.get(projects_matcher, json={"projects": [project]})
         projects = organization.projects.all()
         assert projects[0]._tags == [{"key": "some-key", "value": "some-value"}]
+
+    def test_get_organization_project_has_tags(
+        self, organization, project, requests_mock
+    ):
+        matcher = re.compile("project/6d5813be-7e6d-4ab8-80c2-1e3e2a454545$")
+        requests_mock.get(matcher, json=project)
+        assert organization.projects.get(
+            "6d5813be-7e6d-4ab8-80c2-1e3e2a454545"
+        ).tags.all() == [{"key": "some-key", "value": "some-value"}]
 
 
 class TestProject(TestModels):
