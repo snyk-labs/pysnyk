@@ -192,6 +192,8 @@ class ProjectManager(Manager):
                 del project_data["tags"]
             except KeyError:
                 pass
+            if project_data["totalDependencies"] is None:
+                project_data["totalDependencies"] = 0
             project_klass = self.klass.from_dict(project_data)
             project_klass.organization = self.instance
             return project_klass
