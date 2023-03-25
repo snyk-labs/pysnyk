@@ -26,10 +26,10 @@ class TestSnykClient(object):
         return SnykClient("token")
 
     def test_default_api_url(self, client):
-        assert client.api_url == "https://snyk.io/api/v1"
+        assert client.api_url == "https://api.snyk.io/v1"
 
     def test_overriding_api_url(self):
-        url = "https://notsnyk.io/api/v1"
+        url = "https://api.notsnyk.io/v1"
         client = SnykClient("token", url)
         assert client.api_url == url
 
@@ -51,76 +51,76 @@ class TestSnykClient(object):
         assert client.api_post_headers["Content-Type"] == "application/json"
 
     def test_get_sends_request_to_snyk(self, requests_mock, client):
-        requests_mock.get("https://snyk.io/api/v1/sample", text="pong")
+        requests_mock.get("https://api.snyk.io/v1/sample", text="pong")
         assert client.get("sample")
 
     def test_put_sends_request_to_snyk(self, requests_mock, client):
-        requests_mock.put("https://snyk.io/api/v1/sample", text="pong")
+        requests_mock.put("https://api.snyk.io/v1/sample", text="pong")
         assert client.put("sample", {})
 
     def test_delete_sends_request_to_snyk(self, requests_mock, client):
-        requests_mock.delete("https://snyk.io/api/v1/sample")
+        requests_mock.delete("https://api.snyk.io/v1/sample")
         assert client.delete("sample")
 
     def test_post_sends_request_to_snyk(self, requests_mock, client):
-        requests_mock.post("https://snyk.io/api/v1/sample")
+        requests_mock.post("https://api.snyk.io/v1/sample")
         assert client.post("sample", {})
         assert requests_mock.call_count == 1
 
     def test_post_raises_error(self, requests_mock, client):
-        requests_mock.post("https://snyk.io/api/v1/sample", status_code=500, json={})
+        requests_mock.post("https://api.snyk.io/v1/sample", status_code=500, json={})
         with pytest.raises(SnykError):
             client.post("sample", {})
         assert requests_mock.call_count == 1
 
     def test_put_retries_and_raises_error(self, requests_mock, client):
-        requests_mock.put("https://snyk.io/api/v1/sample", status_code=500, json={})
+        requests_mock.put("https://api.snyk.io/v1/sample", status_code=500, json={})
         client = SnykClient("token", tries=4, delay=0, backoff=2)
         with pytest.raises(SnykError):
             client.put("sample", {})
         assert requests_mock.call_count == 4
 
     def test_delete_retries_and_raises_error(self, requests_mock, client):
-        requests_mock.delete("https://snyk.io/api/v1/sample", status_code=500, json={})
+        requests_mock.delete("https://api.snyk.io/v1/sample", status_code=500, json={})
         client = SnykClient("token", tries=4, delay=0, backoff=2)
         with pytest.raises(SnykError):
             client.delete("sample")
         assert requests_mock.call_count == 4
 
     def test_get_retries_and_raises_error(self, requests_mock, client):
-        requests_mock.get("https://snyk.io/api/v1/sample", status_code=500, json={})
+        requests_mock.get("https://api.snyk.io/v1/sample", status_code=500, json={})
         client = SnykClient("token", tries=4, delay=0, backoff=2)
         with pytest.raises(SnykError):
             client.get("sample")
         assert requests_mock.call_count == 4
 
     def test_post_retries_and_raises_error(self, requests_mock, client):
-        requests_mock.post("https://snyk.io/api/v1/sample", status_code=500, json={})
+        requests_mock.post("https://api.snyk.io/v1/sample", status_code=500, json={})
         client = SnykClient("token", tries=4, delay=0, backoff=2)
         with pytest.raises(SnykError):
             client.post("sample", {})
         assert requests_mock.call_count == 4
 
     def test_put_raises_error(self, requests_mock, client):
-        requests_mock.put("https://snyk.io/api/v1/sample", status_code=500, json={})
+        requests_mock.put("https://api.snyk.io/v1/sample", status_code=500, json={})
         with pytest.raises(SnykError):
             client.put("sample", {})
         assert requests_mock.call_count == 1
 
     def test_delete_raises_error(self, requests_mock, client):
-        requests_mock.delete("https://snyk.io/api/v1/sample", status_code=500, json={})
+        requests_mock.delete("https://api.snyk.io/v1/sample", status_code=500, json={})
         with pytest.raises(SnykError):
             client.delete("sample")
         assert requests_mock.call_count == 1
 
     def test_get_raises_error(self, requests_mock, client):
-        requests_mock.get("https://snyk.io/api/v1/sample", status_code=500, json={})
+        requests_mock.get("https://api.snyk.io/v1/sample", status_code=500, json={})
         with pytest.raises(SnykError):
             client.get("sample")
         assert requests_mock.call_count == 1
 
     def test_empty_organizations(self, requests_mock, client):
-        requests_mock.get("https://snyk.io/api/v1/orgs", json={})
+        requests_mock.get("https://api.snyk.io/v1/orgs", json={})
         assert [] == client.organizations.all()
 
     @pytest.fixture
@@ -132,65 +132,65 @@ class TestSnykClient(object):
         return load_test_data(TEST_DATA, "projects")
 
     def test_loads_organizations(self, requests_mock, client, organizations):
-        requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
+        requests_mock.get("https://api.snyk.io/v1/orgs", json=organizations)
         assert len(client.organizations.all()) == 2
 
     def test_first_organizations(self, requests_mock, client, organizations):
-        requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
+        requests_mock.get("https://api.snyk.io/v1/orgs", json=organizations)
         org = client.organizations.first()
         assert "defaultOrg" == org.name
 
     def test_first_organizations_on_empty(self, requests_mock, client):
-        requests_mock.get("https://snyk.io/api/v1/orgs", json={})
+        requests_mock.get("https://api.snyk.io/v1/orgs", json={})
         with pytest.raises(SnykNotFoundError):
             client.organizations.first()
 
     def test_filter_organizations(self, requests_mock, client, organizations):
-        requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
+        requests_mock.get("https://api.snyk.io/v1/orgs", json=organizations)
         assert 1 == len(client.organizations.filter(name="defaultOrg"))
 
     def test_filter_organizations_empty(self, requests_mock, client, organizations):
-        requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
+        requests_mock.get("https://api.snyk.io/v1/orgs", json=organizations)
         assert [] == client.organizations.filter(name="not present")
 
     def test_loads_organization(self, requests_mock, client, organizations):
         key = organizations["orgs"][0]["id"]
-        requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
+        requests_mock.get("https://api.snyk.io/v1/orgs", json=organizations)
         org = client.organizations.get(key)
         assert "defaultOrg" == org.name
 
     def test_non_existent_organization(self, requests_mock, client, organizations):
-        requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
+        requests_mock.get("https://api.snyk.io/v1/orgs", json=organizations)
         with pytest.raises(SnykNotFoundError):
             client.organizations.get("not-present")
 
     def test_organization_type(self, requests_mock, client, organizations):
-        requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
+        requests_mock.get("https://api.snyk.io/v1/orgs", json=organizations)
         assert all(type(x) is Organization for x in client.organizations.all())
 
     def test_organization_attributes(self, requests_mock, client, organizations):
-        requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
+        requests_mock.get("https://api.snyk.io/v1/orgs", json=organizations)
         assert client.organizations.first().name == "defaultOrg"
 
     def test_organization_load_group(self, requests_mock, client, organizations):
-        requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
+        requests_mock.get("https://api.snyk.io/v1/orgs", json=organizations)
         assert client.organizations.all()[1].group.name == "ACME Inc."
 
     def test_empty_projects(self, requests_mock, client, organizations):
-        requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
+        requests_mock.get("https://api.snyk.io/v1/orgs", json=organizations)
         matcher = re.compile("projects$")
         requests_mock.get(matcher, json={})
         assert [] == client.projects.all()
 
     def test_projects(self, requests_mock, client, organizations, projects):
-        requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
+        requests_mock.get("https://api.snyk.io/v1/orgs", json=organizations)
         matcher = re.compile("projects$")
         requests_mock.get(matcher, json=projects)
         assert len(client.projects.all()) == 2
         assert all(type(x) is Project for x in client.projects.all())
 
     def test_project(self, requests_mock, client, organizations, projects):
-        requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
+        requests_mock.get("https://api.snyk.io/v1/orgs", json=organizations)
         matcher = re.compile("projects$")
         requests_mock.get(matcher, json=projects)
         assert (
@@ -199,7 +199,7 @@ class TestSnykClient(object):
     ***REMOVED***
 
     def test_non_existent_project(self, requests_mock, client, organizations, projects):
-        requests_mock.get("https://snyk.io/api/v1/orgs", json=organizations)
+        requests_mock.get("https://api.snyk.io/v1/orgs", json=organizations)
         matcher = re.compile("projects$")
         requests_mock.get(matcher, json=projects)
         with pytest.raises(SnykNotFoundError):

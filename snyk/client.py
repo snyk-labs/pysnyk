@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class SnykClient(object):
-    API_URL = "https://snyk.io/api/v1"
+    API_URL = "https://api.snyk.io/v1"
     USER_AGENT = "pysnyk/%s" % __version__
 
     def __init__(
