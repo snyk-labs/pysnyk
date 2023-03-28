@@ -21,7 +21,7 @@ class TestModels(object):
 
     @pytest.fixture
     def base_url(self):
-        return "https://snyk.io/api/v1"
+        return "https://api.snyk.io/v1"
 
     @pytest.fixture
     def organization_url(self, base_url, organization):
@@ -529,8 +529,8 @@ class TestProject(TestModels):
                             "title": "Regular Expression Denial of Service (ReDoS)",
                             "severity": "low",
                             "originalSeverity": "high",
-                            "url": "https://snyk.io/vuln/npm:ms:20170412",
-                            "description": "`## Overview\\r\\n[`ms`](https://www.npmjs.com/package/ms) is a tiny millisecond conversion utility.\\r\\n\\r\\nAffected versions of this package are vulnerable to Regular Expression Denial of Service (ReDoS) due to an incomplete fix for previously reported vulnerability [npm:ms:20151024](https://snyk.io/vuln/npm:ms:20151024). The fix limited the length of accepted input string to 10,000 characters, and turned to be insufficient making it possible to block the event loop for 0.3 seconds (on a typical laptop) with a specially crafted string passed to `ms",
+                            "url": "https://security.snyk.io/vuln/npm:ms:20170412",
+                            "description": "`## Overview\\r\\n[`ms`](https://www.npmjs.com/package/ms) is a tiny millisecond conversion utility.\\r\\n\\r\\nAffected versions of this package are vulnerable to Regular Expression Denial of Service (ReDoS) due to an incomplete fix for previously reported vulnerability [npm:ms:20151024](https://security.snyk.io/vuln/npm:ms:20151024). The fix limited the length of accepted input string to 10,000 characters, and turned to be insufficient making it possible to block the event loop for 0.3 seconds (on a typical laptop) with a specially crafted string passed to `ms",
                             "identifiers": {"CVE": [], "CWE": ["CWE-400"], "OSVDB": []},
                             "credit": ["Snyk Security Research Team"],
                             "exploitMaturity": "no-known-exploit",
@@ -617,9 +617,9 @@ class TestProject(TestModels):
         expected = [
             Vulnerability(
                 id="npm:ms:20170412",
-                url="https://snyk.io/vuln/npm:ms:20170412",
+                url="https://security.snyk.io/vuln/npm:ms:20170412",
                 title="Regular Expression Denial of Service (ReDoS)",
-                description="`## Overview\\r\\n[`ms`](https://www.npmjs.com/package/ms) is a tiny millisecond conversion utility.\\r\\n\\r\\nAffected versions of this package are vulnerable to Regular Expression Denial of Service (ReDoS) due to an incomplete fix for previously reported vulnerability [npm:ms:20151024](https://snyk.io/vuln/npm:ms:20151024). The fix limited the length of accepted input string to 10,000 characters, and turned to be insufficient making it possible to block the event loop for 0.3 seconds (on a typical laptop) with a specially crafted string passed to `ms",
+                description="`## Overview\\r\\n[`ms`](https://www.npmjs.com/package/ms) is a tiny millisecond conversion utility.\\r\\n\\r\\nAffected versions of this package are vulnerable to Regular Expression Denial of Service (ReDoS) due to an incomplete fix for previously reported vulnerability [npm:ms:20151024](https://security.snyk.io/vuln/npm:ms:20151024). The fix limited the length of accepted input string to 10,000 characters, and turned to be insufficient making it possible to block the event loop for 0.3 seconds (on a typical laptop) with a specially crafted string passed to `ms",
                 upgradePath=[
                     "tap@11.1.5",
                     "nyc@11.9.0",
