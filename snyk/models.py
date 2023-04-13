@@ -138,7 +138,7 @@ class OrganizationGroup(DataClassJSONMixin):
 @dataclass
 class Package(DataClassJSONMixin):
     name: str
-    version: str
+    version: Optional[str] = None
     fixVersion: Optional[str] = None
 
 
