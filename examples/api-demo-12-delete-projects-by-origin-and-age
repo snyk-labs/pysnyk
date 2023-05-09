@@ -1,0 +1,99 @@
+# Delete projects from a given org that were created over X number of days ago
+# 
+# [Example command]: 
+# python3 api-demo-12-delete-projects-by-origin-and-age.py --orgId <insert org ID> --cutoffDays 30
+
+import argparse
+from snyk import SnykClient
+from datetime import datetime
+from utils import get_default_token_path, get_token
+
+
+def parse_command_line_args():
+    
+    parser = argparse.ArgumentParser(description="Snyk API Examples")
+
+    parser.add_argument(
+        "--orgId", type=str, help="The Snyk Organisation ID", required=True
+    )
+
+    parser.add_argument(
+        "--cutoffDays", type=int, help="Number of days to hold off on deleting a project", required=True
+    )
+
+    #parser.add_argument(
+    #    "--projectName",
+    #    type=str,
+    #    help="Put in your project name as it appears in Snyk",
+    #    required=True,
+    #)
+    
+    #parser.add_argument(
+    #    "--projectTypes",
+    #    help=" Set this if you want to make sure the project is of a certain package type (apk, deb, rpm, linux)",
+    #    required=False,
+    #)
+    
+    parser.add_argument(
+        "--projectOrigin",
+        choices=[
+            "cli",
+            "github",
+            "github-enterprise",
+            "bitbucket-cloud",
+            "bitbucket-server",
+            "gitlab",
+            "docker-hub",
+        ],
+        help=" Set this if you want to make sure the project is from a particular place (repo, CLI, etc)",
+        required=False,
+    )
+    return parser.parse_args()
+
+
+# logic to determine age of snyk project since create date in snyk
+def determine_days(createDate, cutOffTime):
+    time = createDate.split("T")
+    # print(time[0])
+    today = datetime.today()
+    # print("Today's date:", today)
+    date1 = datetime.strptime(time[0], "%Y-%m-%d")
+    delta = today - date1
+    # print(f'Difference is {delta.days} days')
+
+    if delta.days > cutOffTime:
+        return True
+    else:
+        return False
+
+
+snyk_token_path = get_default_token_path()
+snyk_token = get_token(snyk_token_path)
+args = parse_command_line_args()
+# For example, for GitHub projects it is `[org]/[repo-name]`
+# For a Docker scan pushed into Snyk via `snyk monitor`, it is `docker-image|[image-name]`
+
+# ----
+org_id = args.orgId
+project_origin = args.projectOrigin
+#project_types = ["apk","deb","rpm", "linux"]
+cutoff_days = args.cutoffDays
+
+client = SnykClient((snyk_token), tries=10, delay=1, backoff=2, debug=True)
+for project in client.organizations.get(org_id).projects.all():
+    #print(project.name)
+    #print(project.origin)
+    #print(project.type)
+    #print(project.created)    
+
+    if project.origin == project_origin:
+        #for projType in project_types:
+            #if project.type == projType:
+           #if project.name == project_name:
+                if determine_days(project.created, cutoff_days):
+                    if project.delete():
+                        print("Project NAME %s DELETED!" % project.name)
+                        print(project.id)
+                        print(project.origin)
+                        print(project.type)
+                        print(project.created)
