@@ -1,7 +1,7 @@
 # Delete projects from a given org that were created over X number of days ago
 # 
 # [Example command]: 
-# python3 api-demo-12-delete-projects-by-origin-and-age.py --orgId <insert org ID> --cutoffDays 30
+# python3 api-demo-12-delete-projects-by-origin-and-age.py --projectOrigin cli --orgId <insert org ID> --cutoffDays 30
 
 import argparse
 from snyk import SnykClient
