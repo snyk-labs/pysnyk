@@ -51,7 +51,7 @@ def parse_command_line_args():
     return parser.parse_args()
 
 
-# logic to determine age of snyk project since create date in snyk
+# function to determine age of snyk project since create date, compare to cutoff age in days (cutoffTime) from now
 def determine_days(createDate, cutOffTime):
     time = createDate.split("T")
     # print(time[0])
