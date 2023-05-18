@@ -587,6 +587,8 @@ class Project(DataClassJSONMixin):
     attributes: Optional[Dict[str, List[str]]] = None
     _tags: Optional[List[Any]] = field(default_factory=list)
     remediation: Optional[Dict[Any, Any]] = field(default_factory=dict)
+    owner: Optional[Dict[Any, Any]] = field(default_factory=dict)
+    importingUser: Optional[Dict[Any, Any]] = field(default_factory=dict)
 
     def delete(self) -> bool:
         path = "org/%s/project/%s" % (self.organization.id, self.id)
