@@ -498,6 +498,12 @@ class IssueCounts(DataClassJSONMixin):
     # https://updates.snyk.io/critical-severity-level-195891, critical severity is optional since it is still under Snyk preview
     critical: Optional[int] = 0
 
+@dataclass
+class User(DataClassJSONMixin):
+    id: str
+    name: str
+    username: str
+    email: str
 
 @dataclass
 class DependencyGraphPackageInfo(DataClassJSONMixin):
@@ -544,6 +550,12 @@ class DependencyProject(DataClassJSONMixin):
     name: str
     id: str
 
+@dataclass
+# TODO: list actual values this can return
+class Attributes(DataClassJSONMixin):
+    criticality: List[str]
+    environment: List[str]
+    lifecycle: List[str]
 
 @dataclass
 class Dependency(DataClassJSONMixin):
@@ -564,31 +576,33 @@ class Dependency(DataClassJSONMixin):
 @dataclass
 class Project(DataClassJSONMixin):
     name: str
-    organization: Organization
     id: str
     created: str
     origin: str
     type: str
-    readOnly: bool
+    readOnly: bool # TODO: not yet available in REST
     testFrequency: str
     totalDependencies: int
-    lastTestedDate: str
-    browseUrl: str
-    isMonitored: bool
-    issueCountsBySeverity: IssueCounts
-    imageTag: Optional[str] = None
-    imageId: Optional[str] = None
-    imageBaseImage: Optional[str] = None
-    imagePlatform: Optional[str] = None
-    imageCluster: Optional[str] = None
-    hostname: Optional[str] = None
+    issueCountsBySeverity: IssueCounts # TODO: Can be fetched from the latest project snapshot via v1 https://snyk.docs.apiary.io/#reference/projects/project-history/list-all-project-snapshots
+    imageId: Optional[str] = None # TODO: Can be fetched from the latest project snapshot via v1 https://snyk.docs.apiary.io/#reference/projects/project-history/list-all-project-snapshots
+    imageTag: Optional[str] = None # TODO: Can be fetched from the latest project snapshot via v1 https://snyk.docs.apiary.io/#reference/projects/project-history/list-all-project-snapshots
+    imageBaseImage: Optional[str] = None # TODO: Can be fetched from the latest project snapshot via v1 https://snyk.docs.apiary.io/#reference/projects/project-history/list-all-project-snapshots
+    imagePlatform: Optional[str] = None # TODO: Can be fetched from the latest project snapshot via v1 https://snyk.docs.apiary.io/#reference/projects/project-history/list-all-project-snapshots
+    imageCluster: Optional[str] = None # TODO: can be fetched from https://apidocs.snyk.io/?version=2023-04-28%7Ebeta#get-/orgs/-org_id-/targets
     remoteRepoUrl: Optional[str] = None
+    lastTestedDate: str # TODO: Can be fetched from the latest project snapshot via v1 https://snyk.docs.apiary.io/#reference/projects/project-history/list-all-project-snapshots
+    owner: User # TODO: use the owner ID and call this API to get the rest of the data https://apidocs.snyk.io/?version=2023-05-29%7Ebeta#get-/orgs/-org_id-/users/-id-
+    importingUser: User
+    browseUrl: str # TODO: constrict this yourself from scratch using the API host + project UUID + org name
+    isMonitored: bool
     branch: Optional[str] = None
-    attributes: Optional[Dict[str, List[str]]] = None
+    # TODO: delete remediation. This must be a mistake, there is no remediation in /projects v1 response
+    # remediation: Optional[Dict[Any, Any]] = field(default_factory=dict) # TODO: thsi is from individual project call only?
+    targetReference: str
+    attributes: Attributes
+    # appended/amended fields
+    organization: Organization
     _tags: Optional[List[Any]] = field(default_factory=list)
-    remediation: Optional[Dict[Any, Any]] = field(default_factory=dict)
-    owner: Optional[Dict[Any, Any]] = field(default_factory=dict)
-    importingUser: Optional[Dict[Any, Any]] = field(default_factory=dict)
 
     def delete(self) -> bool:
         path = "org/%s/project/%s" % (self.organization.id, self.id)

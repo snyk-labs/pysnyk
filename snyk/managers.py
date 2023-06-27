@@ -137,6 +137,10 @@ class TagManager(Manager):
         return bool(self.client.post(path, tag))
 
 
+# TODO: change implementation here to call REST Projects and other V1 APIs to fill in the gaps as per
+# migration guide https://docs.google.com/document/d/1e-CnYRYxZXBRCRFW8YZ8tfKkv5zLSg2tEHPiLrvO8Oc
+# Since the implementation uses filtering by tags, use an older API version that has this available https://apidocs.snyk.io/?version=2022-07-08%7Ebeta#get-/orgs/-org_id-/projects
+# See annotations on the class snyk/models.py#L451-L452 for what data needs to be fetched from elsewhere or constructed
 class ProjectManager(Manager):
     def _query(self, tags: List[Dict[str, str]] = []):
         projects = []
