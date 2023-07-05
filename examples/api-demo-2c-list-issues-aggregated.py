@@ -69,6 +69,10 @@ for v in issue_set.issues:
     print("  Severity: %s" % v.issueData.severity)
     print("  CVSS Score: %s" % v.issueData.cvssScore)
 
+    # print CVSS assigners if exists
+    for detail in v.issueData.cvssDetails:
+        print("    %s score: %s" % (detail['assigner'], detail['cvssV3BaseScore']))
+
     # for the excel output
     new_output_item = {
         "title": v.issueData.title,
