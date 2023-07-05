@@ -90,6 +90,7 @@ class IssueData(DataClassJSONMixin):
     disclosureTime: Optional[str] = None
     CVSSv3: Optional[str] = None
     cvssScore: Optional[str] = None
+    cvssDetails: Optional[List[Any]] = None
     language: Optional[str] = None
     patches: Optional[Any] = None
     nearestFixedInVersion: Optional[str] = None
