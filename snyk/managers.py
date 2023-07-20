@@ -1,4 +1,5 @@
 import abc
+import json
 from typing import Any, Dict, List
 
 from deprecation import deprecated  # type: ignore
@@ -136,33 +137,97 @@ class TagManager(Manager):
     ***REMOVED***
         return bool(self.client.post(path, tag))
 
-
 class ProjectManager(Manager):
-    def _query(self, tags: List[Dict[str, str]] = []):
+    def _rest_to_v1_response_format(self, project):
+        # Get the latest project snapshot to get numbers of vulns
+        project_snapshot_result = self.client.post(
+            f"org/{project.get('relationships', {}).get('organization', {}).get('data', {}).get('id')}/project/{project.get('id')}/history?perPage=1&page=1",
+            {})
+        project_snapshot = project_snapshot_result.json().get("snapshots", [{}])[0]
+
+        # Figure out the project owner & look up user details via ID
+        importing_user_id = project.get('relationships', {}).get('importer', {}).get('data', {}).get('id')
+        print(
+            f"orgid={project.get('relationships', {}).get('organization', {}).get('data', {}).get('id')} projectid={project.get('id')} userid={importing_user_id}")
+        importing_user_response = self.client.get(
+            f"orgs/{project.get('relationships', {}).get('organization', {}).get('data', {}).get('id')}/users/{importing_user_id}",
+            version="2023-05-29~beta")
+        importing_user = importing_user_response.json()
+
+        attributes = project.get('attributes', {})
+        settings = attributes.get('settings', {})
+        recurring_tests = settings.get('recurring_tests', {})
+        importing_user_data = importing_user.get('data', {})
+        importing_user_attributes = importing_user_data.get('attributes', {})
+        issue_counts = project_snapshot.get('issueCounts', {}).get('vuln', {})
+
+        return {
+            "name": attributes.get("name"),
+            "id": project.get("id"),
+            "created": attributes.get("created"),
+            "origin": attributes.get("origin"),
+            "type": attributes.get("type"),
+            "readOnly": attributes.get("read_only"),
+            "testFrequency": recurring_tests.get("frequency"),
+            "totalDependencies": project_snapshot.get("totalDependencies", 0),
+            "issueCountsBySeverity": {
+                "low": issue_counts.get("low", 0),
+                "medium": issue_counts.get("medium", 0),
+                "high": issue_counts.get("high", 0),
+                "critical": issue_counts.get("critical", 0),
+            },
+            "lastTestedDate": project_snapshot.get("created"),
+            "importingUser": {
+                "id": importing_user_id,
+                "name": importing_user_attributes.get("name"),
+                "username": importing_user_attributes.get("username"),
+                "email": importing_user_attributes.get("email"),
+            },
+            "isMonitored": True if project.get("meta", {}).get("cli_monitored_at") else False,
+            "owner": {
+                "id": importing_user_id,
+                "name": importing_user_attributes.get("name"),
+                "username": importing_user_attributes.get("username"),
+                "email": importing_user_attributes.get("email"),
+            },
+            "targetReference": attributes.get("target_reference"),
+            "tags": attributes.get("tags", []),
+            "browseUrl": f"https://app.snyk.io/org/{project.get('relationships', {}).get('organization', {}).get('data', {}).get('id')}/project/{project.get('id')}",
+        }
+
+    def _query(self, tags: List[Dict[str, str]] = [], next_url: str = None):
         projects = []
         if self.instance:
-            path = "org/%s/projects" % self.instance.id
+            path = "/orgs/%s/projects" % self.instance.id if not next_url else next_url
             if tags:
                 for tag in tags:
                     if "key" not in tag or "value" not in tag or len(tag.keys()) != 2:
                         raise SnykError("Each tag must contain only a key and a value")
-                data = {"filters": {"tags": {"includes": tags}}}
-                resp = self.client.post(path, data)
+                data = {"tags": [f"{k}:{v}" for k, v in tags.items()]}
+                resp = self.client.post(path, data, version="2023-06-19", exclude_version=True if next_url else False)
             else:
-                resp = self.client.get(path)
-            if "projects" in resp.json():
-                for project_data in resp.json()["projects"]:
+                resp = self.client.get(path, version="2023-06-19", exclude_version=True if next_url else False)
+
+            if "data" in resp.json():
+                for response_data in resp.json()["data"]:
+                    project_data = self._rest_to_v1_response_format(response_data)
                     project_data["organization"] = self.instance.to_dict()
-                    # We move tags to _tags as a cache, to avoid the need for additional requests
-                    # when working with tags. We want tags to be the manager
                     try:
-                        project_data["_tags"] = project_data["tags"]
-                        del project_data["tags"]
+                        project_data["attributes"]["_tags"] = project_data[
+                            "attributes"
+                        ]["tags"]
+                        del project_data["attributes"]["tags"]
                     except KeyError:
                         pass
-                    if project_data["totalDependencies"] is None:
+                    if not project_data.get("totalDependencies"):
                         project_data["totalDependencies"] = 0
                     projects.append(self.klass.from_dict(project_data))
+
+            # If we have another page, then process this page too
+            if 'next' in resp.json().get("links", {}):
+                next_url = resp.json().get("links", {})['next']
+                projects.extend(self._query(tags, next_url))
+
             for x in projects:
                 x.organization = self.instance
         else:
