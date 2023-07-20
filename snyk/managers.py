@@ -203,7 +203,7 @@ class ProjectManager(Manager):
                 for tag in tags:
                     if "key" not in tag or "value" not in tag or len(tag.keys()) != 2:
                         raise SnykError("Each tag must contain only a key and a value")
-                data = {"tags": [f"{k}:{v}" for k, v in tags.items()]}
+                data = {"tags": [f'{d["key"]}:{d["value"]}' for d in tags]}
                 resp = self.client.post(path, data, version="2023-06-19", exclude_version=True if next_url else False)
             else:
                 resp = self.client.get(path, version="2023-06-19", exclude_version=True if next_url else False)
