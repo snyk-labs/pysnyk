@@ -586,7 +586,6 @@ class Project(DataClassJSONMixin):
     branch: Optional[str] = None
     attributes: Optional[Dict[str, List[str]]] = None
     _tags: Optional[List[Any]] = field(default_factory=list)
-    remediation: Optional[Dict[Any, Any]] = field(default_factory=dict)
     owner: Optional[Dict[Any, Any]] = field(default_factory=dict)
     importingUser: Optional[Dict[Any, Any]] = field(default_factory=dict)
 
