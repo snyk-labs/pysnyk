@@ -146,8 +146,6 @@ class SnykClient(object):
         else:
             url = f"{self.api_url}/{path}"
 
-        print(f"TOTAL URL = {url}")
-
         if params or self.version:
 
             if not params:
