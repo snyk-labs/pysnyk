@@ -215,10 +215,10 @@ class ProjectManager(Manager):
                     if "key" not in tag or "value" not in tag or len(tag.keys()) != 2:
                         raise SnykError("Each tag must contain only a key and a value")
                 data = {"tags": [f'{d["key"]}:{d["value"]}' for d in tags]}
-                resp = self.client.post(
+                resp = self.client.get(
                     path,
-                    data,
                     version="2023-06-19",
+                    params={"tags": ",".join(data)},
                     exclude_version=True if next_url else False,
             ***REMOVED***
             else:
