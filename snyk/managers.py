@@ -137,29 +137,38 @@ class TagManager(Manager):
     ***REMOVED***
         return bool(self.client.post(path, tag))
 
+
 class ProjectManager(Manager):
     def _rest_to_v1_response_format(self, project):
         # Get the latest project snapshot to get numbers of vulns
         project_snapshot_result = self.client.post(
             f"org/{project.get('relationships', {}).get('organization', {}).get('data', {}).get('id')}/project/{project.get('id')}/history?perPage=1&page=1",
-            {})
+            {},
+    ***REMOVED***
         project_snapshot = project_snapshot_result.json().get("snapshots", [{}])[0]
 
         # Figure out the project owner & look up user details via ID
-        importing_user_id = project.get('relationships', {}).get('importer', {}).get('data', {}).get('id')
+        importing_user_id = (
+            project.get("relationships", {})
+            .get("importer", {})
+            .get("data", {})
+            .get("id")
+    ***REMOVED***
         print(
-            f"orgid={project.get('relationships', {}).get('organization', {}).get('data', {}).get('id')} projectid={project.get('id')} userid={importing_user_id}")
+            f"orgid={project.get('relationships', {}).get('organization', {}).get('data', {}).get('id')} projectid={project.get('id')} userid={importing_user_id}"
+    ***REMOVED***
         importing_user_response = self.client.get(
             f"orgs/{project.get('relationships', {}).get('organization', {}).get('data', {}).get('id')}/users/{importing_user_id}",
-            version="2023-05-29~beta")
+            version="2023-05-29~beta",
+    ***REMOVED***
         importing_user = importing_user_response.json()
 
-        attributes = project.get('attributes', {})
-        settings = attributes.get('settings', {})
-        recurring_tests = settings.get('recurring_tests', {})
-        importing_user_data = importing_user.get('data', {})
-        importing_user_attributes = importing_user_data.get('attributes', {})
-        issue_counts = project_snapshot.get('issueCounts', {}).get('vuln', {})
+        attributes = project.get("attributes", {})
+        settings = attributes.get("settings", {})
+        recurring_tests = settings.get("recurring_tests", {})
+        importing_user_data = importing_user.get("data", {})
+        importing_user_attributes = importing_user_data.get("attributes", {})
+        issue_counts = project_snapshot.get("issueCounts", {}).get("vuln", {})
 
         return {
             "name": attributes.get("name"),
@@ -183,7 +192,9 @@ class ProjectManager(Manager):
                 "username": importing_user_attributes.get("username"),
                 "email": importing_user_attributes.get("email"),
             },
-            "isMonitored": True if project.get("meta", {}).get("cli_monitored_at") else False,
+            "isMonitored": True
+            if project.get("meta", {}).get("cli_monitored_at")
+            else False,
             "owner": {
                 "id": importing_user_id,
                 "name": importing_user_attributes.get("name"),
@@ -204,9 +215,18 @@ class ProjectManager(Manager):
                     if "key" not in tag or "value" not in tag or len(tag.keys()) != 2:
                         raise SnykError("Each tag must contain only a key and a value")
                 data = {"tags": [f'{d["key"]}:{d["value"]}' for d in tags]}
-                resp = self.client.post(path, data, version="2023-06-19", exclude_version=True if next_url else False)
+                resp = self.client.post(
+                    path,
+                    data,
+                    version="2023-06-19",
+                    exclude_version=True if next_url else False,
+            ***REMOVED***
             else:
-                resp = self.client.get(path, version="2023-06-19", exclude_version=True if next_url else False)
+                resp = self.client.get(
+                    path,
+                    version="2023-06-19",
+                    exclude_version=True if next_url else False,
+            ***REMOVED***
 
             if "data" in resp.json():
                 for response_data in resp.json()["data"]:
@@ -224,8 +244,8 @@ class ProjectManager(Manager):
                     projects.append(self.klass.from_dict(project_data))
 
             # If we have another page, then process this page too
-            if 'next' in resp.json().get("links", {}):
-                next_url = resp.json().get("links", {})['next']
+            if "next" in resp.json().get("links", {}):
+                next_url = resp.json().get("links", {})["next"]
                 projects.extend(self._query(tags, next_url))
 
             for x in projects:
