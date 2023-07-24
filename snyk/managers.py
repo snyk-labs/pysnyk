@@ -1,11 +1,14 @@
 import abc
+import logging
 from typing import Any, Dict, List
+from urllib.parse import urljoin
 
 from deprecation import deprecated  # type: ignore
 
-from .errors import SnykError, SnykNotFoundError, SnykNotImplementedError
+from .errors import SnykError, SnykNotFoundError, SnykNotImplementedError, SnykHTTPError
 from .utils import snake_to_camel
 
+logger = logging.getLogger(__name__)
 
 class Manager(abc.ABC):
     def __init__(self, klass, client, instance=None):
@@ -62,6 +65,7 @@ class Manager(abc.ABC):
                 "IntegrationSetting": IntegrationSettingManager,
                 "Tag": TagManager,
                 "IssuePaths": IssuePathsManager,
+                "OrganizationGroup": OrganizationGroupManager,
             }[key]
             return manager(klass, client, instance)
         except KeyError:
@@ -106,14 +110,93 @@ class SingletonManager(Manager):
 
 class OrganizationManager(Manager):
     def all(self):
-        resp = self.client.get("orgs")
+        params = {'limit': self.client.params['limit']}
+        resp = self.client.get_rest_pages("/orgs", params)
+        
         orgs = []
-        if "orgs" in resp.json():
-            for org_data in resp.json()["orgs"]:
-                orgs.append(self.klass.from_dict(org_data))
-        for org in orgs:
-            org.client = self.client
+        if len(resp) > 0:
+
+            groups = self.client.groups.all()
+
+            for org in resp:
+
+                try:
+                    group = next(x for x in groups if x.id == org['attributes']['group_id']).to_dict()
+                except StopIteration:
+                    group = None
+
+                # Map org data to model variables
+                org_template = {
+                    'name':  org['attributes']['name'],
+                    'id': org['id'],
+                    'slug': org['attributes']['slug'],
+                    'url': urljoin(self.client.web_url, '/org/{}'.format(org['attributes']['slug'])),
+                    'personal': org['attributes']['is_personal'],
+                    'group': group,
+                    'client': self.client
+                }
+                
+                orgs.append(self.klass.from_dict(org_template))
+
         return orgs
+
+    def get(self, id: str):
+        try:
+            org = self.client.get_rest_page("/orgs/{}".format(id))
+
+            org_template = {
+                    'name':  org['attributes']['name'],
+                    'id': org['id'],
+                    'slug': org['attributes']['slug'],
+                    'url': urljoin(self.client.web_url, '/org/{}'.format(org['attributes']['slug'])),
+                    'personal': org['attributes']['is_personal'],
+                    'group': self.client.groups.get(org['attributes']['group_id']).to_dict() if 'group_id' in org['attributes'].keys() else None,
+                    'client': self.client
+                }
+        except SnykHTTPError as e:
+            logging.error(e.error)
+            raise e
+        except Exception as e:
+            logging.error(e)
+            raise e
+
+        return self.klass.from_dict(org_template)
+
+class OrganizationGroupManager(Manager):
+    def all(self):
+        params = {'limit': self.client.params['limit']}
+        resp = self.client.get_rest_pages("/groups", params)
+
+        groups = []
+        if len(resp) > 0:
+            for group in resp:
+                groups.append(self.klass.from_dict({'name': group['attributes']['name'], 'id': group['id']}))
+
+        return groups
+
+    def first(self):
+        raise SnykNotImplementedError  # pragma: no cover
+    
+    def get(self, id: str):
+        try:
+            resp = self.client.get_rest_page("/groups/{}".format(id))
+        except SnykHTTPError as e:
+            if e.error[0]['detail'] == "Group Not Found":
+                logging.error("Group Not Found")
+                raise SnykNotFoundError from None
+            elif e.error[0]['detail'] == 'must match format "uuid"':
+                logging.error("ID must match format 'uuid'")
+                raise e
+            else:
+                raise e
+        except Exception as e:
+            raise e
+
+        return self.klass(resp['attributes']['name'],resp['id'])
+
+
+    def filter(self, **kwargs: Any):
+       raise SnykNotImplementedError  # pragma: no cover
 
 
 class TagManager(Manager):
@@ -142,33 +225,38 @@ class TagManager(Manager):
 # Since the implementation uses filtering by tags, use an older API version that has this available https://apidocs.snyk.io/?version=2022-07-08%7Ebeta#get-/orgs/-org_id-/projects
 # See annotations on the class snyk/models.py#L451-L452 for what data needs to be fetched from elsewhere or constructed
 class ProjectManager(Manager):
-    def _query(self, tags: List[Dict[str, str]] = []):
+    #def _query(self, tags: List[Dict[str, str]] = []):
+    def _query(self, params: dict = {}):
         projects = []
         if self.instance:
-            path = "org/%s/projects" % self.instance.id
-            if tags:
-                for tag in tags:
-                    if "key" not in tag or "value" not in tag or len(tag.keys()) != 2:
-                        raise SnykError("Each tag must contain only a key and a value")
-                data = {"filters": {"tags": {"includes": tags}}}
-                resp = self.client.post(path, data)
-            else:
-                resp = self.client.get(path)
-            if "projects" in resp.json():
-                for project_data in resp.json()["projects"]:
-                    project_data["organization"] = self.instance.to_dict()
-                    # We move tags to _tags as a cache, to avoid the need for additional requests
-                    # when working with tags. We want tags to be the manager
-                    try:
-                        project_data["_tags"] = project_data["tags"]
-                        del project_data["tags"]
-                    except KeyError:
-                        pass
-                    if project_data["totalDependencies"] is None:
-                        project_data["totalDependencies"] = 0
-                    projects.append(self.klass.from_dict(project_data))
-            for x in projects:
-                x.organization = self.instance
+            if 'limit' not in params.keys():
+                params['limit'] = self.client.params['limit']
+                
+            path = "orgs/%s/projects" % self.instance.id
+            resp = self.client.get_rest_pages(path, params)
+
+            for project in resp:
+                attributes = project['attributes']
+
+                project_data = {
+                    'name':    attributes['name'],
+                    'id':      project['id'],
+                    'created': attributes['created'],
+                    'origin':  attributes['origin'],
+                    'type':    attributes['type'],
+                    'readOnly': attributes['read_only'],
+                    'testFrequency': attributes['settings']['recurring_tests']['frequency'],
+                    'browseUrl': urljoin(self.instance.url,'/project/{}'.format(id)),
+                    'isMonitored': attributes['status'] if attributes['status'] == 'active' else False,
+                    'targetReference': attributes['target_reference'],
+                    'organization': self.instance.to_dict(),
+                    '_tags': attributes['tags'] if 'tags' in attributes.keys() else [],
+                    'attributes': {'criticality':attributes['business_criticality'], 'environment':attributes['environment'], 'lifecycle':attributes['lifecycle']},
+                }
+
+                project_klass = self.klass.from_dict(project_data)
+
+                projects.append(project_klass)
         else:
             for org in self.client.organizations.all():
                 projects.extend(org.projects.all())
@@ -185,21 +273,28 @@ class ProjectManager(Manager):
 
     def get(self, id: str):
         if self.instance:
-            path = "org/%s/project/%s" % (self.instance.id, id)
-            resp = self.client.get(path)
-            project_data = resp.json()
-            project_data["organization"] = self.instance.to_dict()
-            # We move tags to _tags as a cache, to avoid the need for additional requests
-            # when working with tags. We want tags to be the manager
-            try:
-                project_data["_tags"] = project_data["tags"]
-                del project_data["tags"]
-            except KeyError:
-                pass
-            if project_data["totalDependencies"] is None:
-                project_data["totalDependencies"] = 0
+            path = "orgs/%s/projects/%s" % (self.instance.id, id)
+            resp = self.client.get_rest_page(path)
+            attributes = resp['attributes']
+            
+            project_data = {
+                'name':    attributes['name'],
+                'id':      resp['id'],
+                'created': attributes['created'],
+                'origin':  attributes['origin'],
+                'type':    attributes['type'],
+                'readOnly': attributes['read_only'],
+                'testFrequency': attributes['settings']['recurring_tests']['frequency'],
+                'browseUrl': urljoin(self.instance.url,'/project/{}'.format(id)),
+                'isMonitored': attributes['status'] if attributes['status'] == 'active' else False,
+                'targetReference': attributes['target_reference'],
+                'organization': self.instance.to_dict(),
+                '_tags': attributes['tags'] if 'tags' in attributes.keys() else [],
+                'attributes': {'criticality':attributes['business_criticality'], 'environment':attributes['environment'], 'lifecycle':attributes['lifecycle']},
+            }
+
             project_klass = self.klass.from_dict(project_data)
-            project_klass.organization = self.instance
+            
             return project_klass
         else:
             return super().get(id)

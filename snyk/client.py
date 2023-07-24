@@ -8,20 +8,24 @@ from retry.api import retry_call
 from .__version__ import __version__
 from .errors import SnykHTTPError, SnykNotImplementedError
 from .managers import Manager
-from .models import Organization, Project
+from .models import Organization, Project, OrganizationGroup
 from .utils import cleanup_path
 
 logger = logging.getLogger(__name__)
 
 
 class SnykClient(object):
-    API_URL = "https://api.snyk.io/v1"
+    WEB_URL = "https://app.snyk.io"
+    API_URL = "https://api.snyk.io/rest"
+    VERSION = "2023-06-23~experimental"
+    #API_URL = "https://api.snyk.io/v1"
     USER_AGENT = "pysnyk/%s" % __version__
 
     def __init__(
         self,
         token: str,
         url: Optional[str] = None,
+        web_url: Optional[str] = None,
         user_agent: Optional[str] = USER_AGENT,
         debug: bool = False,
         tries: int = 1,
@@ -29,6 +33,7 @@ class SnykClient(object):
         backoff: int = 2,
         verify: bool = True,
         version: Optional[str] = None,
+        params: dict = {'limit':100},
     ):
         self.api_token = token
         self.api_url = url or self.API_URL
@@ -42,7 +47,9 @@ class SnykClient(object):
         self.backoff = backoff
         self.delay = delay
         self.verify = verify
-        self.version = version
+        self.version = version or self.VERSION
+        self.web_url = web_url or self.WEB_URL
+        self.params = params
 
         # Ensure we don't have a trailing /
         if self.api_url[-1] == "/":
@@ -157,7 +164,7 @@ class SnykClient(object):
             fkwargs = {"headers": self.api_headers}
 
         logger.debug(f"GET: {debug_url}")
-
+        
         resp = retry_call(
             self.request,
             fargs=[requests.get, url],
@@ -192,6 +199,13 @@ class SnykClient(object):
 
         return resp
 
+    def get_rest_page(self, path: str, params: dict = {}) -> dict:
+        """Helper function to colleged unpaginated responses from the rest API as a dictionary
+
+        This takes the "data" list from the response and returns it"""
+        
+        return self.get(path, params).json()['data']
+
     def get_rest_pages(self, path: str, params: dict = {}) -> List:
         """
         Helper function to collect paginated responses from the rest API into a single
@@ -203,7 +217,6 @@ class SnykClient(object):
 
         # this is a raw primative but a higher level module might want something that does an
         # arbitrary path + origin=foo + limit=100 url construction instead before being sent here
-
         limit = params["limit"]
 
         data = list()
@@ -211,12 +224,16 @@ class SnykClient(object):
         page = self.get(path, params).json()
 
         data.extend(page["data"])
-
+        
         while "next" in page["links"].keys():
             logger.debug(
                 f"GET_REST_PAGES: Another link exists: {page['links']['next']}"
             )
 
+            # Check for "/rest" at the end of the root url and beginning of next url
+            if page["links"]["next"][:5] == "/rest" and self.api_url[-5:] == "/rest":
+                page["links"]["next"] = page["links"]["next"][5:]
+            
             next_url = urllib.parse.urlsplit(page["links"]["next"])
             query = urllib.parse.parse_qs(next_url.query)
 
@@ -254,8 +271,11 @@ class SnykClient(object):
     # https://snyk.docs.apiary.io/#reference/groups/organisations-in-groups/create-a-new-organisation-in-the-group
     # https://snyk.docs.apiary.io/#reference/0/list-members-in-a-group/list-all-members-in-a-group
     # https://snyk.docs.apiary.io/#reference/0/members-in-an-organisation-of-a-group/add-a-member-to-an-organisation-from-another-organisation-in-the-group
-    def groups(self):
-        raise SnykNotImplementedError  # pragma: no cover
+    @property
+    def groups(self) -> Manager:
+        return Manager.factory(OrganizationGroup, self)
+        #return Manager.factory(Organization, self)
+        #raise SnykNotImplementedError  # pragma: no cover
 
     # https://snyk.docs.apiary.io/#reference/reporting-api/issues/get-list-of-issues
     def issues(self):
