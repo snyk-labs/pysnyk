@@ -1,7 +1,8 @@
 import abc
 import logging
+import json
 from typing import Any, Dict, List
-from urllib.parse import urljoin
+from requests.compat import urljoin
 
 from deprecation import deprecated  # type: ignore
 
@@ -49,24 +50,26 @@ class Manager(abc.ABC):
             else:
                 key = klass.__name__
             manager = {
-                "Project": ProjectManager,
-                "Organization": OrganizationManager,
-                "Member": MemberManager,
-                "License": LicenseManager,
-                "Dependency": DependencyManager,
-                "Entitlement": EntitlementManager,
-                "Setting": SettingManager,
-                "Ignore": IgnoreManager,
-                "JiraIssue": JiraIssueManager,
-                "DependencyGraph": DependencyGraphManager,
-                "IssueSet": IssueSetManager,
+                "Project":            ProjectManager,
+                "Organization":       OrganizationManager,
+                "Member":             MemberManager,
+                "License":            LicenseManager,
+                "Dependency":         DependencyManager,
+                "Entitlement":        EntitlementManager,
+                "Setting":            SettingManager,
+                "Ignore":             IgnoreManager,
+                "JiraIssue":          JiraIssueManager,
+                "DependencyGraph":    DependencyGraphManager,
+                "IssueSet":           IssueSetManager,
                 "IssueSetAggregated": IssueSetAggregatedManager,
-                "Integration": IntegrationManager,
+                "Integration":        IntegrationManager,
                 "IntegrationSetting": IntegrationSettingManager,
-                "Tag": TagManager,
-                "IssuePaths": IssuePathsManager,
-                "OrganizationGroup": OrganizationGroupManager,
+                "Tag":                TagManager,
+                "IssuePaths":         IssuePathsManager,
+                "OrganizationGroup":  OrganizationGroupManager,
+                "User":               UserManager,
             }[key]
+            
             return manager(klass, client, instance)
         except KeyError:
             raise SnykError
@@ -204,12 +207,31 @@ class TagManager(Manager):
         return self.instance._tags
 
     def add(self, key, value) -> bool:
-        tag = {"key": key, "value": value}
-        path = "org/%s/project/%s/tags" % (
+
+        path = "orgs/%s/projects/%s" % (
             self.instance.organization.id,
             self.instance.id,
         )
-        return bool(self.client.post(path, tag))
+        
+        # Retain previous tags
+        tags = self.instance._tags
+        tags.append({'key':key, 'value':value})
+
+        # Build the request body
+        body = {
+            "data": { 
+            "attributes":{
+                "tags":tags
+            },
+            "relationships":{}, 
+            "id":self.instance.id, 
+            "type": "project"
+            }
+        }
+
+        params = {'user_id': self.instance.organization.client.users.self.id}
+        headers = {'content-type': 'application/vnd.api+json'}
+        return bool(self.client.patch(path=path, body=body, params=params, headers=headers))
 
     def delete(self, key, value) -> bool:
         tag = {"key": key, "value": value}
@@ -219,7 +241,30 @@ class TagManager(Manager):
         )
         return bool(self.client.post(path, tag))
 
+class UserManager(Manager):
+    
+    def all(self) -> Any:
+        pass  # pragma: no cover
+    
+    def first(self):
+        raise SnykNotImplementedError  # pragma: no cover
 
+    def get(self, id: str):
+        raise SnykNotImplementedError  # pragma: no cover
+
+    def filter(self, **kwargs: Any):
+        raise SnykNotImplementedError  # pragma: no cover
+      
+    @property
+    def self(self):
+        user = self.client.get_rest_page("/self")
+        user_data = {'id': user['id']}
+        fields = ['name','username','email']
+        for field in fields:
+            if field in user['attributes']:
+                user_data[field] = user['attributes'][field]
+        return self.klass.from_dict(user_data)
+    
 # TODO: change implementation here to call REST Projects and other V1 APIs to fill in the gaps as per
 # migration guide https://docs.google.com/document/d/1e-CnYRYxZXBRCRFW8YZ8tfKkv5zLSg2tEHPiLrvO8Oc
 # Since the implementation uses filtering by tags, use an older API version that has this available https://apidocs.snyk.io/?version=2022-07-08%7Ebeta#get-/orgs/-org_id-/projects
@@ -239,19 +284,21 @@ class ProjectManager(Manager):
                 attributes = project['attributes']
 
                 project_data = {
-                    'name':    attributes['name'],
-                    'id':      project['id'],
-                    'created': attributes['created'],
-                    'origin':  attributes['origin'],
-                    'type':    attributes['type'],
-                    'readOnly': attributes['read_only'],
-                    'testFrequency': attributes['settings']['recurring_tests']['frequency'],
-                    'browseUrl': urljoin(self.instance.url,'/project/{}'.format(id)),
-                    'isMonitored': attributes['status'] if attributes['status'] == 'active' else False,
+                    'name':            attributes['name'],
+                    'id':              project['id'],
+                    'created':         attributes['created'],
+                    'origin':          attributes['origin'],
+                    'type':            attributes['type'],
+                    'readOnly':        attributes['read_only'],
+                    'testFrequency':   attributes['settings']['recurring_tests']['frequency'],
+                    'browseUrl':       urljoin(self.instance.url,'/project/{}'.format(id)),
+                    'isMonitored':     attributes['status'] if attributes['status'] == 'active' else False,
                     'targetReference': attributes['target_reference'],
-                    'organization': self.instance.to_dict(),
-                    '_tags': attributes['tags'] if 'tags' in attributes.keys() else [],
-                    'attributes': {'criticality':attributes['business_criticality'], 'environment':attributes['environment'], 'lifecycle':attributes['lifecycle']},
+                    'organization':    self.instance.to_dict(),
+                    '_tags':           attributes['tags'] if 'tags' in attributes.keys() else [],
+                    'attributes':      {'criticality': attributes['business_criticality'], 
+                                        'environment': attributes['environment'], 
+                                        'lifecycle':   attributes['lifecycle']},
                 }
 
                 project_klass = self.klass.from_dict(project_data)
@@ -278,19 +325,21 @@ class ProjectManager(Manager):
             attributes = resp['attributes']
             
             project_data = {
-                'name':    attributes['name'],
-                'id':      resp['id'],
-                'created': attributes['created'],
-                'origin':  attributes['origin'],
-                'type':    attributes['type'],
-                'readOnly': attributes['read_only'],
-                'testFrequency': attributes['settings']['recurring_tests']['frequency'],
-                'browseUrl': urljoin(self.instance.url,'/project/{}'.format(id)),
-                'isMonitored': attributes['status'] if attributes['status'] == 'active' else False,
+                'name':            attributes['name'],
+                'id':              resp['id'],
+                'created':         attributes['created'],
+                'origin':          attributes['origin'],
+                'type':            attributes['type'],
+                'readOnly':        attributes['read_only'],
+                'testFrequency':   attributes['settings']['recurring_tests']['frequency'],
+                'browseUrl':       urljoin(self.instance.url,'/project/{}'.format(id)),
+                'isMonitored':     attributes['status'] if attributes['status'] == 'active' else False,
                 'targetReference': attributes['target_reference'],
-                'organization': self.instance.to_dict(),
-                '_tags': attributes['tags'] if 'tags' in attributes.keys() else [],
-                'attributes': {'criticality':attributes['business_criticality'], 'environment':attributes['environment'], 'lifecycle':attributes['lifecycle']},
+                'organization':    self.instance.to_dict(),
+                '_tags':           attributes['tags'] if 'tags' in attributes.keys() else [],
+                'attributes':      {'criticality': attributes['business_criticality'], 
+                                    'environment': attributes['environment'], 
+                                    'lifecycle':   attributes['lifecycle']},
             }
 
             project_klass = self.klass.from_dict(project_data)

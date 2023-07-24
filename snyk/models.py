@@ -503,8 +503,8 @@ class IssueCounts(DataClassJSONMixin):
 class User(DataClassJSONMixin):
     id: str
     name: str
-    username: str
-    email: str
+    username: Optional[str] = field(default_factory=str)
+    email: Optional[str] = field(default_factory=str)
 
 @dataclass
 class DependencyGraphPackageInfo(DataClassJSONMixin):

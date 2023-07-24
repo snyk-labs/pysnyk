@@ -3,12 +3,13 @@ import urllib.parse
 from typing import Any, List, Optional
 
 import requests
+from requests.compat import urljoin
 from retry.api import retry_call
 
 from .__version__ import __version__
 from .errors import SnykHTTPError, SnykNotImplementedError
 from .managers import Manager
-from .models import Organization, Project, OrganizationGroup
+from .models import Organization, Project, OrganizationGroup, User
 from .utils import cleanup_path
 
 logger = logging.getLogger(__name__)
@@ -71,6 +72,7 @@ class SnykClient(object):
             resp = method(
                 url, headers=headers, params=params, json=json, verify=self.verify
             )
+
         elif params and not json:
             resp = method(url, headers=headers, params=params, verify=self.verify)
         elif json and not params:
@@ -98,6 +100,39 @@ class SnykClient(object):
             logger=logger,
         )
 
+        if not resp.ok:
+            logger.error(resp.text)
+            raise SnykHTTPError(resp)
+
+        return resp
+
+    def patch(self, path: str, body: Any, headers: dict = {}, params: dict = None) -> requests.Response:
+        path = cleanup_path(path)
+
+        url = f"{self.api_url}/{path}"
+        
+        logger.debug(f"PATCH: {url}")
+        
+        if params or self.version:
+
+            if not params:
+                params = {}
+
+            # we use the presence of version to determine if we are REST or not
+            if "version" not in params.keys() and self.version:
+                params["version"] = self.version
+
+        resp = retry_call(
+            self.request,
+            fargs=[requests.patch, url],
+            fkwargs={"json": body, "headers": {**self.api_post_headers, **headers}, "params": params},
+            tries=self.tries,
+            delay=self.delay,
+            backoff=self.backoff,
+            exceptions=SnykHTTPError,
+            logger=logger,
+        )
+        
         if not resp.ok:
             logger.error(resp.text)
             raise SnykHTTPError(resp)
@@ -274,9 +309,13 @@ class SnykClient(object):
     @property
     def groups(self) -> Manager:
         return Manager.factory(OrganizationGroup, self)
-        #return Manager.factory(Organization, self)
-        #raise SnykNotImplementedError  # pragma: no cover
 
     # https://snyk.docs.apiary.io/#reference/reporting-api/issues/get-list-of-issues
     def issues(self):
         raise SnykNotImplementedError  # pragma: no cover
+
+    # At the client level this should only be able to return the results for /self
+    # https://apidocs.snyk.io/experimental?version=2023-06-23%7Eexperimental#get-/self
+    @property
+    def users(self) -> Manager:
+        return Manager.factory(User, self)
