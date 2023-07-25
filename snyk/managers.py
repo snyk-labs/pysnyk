@@ -163,7 +163,7 @@ class ProjectManager(Manager):
                 "critical": issue_counts.get("critical"),
             },
             "targetReference": attributes.get("target_reference"),
-            "tags": attributes.get("tags", []),
+            "_tags": attributes.get("tags", []),
             "browseUrl": f"https://app.snyk.io/org/{project.get('relationships', {}).get('organization', {}).get('data', {}).get('id')}/project/{project.get('id')}",
             "importingUserId": project.get("relationships", {})
             .get("importer", {})
@@ -186,7 +186,7 @@ class ProjectManager(Manager):
                 for tag in tags:
                     if "key" not in tag or "value" not in tag or len(tag.keys()) != 2:
                         raise SnykError("Each tag must contain only a key and a value")
-                data = {"tags": [f'{d["key"]}:{d["value"]}' for d in tags]}
+                data = [f'{d["key"]}:{d["value"]}' for d in tags]
                 params["tags"] = ",".join(data)
 
             # Append the issue count param to the params if this is the first page
@@ -202,6 +202,7 @@ class ProjectManager(Manager):
             )
 
             if "data" in resp.json():
+                # Process projects in current response
                 for response_data in resp.json()["data"]:
                     project_data = self._rest_to_v1_response_format(response_data)
                     project_data["organization"] = self.instance.to_dict()
@@ -216,10 +217,10 @@ class ProjectManager(Manager):
                         project_data["totalDependencies"] = 0
                     projects.append(self.klass.from_dict(project_data))
 
-            # If we have another page, then process this page too
-            if "next" in resp.json().get("links", {}):
-                next_url = resp.json().get("links", {})["next"]
-                projects.extend(self._query(tags, next_url))
+                # If we have another page, then process this page too
+                if "next" in resp.json().get("links", {}):
+                    next_url = resp.json().get("links", {})["next"]
+                    projects.extend(self._query(tags, next_url))
 
             for x in projects:
                 x.organization = self.instance
@@ -250,7 +251,7 @@ class ProjectManager(Manager):
                 del project_data["tags"]
             except KeyError:
                 pass
-            if project_data["totalDependencies"] is None:
+            if project_data.get("totalDependencies") is None:
                 project_data["totalDependencies"] = 0
             project_klass = self.klass.from_dict(project_data)
             project_klass.organization = self.instance
