@@ -571,23 +571,16 @@ class Project(DataClassJSONMixin):
     type: str
     readOnly: bool
     testFrequency: str
-    totalDependencies: int
-    lastTestedDate: str
     browseUrl: str
     isMonitored: bool
     issueCountsBySeverity: IssueCounts
-    imageTag: Optional[str] = None
-    imageId: Optional[str] = None
-    imageBaseImage: Optional[str] = None
-    imagePlatform: Optional[str] = None
-    imageCluster: Optional[str] = None
+    importingUserId: Optional[str] = None
+    owningUserId: Optional[str] = None
     hostname: Optional[str] = None
     remoteRepoUrl: Optional[str] = None
     branch: Optional[str] = None
     attributes: Optional[Dict[str, List[str]]] = None
     _tags: Optional[List[Any]] = field(default_factory=list)
-    owner: Optional[Dict[Any, Any]] = field(default_factory=dict)
-    importingUser: Optional[Dict[Any, Any]] = field(default_factory=dict)
 
     def delete(self) -> bool:
         path = "org/%s/project/%s" % (self.organization.id, self.id)
@@ -622,6 +615,67 @@ class Project(DataClassJSONMixin):
             raise SnykError
 
         return bool(self.organization.client.put(path, payload))
+
+    def _get_project_snapshot(self):
+        """
+        Gets the latest project snapshot
+        """
+        project_snapshot_result = self.organization.client.post(
+            f"org/{self.organization.id}/project/{self.id}/history?perPage=1&page=1",
+            {},
+    ***REMOVED***
+        return project_snapshot_result.json().get("snapshots", [{}])[0]
+
+    def __getattr__(self, item):
+        """
+        Will handle lazy loading of attributes which require further API calls or are computationally expensive. This
+        avoids having to load them when we retrieve the full list from the API.
+        """
+        # These attributes require us to get the latest snapshot
+        if item in [
+            "totalDependencies",
+            "lastTestedDate",
+            "imageId",
+            "imageTag",
+            "imageBaseImage",
+            "imagePlatform",
+        ]:
+            snapshot = self._get_project_snapshot()
+            if item == "totalDependencies":
+                return snapshot.get("totalDependencies", 0)
+            elif item == "lastTestedDate":
+                return snapshot.get("created")
+            elif item == "imageId":
+                return snapshot.get("imageId")
+            elif item == "imageTag":
+                return snapshot.get("imageTag")
+            elif item == "imageBaseImage":
+                return snapshot.get("baseImageName")
+            elif item == "imagePlatform":
+                return snapshot.get("imagePlatform")
+        # These attributes require us to call the user API to get a users details
+        elif item in ["importingUser", "owner"]:
+            if item == "importingUser":
+                selected_user = self.importingUserId
+            else:
+                selected_user = self.owningUserId
+            user_response = self.organization.client.get(
+                f"orgs/{self.organization.id}/users/{selected_user}",
+                version="2023-05-29~beta",
+        ***REMOVED***
+            user = user_response.json()
+            user_data = user.get("data", {})
+            user_attributes = user_data.get("attributes", {})
+            return {
+                "id": self.importingUserId,
+                "name": user_attributes.get("name"),
+                "username": user_attributes.get("username"),
+                "email": user_attributes.get("email"),
+            }
+        else:
+            raise AttributeError(
+                f"'{type(self).__name__}' object has no attribute '{item}'"
+        ***REMOVED***
 
     @property
     def settings(self) -> Manager:
