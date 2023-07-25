@@ -140,35 +140,10 @@ class TagManager(Manager):
 
 class ProjectManager(Manager):
     def _rest_to_v1_response_format(self, project):
-        # Get the latest project snapshot to get numbers of vulns
-        project_snapshot_result = self.client.post(
-            f"org/{project.get('relationships', {}).get('organization', {}).get('data', {}).get('id')}/project/{project.get('id')}/history?perPage=1&page=1",
-            {},
-        )
-        project_snapshot = project_snapshot_result.json().get("snapshots", [{}])[0]
-
-        # Figure out the project owner & look up user details via ID
-        importing_user_id = (
-            project.get("relationships", {})
-            .get("importer", {})
-            .get("data", {})
-            .get("id")
-        )
-        print(
-            f"orgid={project.get('relationships', {}).get('organization', {}).get('data', {}).get('id')} projectid={project.get('id')} userid={importing_user_id}"
-        )
-        importing_user_response = self.client.get(
-            f"orgs/{project.get('relationships', {}).get('organization', {}).get('data', {}).get('id')}/users/{importing_user_id}",
-            version="2023-05-29~beta",
-        )
-        importing_user = importing_user_response.json()
-
         attributes = project.get("attributes", {})
         settings = attributes.get("settings", {})
         recurring_tests = settings.get("recurring_tests", {})
-        importing_user_data = importing_user.get("data", {})
-        importing_user_attributes = importing_user_data.get("attributes", {})
-        issue_counts = project_snapshot.get("issueCounts", {}).get("vuln", {})
+        issue_counts = project.get("meta", {}).get("latest_issue_counts")
 
         return {
             "name": attributes.get("name"),
@@ -178,55 +153,53 @@ class ProjectManager(Manager):
             "type": attributes.get("type"),
             "readOnly": attributes.get("read_only"),
             "testFrequency": recurring_tests.get("frequency"),
-            "totalDependencies": project_snapshot.get("totalDependencies", 0),
-            "issueCountsBySeverity": {
-                "low": issue_counts.get("low", 0),
-                "medium": issue_counts.get("medium", 0),
-                "high": issue_counts.get("high", 0),
-                "critical": issue_counts.get("critical", 0),
-            },
-            "lastTestedDate": project_snapshot.get("created"),
-            "importingUser": {
-                "id": importing_user_id,
-                "name": importing_user_attributes.get("name"),
-                "username": importing_user_attributes.get("username"),
-                "email": importing_user_attributes.get("email"),
-            },
             "isMonitored": True
             if project.get("meta", {}).get("cli_monitored_at")
             else False,
-            "owner": {
-                "id": importing_user_id,
-                "name": importing_user_attributes.get("name"),
-                "username": importing_user_attributes.get("username"),
-                "email": importing_user_attributes.get("email"),
+            "issueCountsBySeverity": {
+                "low": issue_counts.get("low"),
+                "medium": issue_counts.get("medium"),
+                "high": issue_counts.get("high"),
+                "critical": issue_counts.get("critical"),
             },
             "targetReference": attributes.get("target_reference"),
             "tags": attributes.get("tags", []),
             "browseUrl": f"https://app.snyk.io/org/{project.get('relationships', {}).get('organization', {}).get('data', {}).get('id')}/project/{project.get('id')}",
+            "importingUserId": project.get("relationships", {})
+            .get("importer", {})
+            .get("data", {})
+            .get("id"),
+            "owningUserId": project.get("relationships", {})
+            .get("owner", {})
+            .get("data", {})
+            .get("id"),
         }
 
     def _query(self, tags: List[Dict[str, str]] = [], next_url: str = None):
         projects = []
+        params = {}
         if self.instance:
             path = "/orgs/%s/projects" % self.instance.id if not next_url else next_url
+
+            # Append to params if we've got tags
             if tags:
                 for tag in tags:
                     if "key" not in tag or "value" not in tag or len(tag.keys()) != 2:
                         raise SnykError("Each tag must contain only a key and a value")
                 data = {"tags": [f'{d["key"]}:{d["value"]}' for d in tags]}
-                resp = self.client.get(
-                    path,
-                    version="2023-06-19",
-                    params={"tags": ",".join(data)},
-                    exclude_version=True if next_url else False,
-                )
-            else:
-                resp = self.client.get(
-                    path,
-                    version="2023-06-19",
-                    exclude_version=True if next_url else False,
-                )
+                params["tags"] = ",".join(data)
+
+            # Append the issue count param to the params if this is the first page
+            if not next_url:
+                params["meta.latest_issue_counts"] = "true"
+
+            # And lastly, make the API call
+            resp = self.client.get(
+                path,
+                version="2023-06-19",
+                params=params,
+                exclude_version=True if next_url else False,
+            )
 
             if "data" in resp.json():
                 for response_data in resp.json()["data"]:
