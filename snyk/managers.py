@@ -214,8 +214,9 @@ class TagManager(Manager):
         )
         
         # Retain previous tags
+        tag = {"key": key, "value": value}
         tags = self.instance._tags
-        tags.append({'key':key, 'value':value})
+        tags.append(tag)
 
         # Build the request body
         body = {
@@ -231,15 +232,46 @@ class TagManager(Manager):
 
         params = {'user_id': self.instance.organization.client.users.self.id}
         headers = {'content-type': 'application/vnd.api+json'}
-        return bool(self.client.patch(path=path, body=body, params=params, headers=headers))
+
+        resp = self.client.patch(path=path, body=body, params=params, headers=headers).json()
+
+        # Check to make sure the new tag was created
+        if tag in resp['data']['attributes']['tags']:
+            return True
+
+        return False
 
     def delete(self, key, value) -> bool:
-        tag = {"key": key, "value": value}
-        path = "org/%s/project/%s/tags/remove" % (
+        path = "orgs/%s/projects/%s" % (
             self.instance.organization.id,
             self.instance.id,
         )
-        return bool(self.client.post(path, tag))
+
+        tag = {"key": key, "value": value}
+        tags = [ x for x in self.instance._tags if x != tag ]
+
+        # Build the request body
+        body = {
+            "data": { 
+            "attributes":{
+                "tags":tags
+            },
+            "relationships":{}, 
+            "id":self.instance.id, 
+            "type": "project"
+            }
+        }
+
+        params = {'user_id': self.instance.organization.client.users.self.id}
+        headers = {'content-type': 'application/vnd.api+json'}
+
+        resp = self.client.patch(path=path, body=body, params=params, headers=headers).json()
+
+        # Check to make sure the tag was deleted
+        if tag in resp['data']['attributes']['tags']:
+            return False
+
+        return True
 
 class UserManager(Manager):
     
