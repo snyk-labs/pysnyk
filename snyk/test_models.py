@@ -321,10 +321,11 @@ class TestOrganization(TestModels):
         assert organization.projects.filter() == []
 
     def test_tags_cache(self, organization, project, requests_mock):
-        projects_matcher = re.compile("project.*$")
-        requests_mock.get(projects_matcher, json={"projects": [project]})
-        project = organization.projects.get("6d5813be-7e6d-4ab8-80c2-1e3e2a454545")
-        assert project._tags == [{"key": "some-key", "value": "some-value"}]
+        matcher = re.compile("project/6d5813be-7e6d-4ab8-80c2-1e3e2a454545$")
+        requests_mock.get(matcher, json=project)
+        assert organization.projects.get(
+            "6d5813be-7e6d-4ab8-80c2-1e3e2a454545"
+        )._tags == [{"key": "some-key", "value": "some-value"}]
 
     def test_get_organization_project_has_tags(
         self, organization, project, requests_mock
@@ -401,11 +402,6 @@ class TestProject(TestModels):
 
     def test_tags_cache(self, project, project_url, requests_mock):
         tags = [{"key": "key", "value": "value"}]
-        print(
-            "HELLOOOOHELLOOOOHELLOOOOHELLOOOOHELLOOOOHELLOOOOHELLOOOOHELLOOOOHELLOOOOHELLOOOOHELLOOOOHELLOOOO"
-        )
-        print(project)
-        print(project._tags)
         project._tags = tags
         assert tags == project.tags.all()
 
