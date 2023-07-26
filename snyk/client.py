@@ -5,6 +5,7 @@ from typing import Any, List, Optional
 import requests
 from requests.compat import urljoin
 from retry.api import retry_call
+from copy import deepcopy
 
 from .__version__ import __version__
 from .errors import SnykHTTPError, SnykNotImplementedError
@@ -34,7 +35,7 @@ class SnykClient(object):
         backoff: int = 2,
         verify: bool = True,
         version: Optional[str] = None,
-        params: dict = {'limit':100},
+        limit: int = 100,
     ):
         self.api_token = token
         self.api_url = url or self.API_URL
@@ -50,7 +51,7 @@ class SnykClient(object):
         self.verify = verify
         self.version = version or self.VERSION
         self.web_url = web_url or self.WEB_URL
-        self.params = params
+        self.limit = limit
 
         # Ensure we don't have a trailing /
         if self.api_url[-1] == "/":
@@ -252,7 +253,14 @@ class SnykClient(object):
 
         # this is a raw primative but a higher level module might want something that does an
         # arbitrary path + origin=foo + limit=100 url construction instead before being sent here
-        limit = params["limit"]
+        
+        # Making sure references to param can't be passed between methods
+        params = deepcopy(params)
+        
+        if 'limit' in params.keys():
+            limit = params["limit"]
+        else:
+            limit = self.client.limit
 
         data = list()
 
@@ -274,8 +282,6 @@ class SnykClient(object):
 
             for k, v in query.items():
                 params[k] = v
-
-            params["limit"] = limit
 
             page = self.get(next_url.path, params).json()
 

@@ -3,6 +3,7 @@ import logging
 import json
 from typing import Any, Dict, List
 from requests.compat import urljoin
+from copy import deepcopy
 
 from deprecation import deprecated  # type: ignore
 
@@ -113,7 +114,7 @@ class SingletonManager(Manager):
 
 class OrganizationManager(Manager):
     def all(self):
-        params = {'limit': self.client.params['limit']}
+        params = {'limit': self.client.limit}
         resp = self.client.get_rest_pages("/orgs", params)
         
         orgs = []
@@ -167,7 +168,7 @@ class OrganizationManager(Manager):
 
 class OrganizationGroupManager(Manager):
     def all(self):
-        params = {'limit': self.client.params['limit']}
+        params = {'limit': self.client.limit}
         resp = self.client.get_rest_pages("/groups", params)
 
         groups = []
@@ -274,7 +275,7 @@ class TagManager(Manager):
         return True
 
 class UserManager(Manager):
-    
+
     def all(self) -> Any:
         pass  # pragma: no cover
     
@@ -302,43 +303,56 @@ class UserManager(Manager):
 # Since the implementation uses filtering by tags, use an older API version that has this available https://apidocs.snyk.io/?version=2022-07-08%7Ebeta#get-/orgs/-org_id-/projects
 # See annotations on the class snyk/models.py#L451-L452 for what data needs to be fetched from elsewhere or constructed
 class ProjectManager(Manager):
-    #def _query(self, tags: List[Dict[str, str]] = []):
+    def _map_rest_data_to_project_model(self, data: dict = {}):
+        """Takes the data field from a rest API query for the /orgs/{org_id}/projects/{project_id} query and maps it to the Project model
+
+        :param data: dictionary data field from a rest API call to /orgs/{org_id}/projects/{project_id}
+
+        :return: Project model"""
+
+        attr = data['attributes']
+
+        project_data = {
+            'name':            attr['name'],
+            'id':              data['id'],
+            'created':         attr['created'],
+            'origin':          attr['origin'],
+            'type':            attr['type'],
+            'readOnly':        attr['read_only'],
+            'testFrequency':   attr['settings']['recurring_tests']['frequency'],
+            'browseUrl':       urljoin(self.instance.url,'/project/{}'.format(id)),
+            'isMonitored':     attr['status'] if attr['status'] == 'active' else False,
+            'targetReference': attr['target_reference'],
+            'organization':    self.instance.to_dict(),
+            '_tags':           attr['tags'] if 'tags' in attr.keys() else [],
+            'attributes':      {'criticality': attr['business_criticality'], 
+                                'environment': attr['environment'], 
+                                'lifecycle':   attr['lifecycle']},
+        }
+
+        return self.klass.from_dict(project_data)
+
     def _query(self, params: dict = {}):
+        # Making sure references to param can't be passed between methods
+        params = deepcopy(params)
+
         projects = []
         if self.instance:
             if 'limit' not in params.keys():
-                params['limit'] = self.client.params['limit']
+                params['limit'] = self.client.limit
                 
             path = "orgs/%s/projects" % self.instance.id
+            
             resp = self.client.get_rest_pages(path, params)
-
+            
             for project in resp:
-                attributes = project['attributes']
+                model = self._map_rest_data_to_project_model(project)
+                projects.append(model)
 
-                project_data = {
-                    'name':            attributes['name'],
-                    'id':              project['id'],
-                    'created':         attributes['created'],
-                    'origin':          attributes['origin'],
-                    'type':            attributes['type'],
-                    'readOnly':        attributes['read_only'],
-                    'testFrequency':   attributes['settings']['recurring_tests']['frequency'],
-                    'browseUrl':       urljoin(self.instance.url,'/project/{}'.format(id)),
-                    'isMonitored':     attributes['status'] if attributes['status'] == 'active' else False,
-                    'targetReference': attributes['target_reference'],
-                    'organization':    self.instance.to_dict(),
-                    '_tags':           attributes['tags'] if 'tags' in attributes.keys() else [],
-                    'attributes':      {'criticality': attributes['business_criticality'], 
-                                        'environment': attributes['environment'], 
-                                        'lifecycle':   attributes['lifecycle']},
-                }
-
-                project_klass = self.klass.from_dict(project_data)
-
-                projects.append(project_klass)
         else:
             for org in self.client.organizations.all():
                 projects.extend(org.projects.all())
+
         return projects
 
     def all(self):
@@ -354,29 +368,10 @@ class ProjectManager(Manager):
         if self.instance:
             path = "orgs/%s/projects/%s" % (self.instance.id, id)
             resp = self.client.get_rest_page(path)
-            attributes = resp['attributes']
-            
-            project_data = {
-                'name':            attributes['name'],
-                'id':              resp['id'],
-                'created':         attributes['created'],
-                'origin':          attributes['origin'],
-                'type':            attributes['type'],
-                'readOnly':        attributes['read_only'],
-                'testFrequency':   attributes['settings']['recurring_tests']['frequency'],
-                'browseUrl':       urljoin(self.instance.url,'/project/{}'.format(id)),
-                'isMonitored':     attributes['status'] if attributes['status'] == 'active' else False,
-                'targetReference': attributes['target_reference'],
-                'organization':    self.instance.to_dict(),
-                '_tags':           attributes['tags'] if 'tags' in attributes.keys() else [],
-                'attributes':      {'criticality': attributes['business_criticality'], 
-                                    'environment': attributes['environment'], 
-                                    'lifecycle':   attributes['lifecycle']},
-            }
 
-            project_klass = self.klass.from_dict(project_data)
+            model = self._map_rest_data_to_project_model(resp)
             
-            return project_klass
+            return model
         else:
             return super().get(id)
 
