@@ -194,8 +194,8 @@ class TestSnykClient(object):
         matcher = re.compile("projects.*$")
         requests_mock.get(matcher, json=projects)
         assert (
-            "atokeneduser/goof"
-            == client.projects.get("6d5813be-7e6d-4ab8-80c2-1e3e2a454545").name
+            "testing-new-name"
+            == client.projects.get("f9fec29a-d288-40d9-a019-cedf825e6efb").name
     ***REMOVED***
 
     def test_non_existent_project(self, requests_mock, client, organizations, projects):

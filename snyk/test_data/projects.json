@@ -1,21 +1,81 @@
 {
-  "projects": [
+  "jsonapi": {
+    "version": "1.0"
+  },
+  "data": [
     {
-      "name": "atokeneduser/goof",
-      "id": "6d5813be-7e6d-4ab8-80c2-1e3e2a454545",
-      "created": "2018-10-29T09:50:54.014Z",
-      "origin": "cli",
-      "type": "npm",
-      "readOnly": "false",
-      "isMonitored": "true",
-      "testFrequency": "daily",
-      "issueCountsBySeverity": {
-        "critical": 1,
-        "low": 8,
-        "high": 13,
-        "medium": 15
+      "type": "project",
+      "id": "f9fec29a-d288-40d9-a019-cedf825e6efb",
+      "meta": {
+        "cli_monitored_at": "2023-06-15T09:20:01.112Z",
+        "latest_issue_counts": {
+          "updated_at": "2023-07-26T03:20:07.810Z",
+          "critical": 1,
+          "high": 0,
+          "medium": 1,
+          "low": 0
+        }
       },
-      "browseUrl": "https://app.snyk.io/org/pysnyk-test-org/project/6d5813be-7e6d-4ab8-80c2-1e3e2a454545"
+      "attributes": {
+        "name": "testing-new-name",
+        "type": "maven",
+        "target_file": "",
+        "target_reference": "",
+        "origin": "api",
+        "created": "2023-06-15T09:20:01.128Z",
+        "status": "active",
+        "business_criticality": [],
+        "environment": [],
+        "lifecycle": [],
+        "tags": [],
+        "read_only": false,
+        "settings": {
+          "recurring_tests": {
+            "frequency": "daily"
+          },
+          "pull_requests": {
+            "fail_only_for_issues_with_fix": false
+          }
+        }
+      },
+      "relationships": {
+        "organization": {
+          "data": {
+            "type": "org",
+            "id": "56564ed1-091c-43b6-8c17-9cfe8298fab5"
+          },
+          "links": {
+            "related": "/orgs/56564ed1-091c-43b6-8c17-9cfe8298fab5"
+          }
+        },
+        "target": {
+          "data": {
+            "type": "target",
+            "id": "3855d63d-4761-4221-bc7f-1604981bd294"
+          },
+          "links": {
+            "related": "/orgs/56564ed1-091c-43b6-8c17-9cfe8298fab5/targets/3855d63d-4761-4221-bc7f-1604981bd294"
+          }
+        },
+        "owner": {
+          "data": {
+            "type": "user",
+            "id": "3b83db9e-d06b-4f1c-91bd-07d5a77de174"
+          },
+          "links": {
+            "related": "/orgs/56564ed1-091c-43b6-8c17-9cfe8298fab5/users/3b83db9e-d06b-4f1c-91bd-07d5a77de174"
+          }
+        },
+        "importer": {
+          "data": {
+            "type": "user",
+            "id": "3b83db9e-d06b-4f1c-91bd-07d5a77de174"
+          },
+          "links": {
+            "related": "/orgs/56564ed1-091c-43b6-8c17-9cfe8298fab5/users/3b83db9e-d06b-4f1c-91bd-07d5a77de174"
+          }
+        }
+      }
     }
   ]
 }
