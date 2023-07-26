@@ -562,6 +562,14 @@ class Dependency(DataClassJSONMixin):
 
 
 @dataclass
+class User(DataClassJSONMixin):
+    id: str
+    name: str
+    username: str
+    email: str
+
+
+@dataclass
 class Project(DataClassJSONMixin):
     name: str
     organization: Organization
@@ -666,12 +674,12 @@ class Project(DataClassJSONMixin):
             user = user_response.json()
             user_data = user.get("data", {})
             user_attributes = user_data.get("attributes", {})
-            return {
-                "id": self.importingUserId,
-                "name": user_attributes.get("name"),
-                "username": user_attributes.get("username"),
-                "email": user_attributes.get("email"),
-            }
+            return User(
+                id=self.importingUserId,
+                name=user_attributes.get("name"),
+                username=user_attributes.get("username"),
+                email=user_attributes.get("email"),
+            )
         else:
             raise AttributeError(
                 f"'{type(self).__name__}' object has no attribute '{item}'"
