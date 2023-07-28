@@ -1,4 +1,5 @@
 import base64
+import re
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Dict, List, Optional, Union
 
@@ -681,11 +682,14 @@ class Project(DataClassJSONMixin):
             )
         elif item == "browseUrl":
             # Ensure that our browse URL matches the tenant the user is making a request to
-            if self.organization.client.api_url.startswith("https://api.eu.snyk.io"):
-                url_prefix = "https://app.eu.snyk.io"
-            elif self.organization.client.api_url.startswith("https://api.au.snyk.io"):
-                url_prefix = "https://app.au.snyk.io"
+            tenant_matches = match = re.match(
+                r"^https://api\.(.*?)\.snyk\.io", self.organization.client.api_url
+            )
+            if tenant_matches:
+                # If a tenant is found, insert it into the URL
+                url_prefix = f"https://app.{match.group(1)}.snyk.io"
             else:
+                # If no tenant is found, use a default URL
                 url_prefix = "https://app.snyk.io"
             return f"{url_prefix}/org/{self.organization.slug}/project/{self.id}"
         else:
