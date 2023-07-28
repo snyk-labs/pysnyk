@@ -52,7 +52,6 @@ class TestOrganization(TestModels):
                 "high": 13,
                 "medium": 15,
             },
-            "browseUrl": "https://app.snyk.io/org/pysnyk-test-org/project/6d5813be-7e6d-4ab8-80c2-1e3e2a454545",
             "tags": [{"key": "some-key", "value": "some-value"}],
         }
 
@@ -350,7 +349,6 @@ class TestProject(TestModels):
             isMonitored="true",
             testFrequency="daily",
             issueCountsBySeverity={"critical": 1, "low": 8, "high": 13, "medium": 15},
-            browseUrl="https://app.snyk.io/org/pysnyk-test-org/project/6d5813be-7e6d-4ab8-80c2-1e3e2a454545",
             organization=organization,
         )
 
