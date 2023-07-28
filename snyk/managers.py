@@ -138,31 +138,88 @@ class TagManager(Manager):
 
 
 class ProjectManager(Manager):
-    def _query(self, tags: List[Dict[str, str]] = []):
+    def _rest_to_v1_response_format(self, project):
+        attributes = project.get("attributes", {})
+        settings = attributes.get("settings", {})
+        recurring_tests = settings.get("recurring_tests", {})
+        issue_counts = project.get("meta", {}).get("latest_issue_counts")
+
+        return {
+            "name": attributes.get("name"),
+            "id": project.get("id"),
+            "created": attributes.get("created"),
+            "origin": attributes.get("origin"),
+            "type": attributes.get("type"),
+            "readOnly": attributes.get("read_only"),
+            "testFrequency": recurring_tests.get("frequency"),
+            "isMonitored": True
+            if project.get("meta", {}).get("cli_monitored_at")
+            else False,
+            "issueCountsBySeverity": {
+                "low": issue_counts.get("low"),
+                "medium": issue_counts.get("medium"),
+                "high": issue_counts.get("high"),
+                "critical": issue_counts.get("critical"),
+            },
+            "targetReference": attributes.get("target_reference"),
+            "_tags": attributes.get("tags", []),
+            "importingUserId": project.get("relationships", {})
+            .get("importer", {})
+            .get("data", {})
+            .get("id"),
+            "owningUserId": project.get("relationships", {})
+            .get("owner", {})
+            .get("data", {})
+            .get("id"),
+        }
+
+    def _query(self, tags: List[Dict[str, str]] = [], next_url: str = None):
         projects = []
+        params = {}
         if self.instance:
-            path = "org/%s/projects" % self.instance.id
+            path = "/orgs/%s/projects" % self.instance.id if not next_url else next_url
+
+            # Append to params if we've got tags
             if tags:
                 for tag in tags:
                     if "key" not in tag or "value" not in tag or len(tag.keys()) != 2:
                         raise SnykError("Each tag must contain only a key and a value")
-                data = {"filters": {"tags": {"includes": tags}}}
-                resp = self.client.post(path, data)
-            else:
-                resp = self.client.get(path)
-            if "projects" in resp.json():
-                for project_data in resp.json()["projects"]:
+                data = [f'{d["key"]}:{d["value"]}' for d in tags]
+                params["tags"] = ",".join(data)
+
+            # Append the issue count param to the params if this is the first page
+            if not next_url:
+                params["meta.latest_issue_counts"] = "true"
+
+            # And lastly, make the API call
+            resp = self.client.get(
+                path,
+                version="2023-06-19",
+                params=params,
+                exclude_version=True if next_url else False,
+            )
+
+            if "data" in resp.json():
+                # Process projects in current response
+                for response_data in resp.json()["data"]:
+                    project_data = self._rest_to_v1_response_format(response_data)
                     project_data["organization"] = self.instance.to_dict()
-                    # We move tags to _tags as a cache, to avoid the need for additional requests
-                    # when working with tags. We want tags to be the manager
                     try:
-                        project_data["_tags"] = project_data["tags"]
-                        del project_data["tags"]
+                        project_data["attributes"]["_tags"] = project_data[
+                            "attributes"
+                        ]["tags"]
+                        del project_data["attributes"]["tags"]
                     except KeyError:
                         pass
-                    if project_data["totalDependencies"] is None:
+                    if not project_data.get("totalDependencies"):
                         project_data["totalDependencies"] = 0
                     projects.append(self.klass.from_dict(project_data))
+
+                # If we have another page, then process this page too
+                if "next" in resp.json().get("links", {}):
+                    next_url = resp.json().get("links", {})["next"]
+                    projects.extend(self._query(tags, next_url))
+
             for x in projects:
                 x.organization = self.instance
         else:
@@ -192,7 +249,7 @@ class ProjectManager(Manager):
                 del project_data["tags"]
             except KeyError:
                 pass
-            if project_data["totalDependencies"] is None:
+            if project_data.get("totalDependencies") is None:
                 project_data["totalDependencies"] = 0
             project_klass = self.klass.from_dict(project_data)
             project_klass.organization = self.instance

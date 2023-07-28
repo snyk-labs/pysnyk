@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 class SnykClient(object):
     API_URL = "https://api.snyk.io/v1"
+    REST_API_URL = "https://api.snyk.io/rest"
     USER_AGENT = "pysnyk/%s" % __version__
 
     def __init__(
@@ -117,7 +118,11 @@ class SnykClient(object):
         return resp
 
     def get(
-        self, path: str, params: dict = None, version: str = None
+        self,
+        path: str,
+        params: dict = None,
+        version: str = None,
+        exclude_version: bool = False,
     ) -> requests.Response:
         """
         Rest (formerly v3) Compatible Snyk Client, assumes the presence of Version, either set in the client
@@ -131,8 +136,15 @@ class SnykClient(object):
         """
 
         path = cleanup_path(path)
-
-        url = f"{self.api_url}/{path}"
+        if version:
+            # When calling a "next page" link, it fails if a version parameter is appended on to the URL - this is a
+            # workaround to prevent that from happening...
+            if exclude_version:
+                url = f"{self.REST_API_URL}/{path}"
+            else:
+                url = f"{self.REST_API_URL}/{path}?version={version}"
+        else:
+            url = f"{self.api_url}/{path}"
 
         if params or self.version:
 
