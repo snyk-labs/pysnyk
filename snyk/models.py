@@ -579,7 +579,6 @@ class Project(DataClassJSONMixin):
     type: str
     readOnly: bool
     testFrequency: str
-    browseUrl: str
     isMonitored: bool
     issueCountsBySeverity: IssueCounts
     importingUserId: Optional[str] = None
@@ -680,6 +679,15 @@ class Project(DataClassJSONMixin):
                 username=user_attributes.get("username"),
                 email=user_attributes.get("email"),
             )
+        elif item == "browseUrl":
+            # Ensure that our browse URL matches the tenant the user is making a request to
+            if self.organization.client.api_url.startswith("https://api.eu.snyk.io"):
+                url_prefix = "https://app.eu.snyk.io"
+            elif self.organization.client.api_url.startswith("https://api.au.snyk.io"):
+                url_prefix = "https://app.au.snyk.io"
+            else:
+                url_prefix = "https://app.snyk.io"
+            return f"{url_prefix}/org/{self.organization.slug}/project/{self.id}"
         else:
             raise AttributeError(
                 f"'{type(self).__name__}' object has no attribute '{item}'"

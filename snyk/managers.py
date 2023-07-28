@@ -1,5 +1,4 @@
 import abc
-import json
 from typing import Any, Dict, List
 
 from deprecation import deprecated  # type: ignore
@@ -164,7 +163,6 @@ class ProjectManager(Manager):
             },
             "targetReference": attributes.get("target_reference"),
             "_tags": attributes.get("tags", []),
-            "browseUrl": f"https://app.snyk.io/org/{project.get('relationships', {}).get('organization', {}).get('data', {}).get('id')}/project/{project.get('id')}",
             "importingUserId": project.get("relationships", {})
             .get("importer", {})
             .get("data", {})
