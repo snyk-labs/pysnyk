@@ -153,7 +153,7 @@ class ProjectManager(Manager):
             "readOnly": attributes.get("read_only"),
             "testFrequency": recurring_tests.get("frequency"),
             "isMonitored": True
-            if project.get("meta", {}).get("cli_monitored_at")
+            if attributes.get("status") == "active"
             else False,
             "issueCountsBySeverity": {
                 "low": issue_counts.get("low"),
