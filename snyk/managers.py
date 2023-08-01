@@ -312,6 +312,7 @@ class ProjectManager(Manager):
 
         attr = data['attributes']
 
+        # Mandetory flags
         project_data = {
             'name':            attr['name'],
             'id':              data['id'],
@@ -324,57 +325,153 @@ class ProjectManager(Manager):
             'isMonitored':     attr['status'] if attr['status'] == 'active' else False,
             'targetReference': attr['target_reference'],
             'organization':    self.instance.to_dict(),
-            '_tags':           attr['tags'] if 'tags' in attr.keys() else [],
             'attributes':      {'criticality': attr['business_criticality'], 
                                 'environment': attr['environment'], 
                                 'lifecycle':   attr['lifecycle']},
         }
+        #            '_tags':           attr['tags'] if 'tags' in attr.keys() else [],
+
+        # Optional flags
+        for key in data.keys():
+            match key:
+                case 'attributes':
+                    for attribute in data['attributes']:
+                        match attribute:
+                            case 'tags':
+                                project_data['_tags'] = attr['tags']
+
+                case 'meta':
+                    if 'latest_dependency_total' in data['meta'].keys():
+                        total = data['meta']['latest_dependency_total']['total']
+                        if total:
+                            project_data['totalDependencies'] = total
+                        else:
+                            project_data['totalDependencies'] = 0
+                    if 'latest_issue_counts' in data['meta'].keys():
+                        project_data['issueCountsBySeverity'] = {
+                            'critical': int(data['meta']['latest_issue_counts']['critical']),
+                            'high': int(data['meta']['latest_issue_counts']['high']),
+                            'medium': int(data['meta']['latest_issue_counts']['medium']),
+                            'low': int(data['meta']['latest_issue_counts']['low']),
+                        }
 
         return self.klass.from_dict(project_data)
 
-    def _query(self, params: dict = {}):
-        # Making sure references to param can't be passed between methods
-        params = deepcopy(params)
+    def filter(self, **kwargs: Any):
+        """This functions allows you to filter using all of the filters available on https://apidocs.snyk.io/experimental?version=2023-06-23%7Eexperimental#tag--Projects
 
-        projects = []
-        if self.instance:
-            if 'limit' not in params.keys():
-                params['limit'] = self.client.limit
+        The list of parameters below are a list of of available filters from version=2023-06-23~experimental as of 7/26/2023
+        
+        :param target_id: List of strings (target IDs)    
+            Return projects that belong to the provided targets
+        :param meta_count: string - Allowed: "only"        
+            Only return the collection count
+        :param ids: List of strings (Project IDs)   
+            Return projects that match the provided IDs
+        :param names: List of strings (Project names) 
+            Return projects that match the provided names
+        :param origins: List of strings (origins)       
+            Return projects that match the provided origins
+        :param types: List of strings (project types) 
+            Return projects that match the provided types
+        :param expand: string - Allowed: "target"      
+            Expand relationships
+        :param latest_issue_counts: bool              
+            Include a summary count for the issues found in the most recent scan of this project
+        :param latest_dependency_total: bool
+            Include the total number of dependencies found in the most recent scan of this project
+        :param cli_monitored_before: date-time - Example: 2021-05-29T09:50:54.014Z       
+            Filter projects uploaded and monitored before this date (encoded value) 
+        :param cli_monitored_after: date-time  - Example: 2021-05-29T09:50:54.014Z
+            Filter projects uploaded and monitored after this date (encoded value)
+        :param importing_user_public_id: List of strings   
+            Return projects that match the provided importing user public ids.
+        :param tags: List of strings (tags) - List of dict() - Example: [{'key':'test_key', 'value':'test_value'}]
+            Return projects that match all the provided tags
+        :param business_criticality: List of strings - Allowed: critical ┃ high ┃ medium ┃ low
+            Return projects that match all the provided business_criticality value
+        :param environment: List of strings - Allowed: frontend ┃ backend ┃ internal ┃ external ┃ mobile ┃ saas ┃ onprem ┃ hosted ┃ distributed
+            Return projects that match all the provided environment values
+        :param lifecycle: List of strings - Allowed: production ┃ development ┃ sandbox
+            Return projects that match all the provided lifecycle values
+        :param version: string - The requested version of the endpoint to process the request
+        :param starting_after: string - Examples: v1.eyJpZCI6IjEwMDAifQo=
+            Return the page of results immediately after this cursor
+        :param ending_before: string - Examples: v1.eyJpZCI6IjExMDAifQo=
+            Return the page of results immediately before this cursor
+        :param limit: int - Default: 10 (Min: 10, Max: 100, only multiples of 10 allowed)
+            Number of results to return per page
+        """
+
+        filters = {
+            'meta.latest_issue_counts': True,
+            'meta.latest_dependency_total': True,
+        }
+
+        filters_list = [
+            "target_id",
+            "meta_count",
+            "ids",
+            "names",
+            "origins",
+            "types",
+            "expand: string - Allowed",
+            "latest_issue_counts",
+            "latest_dependency_total",
+            "cli_monitored_before",
+            "cli_monitored_after",
+            "importing_user_public_id",
+            "tags",
+            "business_criticality",
+            "environment",
+            "lifecycle",
+            "version",
+            "starting_after",
+            "ending_before",
+            "limit",
+        ]
+        
+        filters_list.extend(list(filters.keys()))
+        
+        # Set new filters
+        for filter_name in filters_list:
+            if kwargs.get(filter_name):
+                if filter_name in ["latest_issue_counts","latest_dependency_total"] :
+                    filters[f"meta.{filter_name}"] = kwargs[filter_name]
+                else:
+                    filters[filter_name] = kwargs[filter_name]
+
+        #TODO: Add validation for every parameter to make sure
+        # They're each formatted correctly.
+
+
+        if 'limit' not in filters.keys():
+            filters['limit'] = self.client.limit
                 
-            path = "orgs/%s/projects" % self.instance.id
-            
-            resp = self.client.get_rest_pages(path, params)
-            
-            for project in resp:
-                model = self._map_rest_data_to_project_model(project)
-                projects.append(model)
+        path = "orgs/%s/projects" % self.instance.id
+        
+        resp = self.client.get_rest_pages(path, filters)
 
-        else:
-            for org in self.client.organizations.all():
-                projects.extend(org.projects.all())
-
-        return projects
-
-    def all(self):
-        return self._query()
-
-    def filter(self, tags: List[Dict[str, str]] = [], **kwargs: Any):
-        if tags:
-            return self._filter_by_kwargs(self._query(tags), **kwargs)
-        else:
-            return super().filter(**kwargs)
+        return resp
 
     def get(self, id: str):
         if self.instance:
-            path = "orgs/%s/projects/%s" % (self.instance.id, id)
-            resp = self.client.get_rest_page(path)
-
-            model = self._map_rest_data_to_project_model(resp)
-            
-            return model
+            resp = self.filter(ids=[id])
+            return self._map_rest_data_to_project_model(resp[0])
         else:
             return super().get(id)
 
+    def all(self):
+        projects = []
+        if self.instance:
+            resp = self.filter()
+            for project in resp:
+                model = self._map_rest_data_to_project_model(project)
+                projects.append(model)
+        else:
+            for org in self.client.organizations.all():
+                projects.extend(org.projects.all())
+        return projects
 
 class MemberManager(Manager):
     def all(self):
@@ -587,6 +684,11 @@ class IssueSetManager(SingletonManager):
         post_body = {"filters": filters}
         resp = self.client.post(path, post_body)
         return self.klass.from_dict(self._convert_reserved_words(resp.json()))
+
+    def all(self) -> Any:
+        self._query()
+
+
 
 
 class IssueSetAggregatedManager(SingletonManager):
