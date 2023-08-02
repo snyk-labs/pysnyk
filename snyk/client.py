@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 class SnykClient(object):
     WEB_URL = "https://app.snyk.io"
     API_URL = "https://api.snyk.io/rest"
-    VERSION = "2023-06-23~experimental"
+    VERSION = "2023-07-28~experimental"
     #API_URL = "https://api.snyk.io/v1"
     USER_AGENT = "pysnyk/%s" % __version__
 
@@ -256,7 +256,7 @@ class SnykClient(object):
         
         # Making sure references to param can't be passed between methods
         params = deepcopy(params)
-        
+
         if 'limit' in params.keys():
             limit = params["limit"]
         else:
@@ -268,7 +268,7 @@ class SnykClient(object):
 
         data.extend(page["data"])
         
-        while "next" in page["links"].keys():
+        while "next" in page["links"].keys() and len(page["data"]) >= limit:
             logger.debug(
                 f"GET_REST_PAGES: Another link exists: {page['links']['next']}"
             )

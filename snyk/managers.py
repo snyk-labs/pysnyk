@@ -62,7 +62,7 @@ class Manager(abc.ABC):
                 "JiraIssue":          JiraIssueManager,
                 "DependencyGraph":    DependencyGraphManager,
                 "IssueSet":           IssueSetManager,
-                "IssueSetAggregated": IssueSetAggregatedManager,
+                "IssueSetAggregated": IssueSetAggregatedManager2,
                 "Integration":        IntegrationManager,
                 "IntegrationSetting": IntegrationSettingManager,
                 "Tag":                TagManager,
@@ -321,7 +321,7 @@ class ProjectManager(Manager):
             'type':            attr['type'],
             'readOnly':        attr['read_only'],
             'testFrequency':   attr['settings']['recurring_tests']['frequency'],
-            'browseUrl':       urljoin(self.instance.url,'/project/{}'.format(id)),
+            'browseUrl':       f"{self.instance.url}/project/{data['id']}",
             'isMonitored':     attr['status'] if attr['status'] == 'active' else False,
             'targetReference': attr['target_reference'],
             'organization':    self.instance.to_dict(),
@@ -333,34 +333,33 @@ class ProjectManager(Manager):
 
         # Optional flags
         for key in data.keys():
-            match key:
-                case 'attributes':
-                    for attribute in data['attributes']:
-                        match attribute:
-                            case 'tags':
-                                project_data['_tags'] = attr['tags']
+            if 'attributes' == key:
+                for attribute in data['attributes']:
+                    if 'tags' == attribute:
+                        project_data['_tags'] = attr['tags']
 
-                case 'meta':
-                    if 'latest_dependency_total' in data['meta'].keys():
-                        total = data['meta']['latest_dependency_total']['total']
-                        if total:
-                            project_data['totalDependencies'] = total
-                        else:
-                            project_data['totalDependencies'] = 0
-                    if 'latest_issue_counts' in data['meta'].keys():
-                        project_data['issueCountsBySeverity'] = {
-                            'critical': int(data['meta']['latest_issue_counts']['critical']),
-                            'high': int(data['meta']['latest_issue_counts']['high']),
-                            'medium': int(data['meta']['latest_issue_counts']['medium']),
-                            'low': int(data['meta']['latest_issue_counts']['low']),
-                        }
+            if 'meta' == key:
+                if 'latest_dependency_total' in data['meta'].keys():
+                    total = data['meta']['latest_dependency_total']['total']
+                    if total:
+                        project_data['totalDependencies'] = total
+                    else:
+                        project_data['totalDependencies'] = 0
+                if 'latest_issue_counts' in data['meta'].keys():
+                    project_data['issueCountsBySeverity'] = {
+                        'critical': int(data['meta']['latest_issue_counts']['critical']),
+                        'high': int(data['meta']['latest_issue_counts']['high']),
+                        'medium': int(data['meta']['latest_issue_counts']['medium']),
+                        'low': int(data['meta']['latest_issue_counts']['low']),
+                    }
 
         return self.klass.from_dict(project_data)
 
     def filter(self, **kwargs: Any):
-        """This functions allows you to filter using all of the filters available on https://apidocs.snyk.io/experimental?version=2023-06-23%7Eexperimental#tag--Projects
+        """This functions allows you to filter using all of the filters available on https://apidocs.snyk.io/experimental?version=2023-07-28%7Eexperimental#tag--Projects
+        Then returns the project dictionaries in a list
 
-        The list of parameters below are a list of of available filters from version=2023-06-23~experimental as of 7/26/2023
+        The list of parameters below are a list of of available filters from version=2023-07-28~experimental as of 7/31/2023
         
         :param target_id: List of strings (target IDs)    
             Return projects that belong to the provided targets
@@ -401,6 +400,8 @@ class ProjectManager(Manager):
             Return the page of results immediately before this cursor
         :param limit: int - Default: 10 (Min: 10, Max: 100, only multiples of 10 allowed)
             Number of results to return per page
+
+        :return: returns a list of dictionaries. One dictionary for each project included in the query.
         """
 
         filters = {
@@ -432,10 +433,11 @@ class ProjectManager(Manager):
         ]
         
         filters_list.extend(list(filters.keys()))
-        
+
         # Set new filters
-        for filter_name in filters_list:
-            if kwargs.get(filter_name):
+        for filter_name in kwargs.keys():
+            if filter_name in filters_list:
+                # map variable name to api parameter name
                 if filter_name in ["latest_issue_counts","latest_dependency_total"] :
                     filters[f"meta.{filter_name}"] = kwargs[filter_name]
                 else:
@@ -443,7 +445,6 @@ class ProjectManager(Manager):
 
         #TODO: Add validation for every parameter to make sure
         # They're each formatted correctly.
-
 
         if 'limit' not in filters.keys():
             filters['limit'] = self.client.limit
@@ -454,7 +455,20 @@ class ProjectManager(Manager):
 
         return resp
 
+    def query(self, **kwargs: Any):
+        """Utility to query data from the api and return a list of project data models"""
+        if self.instance:
+            projects = []
+            resp = self.filter(**kwargs)
+            for project in resp:
+                projects.append(self._map_rest_data_to_project_model(project))
+            return projects
+        else:
+            return super().get(**kwargs)
+
     def get(self, id: str):
+        """legacy get method for backward compatibility"""
+        
         if self.instance:
             resp = self.filter(ids=[id])
             return self._map_rest_data_to_project_model(resp[0])
@@ -689,7 +703,118 @@ class IssueSetManager(SingletonManager):
         self._query()
 
 
+class IssueSetAggregatedManager2(SingletonManager):
+    """
+    TODO: Update the Issue model to match the latest changes to API
+    def _map_rest_data_to_issue_model(self, data: dict = {}):
+        '''
+        Lets map what we can, then set the rest to optional
+        Things to map:
 
+        # Mapped
+        id: str
+        issueType: str
+        isIgnored: bool
+
+        # Not Mapped
+        pkgName: str
+        pkgVersions: List[str]
+        isPatched: bool
+        fixInfo: FixInfo
+        introducedThrough: Optional[List[Any]] = None
+        ignoreReasons: Optional[List[Any]] = None
+        # Not mentioned in schema but returned
+        # https://snyk.docs.apiary.io/#reference/projects/aggregated-project-issues/list-all-aggregated-issues
+        priorityScore: Optional[int] = None
+        priority: Optional[Any] = None
+
+        issueData: IssueData
+            # issueData fields to map
+            ## Mapped
+            id: str
+            title: str
+            severity: str
+            url: str
+
+            ## Unmapped
+            exploitMaturity: str
+            description: Optional[str] = None
+            identifiers: Optional[Any] = None
+            credit: Optional[List[str]] = None
+            semver: Optional[Any] = None
+            publicationTime: Optional[str] = None
+            disclosureTime: Optional[str] = None
+            CVSSv3: Optional[str] = None
+            cvssScore: Optional[str] = None
+            language: Optional[str] = None
+            patches: Optional[Any] = None
+            nearestFixedInVersion: Optional[str] = None
+            ignoreReasons: Optional[List[Any]] = None
+
+        '''
+
+        # Map the required items
+        attr = data['attributes']
+        issue_data = {
+            'id': attr['key'], # This appears to be what Snyk is using for the id and not the actual ID for "package_vulnerability" type issues
+            'issueType': attr['type'],
+            'title': attr['title'],
+            'description': "", # Need to get details from somewhere else
+            'issueData': {
+                'id': attr['key']
+                'title': attr['title']
+                'severity': attr['effective_severity_level']
+                exploitMaturity: str
+                description: Optional[str] = None
+                identifiers: Optional[Any] = None
+                credit: Optional[List[str]] = None
+                semver: Optional[Any] = None
+                publicationTime: Optional[str] = None
+                disclosureTime: Optional[str] = None
+                CVSSv3: Optional[str] = None
+                cvssScore: Optional[str] = None
+                language: Optional[str] = None
+                patches: Optional[Any] = None
+                nearestFixedInVersion: Optional[str] = None
+                ignoreReasons: Optional[List[Any]] = None
+            },
+            'isIgnored': attr['ignored'],
+
+        }
+
+        # Calling object is a Project
+        if hasattr(self.instance, 'organization'):
+            # Generate URL
+            issue_data['issueData']['url'] = f"{self.instance.browseUrl}#issue-{attr['key']}"
+
+        # Calling object is an Organization
+        else:
+            issue_data['issueData']['url'] = f"{self.instance.url}/project/{data['relationships']['scan_item']['id']}#issue-{attr['key']}"
+    """
+    def filter(self, **kwargs: Any):
+
+        filters = {}
+        if 'limit' not in filters.keys():
+            filters['limit'] = self.client.limit
+        
+        # Calling object is a Project
+        if hasattr(self.instance, 'organization'):
+            filters['scan_item.id'] = self.instance.id
+            filters['scan_item.type'] = 'project'
+
+            path = f"orgs/{self.instance.organization.id}/issues"
+
+        # Calling object is an Organization
+        else:
+            path = f"orgs/{self.instance.id}/issues"
+        
+        resp = self.client.get_rest_pages(path, filters)
+
+        return resp
+
+    def all(self):
+        return self.filter()
+        
 
 class IssueSetAggregatedManager(SingletonManager):
     def all(self) -> Any:
