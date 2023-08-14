@@ -160,6 +160,7 @@ class ProjectManager(Manager):
                 "critical": issue_counts.get("critical"),
             },
             "targetReference": attributes.get("target_reference"),
+            "branch": attributes.get("target_reference"),
             "_tags": attributes.get("tags", []),
             "importingUserId": project.get("relationships", {})
             .get("importer", {})
