@@ -1,4 +1,5 @@
 import abc
+import json
 from typing import Any, Dict, List
 
 from deprecation import deprecated  # type: ignore
@@ -143,7 +144,13 @@ class ProjectManager(Manager):
         settings = attributes.get("settings", {})
         recurring_tests = settings.get("recurring_tests", {})
         issue_counts = project.get("meta", {}).get("latest_issue_counts")
-
+        remote_repo_url = (
+            project.get("relationships", {})
+            .get("target", {})
+            .get("data", {})
+            .get("attributes", {})
+            .get("url")
+        )
         return {
             "name": attributes.get("name"),
             "id": project.get("id"),
@@ -161,6 +168,7 @@ class ProjectManager(Manager):
             },
             "targetReference": attributes.get("target_reference"),
             "branch": attributes.get("target_reference"),
+            "remoteRepoUrl": remote_repo_url,
             "_tags": attributes.get("tags", []),
             "importingUserId": project.get("relationships", {})
             .get("importer", {})
@@ -189,6 +197,7 @@ class ProjectManager(Manager):
             # Append the issue count param to the params if this is the first page
             if not next_url:
                 params["meta.latest_issue_counts"] = "true"
+            params["expand"] = "target"
 
             # And lastly, make the API call
             resp = self.client.get(
