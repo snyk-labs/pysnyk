@@ -197,7 +197,7 @@ class ProjectManager(Manager):
             # Append the issue count param to the params if this is the first page
             if not next_url:
                 params["meta.latest_issue_counts"] = "true"
-            params["expand"] = "target"
+                params["expand"] = "target"
 
             # And lastly, make the API call
             resp = self.client.get(
