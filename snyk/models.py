@@ -134,6 +134,12 @@ class OrganizationGroup(DataClassJSONMixin):
     name: str
     id: str
 
+    client: Optional[Any] = None
+
+    @property
+    def tags(self) -> Manager:
+        return Manager.factory("OrganizationGroupTags", self.client, self)
+
 
 @dataclass
 class Package(DataClassJSONMixin):

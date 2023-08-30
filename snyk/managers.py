@@ -51,24 +51,25 @@ class Manager(abc.ABC):
             else:
                 key = klass.__name__
             manager = {
-                "Project":            ProjectManager,
-                "Organization":       OrganizationManager,
-                "Member":             MemberManager,
-                "License":            LicenseManager,
-                "Dependency":         DependencyManager,
-                "Entitlement":        EntitlementManager,
-                "Setting":            SettingManager,
-                "Ignore":             IgnoreManager,
-                "JiraIssue":          JiraIssueManager,
-                "DependencyGraph":    DependencyGraphManager,
-                "IssueSet":           IssueSetManager,
-                "IssueSetAggregated": IssueSetAggregatedManager2,
-                "Integration":        IntegrationManager,
-                "IntegrationSetting": IntegrationSettingManager,
-                "Tag":                TagManager,
-                "IssuePaths":         IssuePathsManager,
-                "OrganizationGroup":  OrganizationGroupManager,
-                "User":               UserManager,
+                "Project":               ProjectManager,
+                "Organization":          OrganizationManager,
+                "Member":                MemberManager,
+                "License":               LicenseManager,
+                "Dependency":            DependencyManager,
+                "Entitlement":           EntitlementManager,
+                "Setting":               SettingManager,
+                "Ignore":                IgnoreManager,
+                "JiraIssue":             JiraIssueManager,
+                "DependencyGraph":       DependencyGraphManager,
+                "IssueSet":              IssueSetManager,
+                "IssueSetAggregated":    IssueSetAggregatedManager2,
+                "Integration":           IntegrationManager,
+                "IntegrationSetting":    IntegrationSettingManager,
+                "Tag":                   TagManager,
+                "IssuePaths":            IssuePathsManager,
+                "OrganizationGroup":     OrganizationGroupManager,
+                "OrganizationGroupTags": OrganizationGroupTagManager,
+                "User":                  UserManager,
             }[key]
             
             return manager(klass, client, instance)
@@ -166,6 +167,36 @@ class OrganizationManager(Manager):
 
         return self.klass.from_dict(org_template)
 
+class OrganizationGroupTagManager(Manager):
+    def all(self):
+        # Version 1 endpoint
+        self.client.api_url = self.client.API_URL_V1
+
+        resp = self.client.get(f'/group/{self.instance.id}/tags?perPage=50000&page=1')
+
+        # Reset to REST endpoint
+        self.client.api_url = self.client.API_URL
+        
+        return resp.json()['tags']
+
+    def delete(self,key: str, value: str, force: bool=False) -> bool:
+        # Version 1 endpoint
+        self.client.api_url = self.client.API_URL_V1
+        
+        body = {'key':   key,
+                'value': value,
+                'force': force}
+        
+        resp = self.client.post(f'/group/{self.instance.id}/tags/delete', body)
+
+        # Reset to REST endpoint
+        self.client.api_url = self.client.API_URL
+
+        if resp.status_code == 200:
+            return True
+        else:
+            return False
+
 class OrganizationGroupManager(Manager):
     def all(self):
         params = {'limit': self.client.limit}
@@ -196,7 +227,7 @@ class OrganizationGroupManager(Manager):
         except Exception as e:
             raise e
 
-        return self.klass(resp['attributes']['name'],resp['id'])
+        return self.klass(resp['attributes']['name'],resp['id'],self.client)
 
 
     def filter(self, **kwargs: Any):
@@ -593,24 +624,41 @@ class SettingManager(DictManager):
 
 class IgnoreManager(DictManager):
     def all(self) -> Dict[str, List[object]]:
+        # Version 1 endpoint
+        self.client.api_url = self.client.API_URL_V1
+
         path = "org/%s/project/%s/ignores" % (
             self.instance.organization.id,
             self.instance.id,
         )
         resp = self.client.get(path)
+
+        # Reset to REST endpoint
+        self.client.api_url = self.client.API_URL
         return resp.json()
+
 
 
 class JiraIssueManager(DictManager):
     def all(self) -> Dict[str, List[object]]:
+        # Version 1 endpoint
+        self.client.api_url = self.client.API_URL_V1
+
         path = "org/%s/project/%s/jira-issues" % (
             self.instance.organization.id,
             self.instance.id,
         )
         resp = self.client.get(path)
+
+        # Reset to REST endpoint
+        self.client.api_url = self.client.API_URL
+        
         return resp.json()
 
     def create(self, issue_id: str, fields: Any) -> Dict[str, str]:
+        # Version 1 endpoint
+        self.client.api_url = self.client.API_URL_V1
+
         path = "org/%s/project/%s/issue/%s/jira-issue" % (
             self.instance.organization.id,
             self.instance.id,
@@ -619,6 +667,10 @@ class JiraIssueManager(DictManager):
         post_body = {"fields": fields}
         resp = self.client.post(path, post_body)
         response_data = resp.json()
+
+        # Reset to REST endpoint
+        self.client.api_url = self.client.API_URL
+        
         # The response we get is not following the schema as specified by the api
         # https://snyk.docs.apiary.io/#reference/projects/project-jira-issues-/create-jira-issue
         if (

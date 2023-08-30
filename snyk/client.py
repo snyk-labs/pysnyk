@@ -19,8 +19,8 @@ logger = logging.getLogger(__name__)
 class SnykClient(object):
     WEB_URL = "https://app.snyk.io"
     API_URL = "https://api.snyk.io/rest"
-    VERSION = "2023-07-28~experimental"
-    #API_URL = "https://api.snyk.io/v1"
+    VERSION = "2023-08-04~experimental"
+    API_URL_V1 = "https://api.snyk.io/v1"
     USER_AGENT = "pysnyk/%s" % __version__
 
     def __init__(
@@ -200,7 +200,7 @@ class SnykClient(object):
             fkwargs = {"headers": self.api_headers}
 
         logger.debug(f"GET: {debug_url}")
-        
+
         resp = retry_call(
             self.request,
             fargs=[requests.get, url],
@@ -246,7 +246,7 @@ class SnykClient(object):
         """
         Helper function to collect paginated responses from the rest API into a single
         list.
-
+ff 
         This collects the "data" list from the first reponse and then appends the
         any further "data" lists if a next link is found in the links field.
         """
@@ -260,7 +260,9 @@ class SnykClient(object):
         if 'limit' in params.keys():
             limit = params["limit"]
         else:
-            limit = self.client.limit
+            limit = self.limit
+            params["limit"] = self.limit
+            print("limit: ", limit)
 
         data = list()
 
