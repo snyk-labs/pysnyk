@@ -152,7 +152,7 @@ class SnykClient(object):
                 params = {}
 
             # we use the presence of version to determine if we are REST or not
-            if "version" not in params.keys() and self.version:
+            if "version" not in params.keys() and self.version and not exclude_version:
                 params["version"] = version or self.version
 
             # Python Bools are True/False, JS Bools are true/false
@@ -212,40 +212,20 @@ class SnykClient(object):
         This collects the "data" list from the first reponse and then appends the
         any further "data" lists if a next link is found in the links field.
         """
+        first_page_response = self.get(path, params)
+        page_data = first_page_response.json()
+        return_data = page_data["data"]
 
-        # this is a raw primative but a higher level module might want something that does an
-        # arbitrary path + origin=foo + limit=100 url construction instead before being sent here
+        while page_data.get("links", {}).get("next"):
+            logger.debug(f"GET_REST_PAGES: Another link exists: {page_data['links']['next']}")
+            next_url = page_data.get("links", {}).get("next")
 
-        limit = params["limit"]
-
-        data = list()
-
-        page = self.get(path, params).json()
-
-        data.extend(page["data"])
-
-        while "next" in page["links"].keys():
-            logger.debug(
-                f"GET_REST_PAGES: Another link exists: {page['links']['next']}"
-            )
-
-            next_url = urllib.parse.urlsplit(page["links"]["next"])
-            query = urllib.parse.parse_qs(next_url.query)
-
-            for k, v in query.items():
-                params[k] = v
-
-            params["limit"] = limit
-
-            page = self.get(next_url.path, params).json()
-
-            data.extend(page["data"])
-
-            logger.debug(
-                f"GET_REST_PAGES: Added another {len(page['data'])} items to the response"
-            )
-
-        return data
+            # The next url comes back fully formed (i.e. with all the params already set, so no need to do it here)
+            next_page_response = self.get(next_url, {}, exclude_version=True)
+            page_data = next_page_response.json()
+            return_data.extend(page_data["data"])
+            logger.debug(f"GET_REST_PAGES: Added another {len(page_data['data'])} items to the response")
+        return return_data
 
     # alias for backwards compatibility where V3 was the old name
     get_v3_pages = get_rest_pages
