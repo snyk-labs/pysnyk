@@ -217,14 +217,18 @@ class SnykClient(object):
         return_data = page_data["data"]
 
         while page_data.get("links", {}).get("next"):
-            logger.debug(f"GET_REST_PAGES: Another link exists: {page_data['links']['next']}")
+            logger.debug(
+                f"GET_REST_PAGES: Another link exists: {page_data['links']['next']}"
+            )
             next_url = page_data.get("links", {}).get("next")
 
             # The next url comes back fully formed (i.e. with all the params already set, so no need to do it here)
             next_page_response = self.get(next_url, {}, exclude_version=True)
             page_data = next_page_response.json()
             return_data.extend(page_data["data"])
-            logger.debug(f"GET_REST_PAGES: Added another {len(page_data['data'])} items to the response")
+            logger.debug(
+                f"GET_REST_PAGES: Added another {len(page_data['data'])} items to the response"
+            )
         return return_data
 
     # alias for backwards compatibility where V3 was the old name
