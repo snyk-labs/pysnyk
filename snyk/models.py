@@ -134,6 +134,12 @@ class OrganizationGroup(DataClassJSONMixin):
     name: str
     id: str
 
+    client: Optional[Any] = None
+
+    @property
+    def tags(self) -> Manager:
+        return Manager.factory("OrganizationGroupTags", self.client, self)
+
 
 @dataclass
 class Package(DataClassJSONMixin):
@@ -162,6 +168,7 @@ class Organization(DataClassJSONMixin):
     id: str
     slug: str
     url: str
+    personal: bool
     group: Optional[OrganizationGroup] = None
     client: Optional[Any] = None
 
@@ -188,6 +195,10 @@ class Organization(DataClassJSONMixin):
     @property
     def integrations(self) -> Manager:
         return Manager.factory(Integration, self.client, self)
+
+    @property
+    def issues(self) -> Manager:
+        return Manager.factory(IssueSetAggregated, self.client, self)
 
     """
     Imports need integrations, but exposing a high-level API that
@@ -502,8 +513,8 @@ class IssueCounts(DataClassJSONMixin):
 class User(DataClassJSONMixin):
     id: str
     name: str
-    username: str
-    email: str
+    username: Optional[str] = field(default_factory=str)
+    email: Optional[str] = field(default_factory=str)
 
 @dataclass
 class DependencyGraphPackageInfo(DataClassJSONMixin):
@@ -575,6 +586,7 @@ class Dependency(DataClassJSONMixin):
 
 @dataclass
 class Project(DataClassJSONMixin):
+    # Current set implemented with REST API
     name: str
     id: str
     created: str
@@ -582,27 +594,37 @@ class Project(DataClassJSONMixin):
     type: str
     readOnly: bool # TODO: not yet available in REST
     testFrequency: str
-    totalDependencies: int
-    issueCountsBySeverity: IssueCounts # TODO: Can be fetched from the latest project snapshot via v1 https://snyk.docs.apiary.io/#reference/projects/project-history/list-all-project-snapshots
+    browseUrl: str # TODO: constrict this yourself from scratch using the API host + project UUID + org name [Done in project.get method]
+    isMonitored: bool
+    targetReference: str
+    attributes: Attributes
+    organization: Organization
+    
+    _tags: Optional[List[Any]] = field(default_factory=list)
+    totalDependencies: Optional[int] = field(default_factory=int)
+    issueCountsBySeverity: Optional[IssueCounts] = None
+    
+    # TODO: delete remediation. This must be a mistake, there is no remediation in /projects v1 response
+    # remediation: Optional[Dict[Any, Any]] = field(default_factory=dict) # TODO: this is from individual project call only?
+    
+    # appended/amended fields
+
+    # Setting User fields to optional because these both require Admin permissions to query this data
+    importingUser: Optional[User] = None # TODO. The ID comes in https://apidocs.snyk.io/experimental?version=2023-06-23%7Eexperimental#get-/orgs/-org_id-/projects/-project_id-
+    owner: Optional[User] = None # TODO: use the owner ID and call this API to get the rest of the data https://apidocs.snyk.io/?version=2023-05-29%7Ebeta#get-/orgs/-org_id-/users/-id-
+
+    # Variables that can't be set using REST API yet. Leaving them as optional so they can be set manually in the future or implemented on their own.
+    #totalDependencies: Optional[int] = field(default_factory=int)# TODO: don't see this in the REST API yet.
+    #issueCountsBySeverity: Optional[IssueCounts] = None # TODO: Can be fetched from the latest project snapshot via v1 https://snyk.docs.apiary.io/#reference/projects/project-history/list-all-project-snapshots
+    lastTestedDate: Optional[str] = field(default_factory=str) # TODO: Can be fetched from the latest project snapshot via v1 https://snyk.docs.apiary.io/#reference/projects/project-history/list-all-project-snapshots
     imageId: Optional[str] = None # TODO: Can be fetched from the latest project snapshot via v1 https://snyk.docs.apiary.io/#reference/projects/project-history/list-all-project-snapshots
     imageTag: Optional[str] = None # TODO: Can be fetched from the latest project snapshot via v1 https://snyk.docs.apiary.io/#reference/projects/project-history/list-all-project-snapshots
     imageBaseImage: Optional[str] = None # TODO: Can be fetched from the latest project snapshot via v1 https://snyk.docs.apiary.io/#reference/projects/project-history/list-all-project-snapshots
     imagePlatform: Optional[str] = None # TODO: Can be fetched from the latest project snapshot via v1 https://snyk.docs.apiary.io/#reference/projects/project-history/list-all-project-snapshots
     imageCluster: Optional[str] = None # TODO: can be fetched from https://apidocs.snyk.io/?version=2023-04-28%7Ebeta#get-/orgs/-org_id-/targets
     remoteRepoUrl: Optional[str] = None
-    lastTestedDate: str # TODO: Can be fetched from the latest project snapshot via v1 https://snyk.docs.apiary.io/#reference/projects/project-history/list-all-project-snapshots
-    owner: User # TODO: use the owner ID and call this API to get the rest of the data https://apidocs.snyk.io/?version=2023-05-29%7Ebeta#get-/orgs/-org_id-/users/-id-
-    importingUser: User
-    browseUrl: str # TODO: constrict this yourself from scratch using the API host + project UUID + org name
-    isMonitored: bool
     branch: Optional[str] = None
-    # TODO: delete remediation. This must be a mistake, there is no remediation in /projects v1 response
-    # remediation: Optional[Dict[Any, Any]] = field(default_factory=dict) # TODO: thsi is from individual project call only?
-    targetReference: str
-    attributes: Attributes
-    # appended/amended fields
-    organization: Organization
-    _tags: Optional[List[Any]] = field(default_factory=list)
+    
 
     def delete(self) -> bool:
         path = "org/%s/project/%s" % (self.organization.id, self.id)
@@ -670,6 +692,10 @@ class Project(DataClassJSONMixin):
 
     @property
     def issueset_aggregated(self) -> Manager:
+        return Manager.factory(IssueSetAggregated, self.organization.client, self)
+
+    @property
+    def issues(self) -> Manager:
         return Manager.factory(IssueSetAggregated, self.organization.client, self)
 
     @property
