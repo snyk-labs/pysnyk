@@ -33,7 +33,12 @@ def cleanup_path(path: str) -> str:
     if path[-1] == "/":
         path = path.rstrip("/")
 
-    return path
+    # Ensure we remove "rest/" from next urls
+    parts = path.split("/")
+    if parts[0] == "rest":
+        parts.pop(0)
+
+    return "/".join(parts)
 
 
 def load_test_data(test_dir: str, test_name: str) -> dict:
