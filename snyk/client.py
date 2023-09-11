@@ -123,6 +123,7 @@ class SnykClient(object):
         params: dict = None,
         version: str = None,
         exclude_version: bool = False,
+        exclude_params: bool = False,
     ) -> requests.Response:
         """
         Rest (formerly v3) Compatible Snyk Client, assumes the presence of Version, either set in the client
@@ -146,7 +147,7 @@ class SnykClient(object):
         else:
             url = f"{self.api_url}/{path}"
 
-        if params or self.version:
+        if (params or self.version) and not exclude_params:
 
             if not params:
                 params = {}
@@ -223,7 +224,7 @@ class SnykClient(object):
             next_url = page_data.get("links", {}).get("next")
 
             # The next url comes back fully formed (i.e. with all the params already set, so no need to do it here)
-            next_page_response = self.get(next_url, {}, exclude_version=True)
+            next_page_response = self.get(next_url, {}, exclude_version=True, exclude_params=True)
             page_data = next_page_response.json()
             return_data.extend(page_data["data"])
             logger.debug(
