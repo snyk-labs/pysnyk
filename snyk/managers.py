@@ -144,7 +144,13 @@ class ProjectManager(Manager):
         settings = attributes.get("settings", {})
         recurring_tests = settings.get("recurring_tests", {})
         issue_counts = project.get("meta", {}).get("latest_issue_counts", {})
-
+        remote_repo_url = (
+            project.get("relationships", {})
+            .get("target", {})
+            .get("data", {})
+            .get("attributes", {})
+            .get("url")
+        )
         return {
             "name": attributes.get("name"),
             "id": project.get("id"),
@@ -161,6 +167,8 @@ class ProjectManager(Manager):
                 "critical": issue_counts.get("critical", 0),
             },
             "targetReference": attributes.get("target_reference"),
+            "branch": attributes.get("target_reference"),
+            "remoteRepoUrl": remote_repo_url,
             "_tags": attributes.get("tags", []),
             "importingUserId": project.get("relationships", {})
             .get("importer", {})
