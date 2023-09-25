@@ -143,7 +143,7 @@ class ProjectManager(Manager):
         attributes = project.get("attributes", {})
         settings = attributes.get("settings", {})
         recurring_tests = settings.get("recurring_tests", {})
-        issue_counts = project.get("meta", {}).get("latest_issue_counts")
+        issue_counts = project.get("meta", {}).get("latest_issue_counts", {})
         remote_repo_url = (
             project.get("relationships", {})
             .get("target", {})
@@ -161,10 +161,10 @@ class ProjectManager(Manager):
             "testFrequency": recurring_tests.get("frequency"),
             "isMonitored": True if attributes.get("status") == "active" else False,
             "issueCountsBySeverity": {
-                "low": issue_counts.get("low"),
-                "medium": issue_counts.get("medium"),
-                "high": issue_counts.get("high"),
-                "critical": issue_counts.get("critical"),
+                "low": issue_counts.get("low", 0),
+                "medium": issue_counts.get("medium", 0),
+                "high": issue_counts.get("high", 0),
+                "critical": issue_counts.get("critical", 0),
             },
             "targetReference": attributes.get("target_reference"),
             "branch": attributes.get("target_reference"),
