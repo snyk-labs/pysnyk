@@ -16,7 +16,7 @@ repository = "https://github.com/snyk-labs/pysnyk"
 python = "^3.7"
 requests = "^2.27.1"
 mashumaro = "^3"
-importlib_metadata = "^4.11.2"
+importlib-metadata = ">=4.11.2,<7"
 retry = "^0.9.2"
 deprecation = "^2.1.0"
 
