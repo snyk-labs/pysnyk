@@ -151,6 +151,14 @@ class ProjectManager(Manager):
             .get("attributes", {})
             .get("url")
     ***REMOVED***
+        image_cluster = (
+            project.get("relationships", {})
+            .get("target", {})
+            .get("data", {})
+            .get("meta", {})
+            .get("integration_data", {})
+            .get("cluster")
+    ***REMOVED***
         return {
             "name": attributes.get("name"),
             "id": project.get("id"),
@@ -169,6 +177,7 @@ class ProjectManager(Manager):
             "targetReference": attributes.get("target_reference"),
             "branch": attributes.get("target_reference"),
             "remoteRepoUrl": remote_repo_url,
+            "imageCluster": image_cluster,
             "_tags": attributes.get("tags", []),
             "importingUserId": project.get("relationships", {})
             .get("importer", {})
