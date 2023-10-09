@@ -44,7 +44,6 @@ class SnykClient(object):
         self.delay = delay
         self.verify = verify
         self.version = version
-
         # Ensure we don't have a trailing /
         if self.api_url[-1] == "/":
             self.api_url = self.api_url.rstrip("/")
@@ -210,7 +209,7 @@ class SnykClient(object):
         Helper function to collect paginated responses from the rest API into a single
         list.
 
-        This collects the "data" list from the first reponse and then appends the
+        This collects the "data" list from the first response and then appends the
         any further "data" lists if a next link is found in the links field.
         """
         first_page_response = self.get(path, params)
