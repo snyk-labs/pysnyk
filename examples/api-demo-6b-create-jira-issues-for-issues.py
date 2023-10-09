@@ -1,34 +1,34 @@
-***REMOVED***
+import argparse
 
-***REMOVED***
-***REMOVED***
+from snyk import SnykClient
+from utils import get_default_token_path, get_token
 
 
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
+def parse_command_line_args():
+    parser = argparse.ArgumentParser(description="Snyk API Examples")
+    parser.add_argument(
+        "--orgId", type=str, help="The Snyk Organisation ID", required=True
+    )
+    parser.add_argument(
         "--projectId", type=str, help="The Snyk Project ID", required=True
-***REMOVED***
-***REMOVED***
+    )
+    parser.add_argument(
         "--jiraProjectId", type=int, help="The Jira Project ID", required=True
-***REMOVED***
-***REMOVED***
+    )
+    parser.add_argument(
         "--jiraIssueType", type=int, help="The Jira issue type", required=True
-***REMOVED***
-***REMOVED***
+    )
+    return parser.parse_args()
 
 
 def create_jira_issue(project, issue, jira_project, issuetype):
     return project.jira_issues.create(issue.id, {"project": {"id": jira_project}, "issuetype": {"id": issuetype}, "summary": "%s - %s" % (project.name, issue.title)})
 
 
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
+snyk_token_path = get_default_token_path()
+snyk_token = get_token(snyk_token_path)
+args = parse_command_line_args()
+org_id = args.orgId
 project_id = args.projectId
 jira_project_id = args.jiraProjectId
 jira_issue_type = args.jiraIssueType

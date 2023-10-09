@@ -1,10 +1,10 @@
-***REMOVED***
+import argparse
 import datetime
 import json
 from datetime import date
 
-***REMOVED***
-***REMOVED***
+from snyk import SnykClient
+from utils import get_default_token_path, get_token
 
 # *****Instructions****
 # See README on where to specify snyk-api-token to authorize this example
@@ -31,11 +31,11 @@ class analysisLog:
     bCheckDeprecated = True
     bCheckBetaInUseAndFullVersionAvailable = (
         True
-***REMOVED***  # Check if you are on a 0.x version but a full one 1.x or greater is available
+    )  # Check if you are on a 0.x version but a full one 1.x or greater is available
     bCheckAge = True
     ruleDepYearsSinceLastUpdate = (
         2
-***REMOVED***  # Number of years since last update/release for package
+    )  # Number of years since last update/release for package
     #####END RULES
 
     def __init__(self, neworgid, newprojectId):
@@ -77,38 +77,38 @@ class analysisLog:
             + " , Dependencies Analyzed: "
             + str(self.iDepsAnalyzed)
             + "----"
-    ***REMOVED***
+        )
 
         if self.bCheckDeprecated:
             print(
                 "\t----Deprecated items (Current Package, Package Manager Status)----"
-        ***REMOVED***
+            )
             self.printItemsinList(self.lstDeprecatedViolationItems)
         if self.bCheckMajor:
             print(
                 "\t----Major Policy Version - Difference of "
                 + str(self.ruleMajorDifference)
                 + " (Current Package/Latest Package)----"
-        ***REMOVED***
+            )
             self.printItemsinList(self.lstMajorVersionViolationItems)
         if self.bCheckMinor:
             print(
                 "\t----Minor Policy Version - Difference of "
                 + str(self.ruleMinorDifference)
                 + " (Current Package/Latest Package)----"
-        ***REMOVED***
+            )
             self.printItemsinList(self.lstMinorVersionViolationItems)
         if self.bCheckBetaInUseAndFullVersionAvailable:
             print(
                 "\t----An early version in use (aka 0.X is in use when a full version is available)----"
-        ***REMOVED***
+            )
             self.printItemsinList(self.lstBetaInUseAndFullVersionAvailable)
         if self.bCheckAge:
             print(
                 "\t----Library not maintained: Checking "
                 + str(self.ruleDepYearsSinceLastUpdate)
                 + " Years Since Last Update to this package (Package/Age in Years)----"
-        ***REMOVED***
+            )
             self.printItemsinList(self.lstAgePolicyViolation)
 
     ###VERSION MANIPULATION FUNCTIONS
@@ -138,7 +138,7 @@ class analysisLog:
             minDiff = latestMinVersion - minVersion
             if (latestMajVersion == majVersion) and (
                 minDiff >= self.ruleMinorDifference
-        ***REMOVED***:
+            ):
                 newList = [curDep.name + "@" + curDep.version, latestVersion]
                 self.lstMinorVersionViolationItems.append(newList)
 
@@ -176,14 +176,14 @@ class analysisLog:
             today.year
             - inputDate.year
             - ((today.month, today.day) < (inputDate.month, inputDate.day))
-    ***REMOVED***
+        )
         return age
 
     def checkAgeViolation(self, curDep):
         if self.bCheckAge:
             detectedAgeYearsOld = self.CalculateAgeInYears(
                 curDep.latestVersionPublishedDate
-        ***REMOVED***
+            )
             if detectedAgeYearsOld >= self.ruleDepYearsSinceLastUpdate:
                 newList = [curDep.name, str(detectedAgeYearsOld)]
                 if newList not in self.lstAgePolicyViolation:
@@ -210,11 +210,11 @@ class analysisLog:
 ##END CLASS
 
 
-***REMOVED***
-***REMOVED***
-***REMOVED***"--orgId", type=str, help="The Snyk Organisation Id")
+def parse_command_line_args():
+    parser = argparse.ArgumentParser(description="Snyk API Examples")
+    parser.add_argument("--orgId", type=str, help="The Snyk Organisation Id")
 
-***REMOVED***"--projectId", type=str, help="The project ID in Snyk")
+    parser.add_argument("--projectId", type=str, help="The project ID in Snyk")
 
     args = parser.parse_args()
 
@@ -228,14 +228,14 @@ class analysisLog:
     return args
 
 
-***REMOVED***
-***REMOVED***
+args = parse_command_line_args()
+org_id = args.orgId
 project_id = args.projectId
 
 # List issues in a project
 print("----FETCHING DATA----")
-***REMOVED***
-***REMOVED***
+snyk_token_path = get_default_token_path()
+snyk_token = get_token(snyk_token_path)
 client = SnykClient(snyk_token)
 
 deps = client.organizations.get(org_id).projects.get(project_id).dependencies.all()

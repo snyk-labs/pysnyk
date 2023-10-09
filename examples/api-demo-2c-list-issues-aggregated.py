@@ -1,31 +1,31 @@
-***REMOVED***
+import argparse
 
 import xlsxwriter
 
-***REMOVED***
-***REMOVED***
+from snyk import SnykClient
+from utils import get_default_token_path, get_token
 
 
-***REMOVED***
-***REMOVED***
-***REMOVED***
+def parse_command_line_args():
+    parser = argparse.ArgumentParser(description="Snyk API Examples")
+    parser.add_argument(
         "--orgId", type=str, help="The Snyk Organisation Id", required=True
-***REMOVED***
-***REMOVED***
+    )
+    parser.add_argument(
         "--projectId", type=str, help="The project ID in Snyk", required=True
-***REMOVED***
-***REMOVED***
+    )
+    parser.add_argument(
         "--outputPathExcel",
         type=str,
         help="Optional. The desired output if you want Excel output (use .xlsx).",
-***REMOVED***
-***REMOVED***
+    )
+    return parser.parse_args()
 
 
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
+snyk_token_path = get_default_token_path()
+snyk_token = get_token(snyk_token_path)
+args = parse_command_line_args()
+org_id = args.orgId
 project_id = args.projectId
 
 
@@ -42,7 +42,7 @@ def output_excel(vulns, output_path):
     for ch in lst_col_headers:
         excel_worksheet.write(
             row_index, col_index, lst_col_headers[col_index], format_bold
-    ***REMOVED***
+        )
         col_index += 1
 
     for v in vulns:

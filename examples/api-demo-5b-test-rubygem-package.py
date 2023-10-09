@@ -1,33 +1,33 @@
-***REMOVED***
+import argparse
 
-***REMOVED***
-***REMOVED***
+from snyk import SnykClient
+from utils import get_default_token_path, get_token
 
 
-***REMOVED***
-***REMOVED***
-***REMOVED***
+def parse_command_line_args():
+    parser = argparse.ArgumentParser(description="Snyk API Examples")
+    parser.add_argument(
         "--orgId", type=str, help="The Snyk Organisation Id", required=True
-***REMOVED***
-***REMOVED***
+    )
+    parser.add_argument(
         "--packageName", type=str, help="The RubyGem package name", required=True
-***REMOVED***
-***REMOVED***
+    )
+    parser.add_argument(
         "--packageVersion", type=str, help="The RubyGem package version", required=True
-***REMOVED***
-***REMOVED***
+    )
+    return parser.parse_args()
 
 
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
+snyk_token_path = get_default_token_path()
+snyk_token = get_token(snyk_token_path)
+args = parse_command_line_args()
+org_id = args.orgId
 package_name = args.packageName
 package_version = args.packageVersion
 
 print("Testing package %s@%s\n" % (package_name, package_version))
 
-***REMOVED***
+client = SnykClient(token=snyk_token)
 result = client.organizations.get(org_id).test_rubygem(package_name, package_version)
 
 all_vulnerability_issues = result.issues.vulnerabilities

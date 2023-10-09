@@ -1,21 +1,21 @@
-***REMOVED***
+import argparse
 
-***REMOVED***
-***REMOVED***
+from snyk import SnykClient
+from utils import get_default_token_path, get_token
 
 
-***REMOVED***
-***REMOVED***
-***REMOVED***
+def parse_command_line_args():
+    parser = argparse.ArgumentParser(description="Snyk API Examples")
+    parser.add_argument(
         "--orgId", type=str, help="The Snyk Organisation Id", required=True
-***REMOVED***
-***REMOVED***
+    )
+    return parser.parse_args()
 
 
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
+snyk_token_path = get_default_token_path()
+snyk_token = get_token(snyk_token_path)
+args = parse_command_line_args()
+org_id = args.orgId
 show_dependencies = True
 show_projects = True
 client = SnykClient(snyk_token)
@@ -54,6 +54,6 @@ for proj in projects:
                     print("    Ignore type: %s " % reason_type)
                     print(
                         "    Ignore is disregard if fixable: %s " % disregard_if_fixable
-                ***REMOVED***
+                    )
 
         print("\n")

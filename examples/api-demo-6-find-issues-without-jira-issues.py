@@ -1,24 +1,24 @@
-***REMOVED***
+import argparse
 
-***REMOVED***
-***REMOVED***
+from snyk import SnykClient
+from utils import get_default_token_path, get_token
 
 
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
+def parse_command_line_args():
+    parser = argparse.ArgumentParser(description="Snyk API Examples")
+    parser.add_argument(
+        "--orgId", type=str, help="The Snyk Organisation ID", required=True
+    )
+    parser.add_argument(
         "--projectId", type=str, help="The Snyk Project ID", required=True
-***REMOVED***
-***REMOVED***
+    )
+    return parser.parse_args()
 
 
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
+snyk_token_path = get_default_token_path()
+snyk_token = get_token(snyk_token_path)
+args = parse_command_line_args()
+org_id = args.orgId
 project_id = args.projectId
 
 client = SnykClient(snyk_token)
@@ -35,4 +35,4 @@ for issue in issues.vulnerabilities + issues.licenses:
         print(
             "  https://app.snyk.io/org/%s/project/%s#%s"
             % (org.name, project_id, issue.id)
-    ***REMOVED***
+        )

@@ -3,7 +3,7 @@ import re
 
 import pytest  # type: ignore
 
-***REMOVED***
+from snyk import SnykClient
 from snyk.__version__ import __version__
 from snyk.errors import SnykError, SnykNotFoundError
 from snyk.models import Organization, Project
@@ -196,7 +196,7 @@ class TestSnykClient(object):
         assert (
             "testing-new-name"
             == client.projects.get("f9fec29a-d288-40d9-a019-cedf825e6efb").name
-    ***REMOVED***
+        )
 
     def test_non_existent_project(self, requests_mock, client, organizations, projects):
         requests_mock.get("https://api.snyk.io/v1/orgs", json=organizations)
@@ -209,13 +209,13 @@ class TestSnykClient(object):
     def rest_client(self):
         return SnykClient(
             "token", version="2022-02-16~experimental", url="https://api.snyk.io/rest"
-    ***REMOVED***
+        )
 
     @pytest.fixture
     def v3_client(self):
         return SnykClient(
             "token", version="2022-02-16~experimental", url="https://api.snyk.io/v3"
-    ***REMOVED***
+        )
 
     @pytest.fixture
     def v3_groups(self):
@@ -253,7 +253,7 @@ class TestSnykClient(object):
         requests_mock.get(
             f"{V3_URL}/orgs/{V3_ORG}/targets?limit=10&version={V3_VERSION}",
             json=v3_targets_page1,
-    ***REMOVED***
+        )
         t_params = {"limit": 10}
 
         targets = v3_client.get(f"orgs/{V3_ORG}/targets", t_params).json()
@@ -267,19 +267,19 @@ class TestSnykClient(object):
         v3_targets_page1,
         v3_targets_page2,
         v3_targets_page3,
-***REMOVED***:
+    ):
         requests_mock.get(
             f"{V3_URL}/orgs/{V3_ORG}/targets?limit=10&version={V3_VERSION}",
             json=v3_targets_page1,
-    ***REMOVED***
+        )
         requests_mock.get(
             f"{V3_URL}/orgs/{V3_ORG}/targets?limit=10&version={V3_VERSION}&excludeEmpty=true&starting_after=v1.eyJpZCI6IjMyODE4ODAifQ%3D%3D",
             json=v3_targets_page2,
-    ***REMOVED***
+        )
         requests_mock.get(
             f"{V3_URL}/orgs/{V3_ORG}/targets?limit=10&version={V3_VERSION}&excludeEmpty=true&starting_after=v1.eyJpZCI6IjI5MTk1NjgifQ%3D%3D",
             json=v3_targets_page3,
-    ***REMOVED***
+        )
         t_params = {"limit": 10}
 
         data = v3_client.get_v3_pages(f"orgs/{V3_ORG}/targets", t_params)
@@ -290,7 +290,7 @@ class TestSnykClient(object):
         requests_mock.get(
             f"{REST_URL}/orgs/{REST_ORG}/targets?limit=10&version={REST_VERSION}",
             json=rest_targets_page1,
-    ***REMOVED***
+        )
         t_params = {"limit": 10}
 
         targets = rest_client.get(f"orgs/{REST_ORG}/targets", t_params).json()
@@ -304,19 +304,19 @@ class TestSnykClient(object):
         rest_targets_page1,
         rest_targets_page2,
         rest_targets_page3,
-***REMOVED***:
+    ):
         requests_mock.get(
             f"{REST_URL}/orgs/{REST_ORG}/targets?limit=10&version={REST_VERSION}",
             json=rest_targets_page1,
-    ***REMOVED***
+        )
         requests_mock.get(
             f"{REST_URL}/orgs/{REST_ORG}/targets?limit=10&version={REST_VERSION}&excludeEmpty=true&starting_after=v1.eyJpZCI6IjMyODE4ODAifQ%3D%3D",
             json=rest_targets_page2,
-    ***REMOVED***
+        )
         requests_mock.get(
             f"{REST_URL}/orgs/{REST_ORG}/targets?limit=10&version={REST_VERSION}&excludeEmpty=true&starting_after=v1.eyJpZCI6IjI5MTk1NjgifQ%3D%3D",
             json=rest_targets_page3,
-    ***REMOVED***
+        )
         t_params = {"limit": 10}
 
         data = rest_client.get_rest_pages(f"orgs/{V3_ORG}/targets", t_params)

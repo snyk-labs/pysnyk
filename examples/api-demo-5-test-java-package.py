@@ -1,24 +1,24 @@
-***REMOVED***
+import argparse
 
-***REMOVED***
-***REMOVED***
+from snyk import SnykClient
+from utils import get_default_token_path, get_token
 
 
-***REMOVED***
-***REMOVED***
-***REMOVED***
+def parse_command_line_args():
+    parser = argparse.ArgumentParser(description="Snyk API Examples")
+    parser.add_argument(
         "--orgId", type=str, help="The Snyk Organisation Id", required=True
-***REMOVED***
-***REMOVED***"--groupId", type=str, help="The maven package name")
-***REMOVED***"--artifactId", type=str, help="The maven package name")
-***REMOVED***"--packageVersion", type=str, help="The maven package name")
-***REMOVED***
+    )
+    parser.add_argument("--groupId", type=str, help="The maven package name")
+    parser.add_argument("--artifactId", type=str, help="The maven package name")
+    parser.add_argument("--packageVersion", type=str, help="The maven package name")
+    parser.add_argument(
         "full_package_descriptor",
         nargs="?",
         metavar="groupId:artifactId@version",
         type=str,
         help="Full package to test.",
-***REMOVED***
+    )
     args_list = parser.parse_args()
     if args_list.full_package_descriptor:
         try:
@@ -32,12 +32,12 @@
         except:
             parser.error(
                 "Invalid full package description. Should be <groupId>:<packageId>@<version>"
-        ***REMOVED***
+            )
 
         if not args_list.packageVersion:
             parser.error(
                 "Invalid full package description. Should be <groupId>:<packageId>@<version>"
-        ***REMOVED***
+            )
     else:
         if args_list.groupId is None:
             parser.error("You must specify --groupId")
@@ -48,11 +48,11 @@
     return args_list
 
 
-***REMOVED***
-***REMOVED***
-***REMOVED***
+snyk_token_path = get_default_token_path()
+snyk_token = get_token(snyk_token_path)
+args = parse_command_line_args()
 
-***REMOVED***
+org_id = args.orgId
 package_group_id = args.groupId
 package_artifact_id = args.artifactId
 package_version = args.packageVersion

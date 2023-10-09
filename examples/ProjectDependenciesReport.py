@@ -1,6 +1,6 @@
 import json
 
-***REMOVED***
+from snyk import SnykClient
 
 
 def print_json(json_obj):
@@ -168,7 +168,7 @@ def get_flat_dependencies(dep_list):
 
         flat_dep_list.append(
             {"pkgId": package_id, "path": path, "licenses": licenses_str}
-    ***REMOVED***
+        )
         flat_child_deps_list = get_flat_dependencies(d["dependencies"])
         flat_dep_list.extend(flat_child_deps_list)
     return flat_dep_list

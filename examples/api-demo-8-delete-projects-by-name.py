@@ -1,21 +1,21 @@
-***REMOVED***
+import argparse
 
-***REMOVED***
-***REMOVED***
+from snyk import SnykClient
+from utils import get_default_token_path, get_token
 
 
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
+def parse_command_line_args():
+    parser = argparse.ArgumentParser(description="Snyk API Examples")
+    parser.add_argument(
+        "--orgId", type=str, help="The Snyk Organisation ID", required=True
+    )
+    parser.add_argument(
         "--projectName",
         type=str,
         help="Put in your project name as it appears in Snyk",
         required=True,
-***REMOVED***
-***REMOVED***
+    )
+    parser.add_argument(
         "--projectOrigin",
         choices=[
             "cli",
@@ -27,14 +27,14 @@
         ],
         help=" Set this if you want to make sure the project is from a particular place (repo, CLI, etc)",
         required=False,
-***REMOVED***
-***REMOVED***
+    )
+    return parser.parse_args()
 
 
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
+snyk_token_path = get_default_token_path()
+snyk_token = get_token(snyk_token_path)
+args = parse_command_line_args()
+org_id = args.orgId
 # For example, for GitHub projects it is `[org]/[repo-name]`
 # For a Docker scan pushed into Snyk via `snyk monitor`, it is `docker-image|[image-name]`
 project_name = args.projectName
@@ -44,6 +44,6 @@ client = SnykClient(snyk_token)
 for project in client.organizations.get(org_id).projects.all():
     if project_name == project.name and (
         project.origin == project_origin or not project_origin
-***REMOVED***:
+    ):
         if project.delete():
             print("Project ID %s deleted" % project.id)

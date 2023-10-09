@@ -15,7 +15,7 @@ class TestModels(object):
             id="a04d9cbd-ae6e-44af-b573-0556b0ad4bd2",
             slug="my-other-org",
             url="https://api.snyk.io/org/my-other-org",
-    ***REMOVED***
+        )
         org.client = SnykClient("token")
         return org
 
@@ -116,7 +116,7 @@ class TestOrganization(TestModels):
     def test_empty_dependencies(self, organization, organization_url, requests_mock):
         requests_mock.post(
             "%s/dependencies" % organization_url, json={"total": 0, "results": []}
-    ***REMOVED***
+        )
         assert [] == organization.dependencies.all()
 
     def test_rubygems_test(self, organization, base_url, blank_test, requests_mock):
@@ -126,7 +126,7 @@ class TestOrganization(TestModels):
     def test_maven_test(self, organization, base_url, blank_test, requests_mock):
         requests_mock.get(
             "%s/test/maven/spring/springboot/1.0.0" % base_url, json=blank_test
-    ***REMOVED***
+        )
         assert organization.test_maven("spring", "springboot", "1.0.0")
 
     def test_python_test(self, organization, base_url, blank_test, requests_mock):
@@ -139,67 +139,67 @@ class TestOrganization(TestModels):
 
     def test_pipfile_test_with_string(
         self, organization, base_url, blank_test, requests_mock
-***REMOVED***:
+    ):
         requests_mock.post("%s/test/pip" % base_url, json=blank_test)
         assert organization.test_pipfile("django==4.0.0")
 
     def test_pipfile_test_with_file(
         self, organization, base_url, blank_test, fake_file, requests_mock
-***REMOVED***:
+    ):
         requests_mock.post("%s/test/pip" % base_url, json=blank_test)
         assert organization.test_pipfile(fake_file)
 
     def test_gemfilelock_test_with_file(
         self, organization, base_url, blank_test, fake_file, requests_mock
-***REMOVED***:
+    ):
         requests_mock.post("%s/test/rubygems" % base_url, json=blank_test)
         assert organization.test_gemfilelock(fake_file)
 
     def test_packagejson_test_with_file(
         self, organization, base_url, blank_test, fake_file, requests_mock
-***REMOVED***:
+    ):
 
         requests_mock.post("%s/test/npm" % base_url, json=blank_test)
         assert organization.test_packagejson(fake_file)
 
     def test_packagejson_test_with_files(
         self, organization, base_url, blank_test, fake_file, requests_mock
-***REMOVED***:
+    ):
 
         requests_mock.post("%s/test/npm" % base_url, json=blank_test)
         assert organization.test_packagejson(fake_file, fake_file)
 
     def test_gradlefile_test_with_file(
         self, organization, base_url, blank_test, fake_file, requests_mock
-***REMOVED***:
+    ):
 
         requests_mock.post("%s/test/gradle" % base_url, json=blank_test)
         assert organization.test_gradlefile(fake_file)
 
     def test_sbt_test_with_file(
         self, organization, base_url, blank_test, fake_file, requests_mock
-***REMOVED***:
+    ):
 
         requests_mock.post("%s/test/sbt" % base_url, json=blank_test)
         assert organization.test_sbt(fake_file)
 
     def test_pom_test_with_file(
         self, organization, base_url, blank_test, fake_file, requests_mock
-***REMOVED***:
+    ):
 
         requests_mock.post("%s/test/maven" % base_url, json=blank_test)
         assert organization.test_pom(fake_file)
 
     def test_composer_with_files(
         self, organization, base_url, blank_test, fake_file, requests_mock
-***REMOVED***:
+    ):
 
         requests_mock.post("%s/test/composer" % base_url, json=blank_test)
         assert organization.test_composer(fake_file, fake_file)
 
     def test_yarn_with_files(
         self, organization, base_url, blank_test, fake_file, requests_mock
-***REMOVED***:
+    ):
 
         requests_mock.post("%s/test/yarn" % base_url, json=blank_test)
         assert organization.test_yarn(fake_file, fake_file)
@@ -253,7 +253,7 @@ class TestOrganization(TestModels):
         requests_mock.post(import_matcher)
         assert organization.import_project(
             "github.com/org/repo", files=["Gemfile.lock"]
-    ***REMOVED***
+        )
         payload = requests_mock.last_request.json()
         assert len(payload["files"]) == 1
         assert payload["files"][0]["path"] == "Gemfile.lock"
@@ -262,14 +262,14 @@ class TestOrganization(TestModels):
         invite_matcher = re.compile("invite$")
         requests_mock.post(
             invite_matcher, json={"email": "example@example.com", "isAdmin": False}
-    ***REMOVED***
+        )
         assert organization.invite("example@example.com")
 
     def test_invite_admin(self, organization, requests_mock):
         invite_matcher = re.compile("invite$")
         requests_mock.post(
             invite_matcher, json={"email": "example@example.com", "isAdmin": True}
-    ***REMOVED***
+        )
         assert organization.invite("example@example.com", admin=True)
 
     def test_get_project(self, organization, project, requests_mock):
@@ -278,19 +278,19 @@ class TestOrganization(TestModels):
         assert (
             "atokeneduser/goof"
             == organization.projects.get("6d5813be-7e6d-4ab8-80c2-1e3e2a454545").name
-    ***REMOVED***
+        )
 
     def test_get_project_organization_has_client(
         self, organization, project, requests_mock
-***REMOVED***:
+    ):
         matcher = re.compile("project/6d5813be-7e6d-4ab8-80c2-1e3e2a454545$")
         requests_mock.get(matcher, json=project)
         assert (
             organization.projects.get(
                 "6d5813be-7e6d-4ab8-80c2-1e3e2a454545"
-        ***REMOVED***.organization.client
+            ).organization.client
             is not None
-    ***REMOVED***
+        )
 
     def test_filter_projects_by_tag_missing_value(self, organization, requests_mock):
         with pytest.raises(SnykError):
@@ -304,7 +304,7 @@ class TestOrganization(TestModels):
         with pytest.raises(SnykError):
             organization.projects.filter(
                 tags=[{"key": "some-key", "value": "some-value", "extra": "extra"}]
-        ***REMOVED***
+            )
 
     def test_filter_projects_by_tag(self, organization, requests_mock):
         tags = [{"key": "some-key", "value": "some-value"}]
@@ -324,16 +324,16 @@ class TestOrganization(TestModels):
         requests_mock.get(matcher, json=project)
         assert organization.projects.get(
             "6d5813be-7e6d-4ab8-80c2-1e3e2a454545"
-    ***REMOVED***._tags == [{"key": "some-key", "value": "some-value"}]
+        )._tags == [{"key": "some-key", "value": "some-value"}]
 
     def test_get_organization_project_has_tags(
         self, organization, project, requests_mock
-***REMOVED***:
+    ):
         matcher = re.compile("project/6d5813be-7e6d-4ab8-80c2-1e3e2a454545$")
         requests_mock.get(matcher, json=project)
         assert organization.projects.get(
             "6d5813be-7e6d-4ab8-80c2-1e3e2a454545"
-    ***REMOVED***.tags.all() == [{"key": "some-key", "value": "some-value"}]
+        ).tags.all() == [{"key": "some-key", "value": "some-value"}]
 
 
 class TestProject(TestModels):
@@ -350,7 +350,7 @@ class TestProject(TestModels):
             testFrequency="daily",
             issueCountsBySeverity={"critical": 1, "low": 8, "high": 13, "medium": 15},
             organization=organization,
-    ***REMOVED***
+        )
 
     @pytest.fixture
     def project_url(self, organization_url, project):
@@ -386,13 +386,13 @@ class TestProject(TestModels):
     def test_add_tag(self, project, project_url, requests_mock):
         requests_mock.post(
             "%s/tags" % project_url, json={"key": "key", "value": "value"}
-    ***REMOVED***
+        )
         assert project.tags.add("key", "value")
 
     def test_delete_tag(self, project, project_url, requests_mock):
         requests_mock.post(
             "%s/tags/remove" % project_url, json={"key": "key", "value": "value"}
-    ***REMOVED***
+        )
         assert project.tags.delete("key", "value")
 
     def test_tags(self, project, project_url, requests_mock):
@@ -410,7 +410,7 @@ class TestProject(TestModels):
     def test_settings(self, project, project_url, requests_mock):
         requests_mock.get(
             "%s/settings" % project_url, json={"PullRequestTestEnabled": True}
-    ***REMOVED***
+        )
         assert 1 == len(project.settings.all())
         assert project.settings.get("PullRequestTestEnabled")
 
@@ -434,13 +434,13 @@ class TestProject(TestModels):
 
     def test_filter_not_implemented_on_dict_managers(
         self, project, project_url, requests_mock
-***REMOVED***:
+    ):
         with pytest.raises(SnykNotImplementedError):
             project.ignores.filter(key="value")
 
     def test_first_fails_on_empty_dict_managers(
         self, project, project_url, requests_mock
-***REMOVED***:
+    ):
         requests_mock.get("%s/ignores" % project_url, json={})
         with pytest.raises(SnykNotFoundError):
             project.ignores.first()
@@ -461,7 +461,7 @@ class TestProject(TestModels):
         }
         adapter = requests_mock.post(
             "%s/issue/%s/jira-issue" % (project_url, issue_id), json=return_data
-    ***REMOVED***
+        )
         fields = {"summary": "something's wrong", "issuetype": {"id": "10000"}}
         out = project.jira_issues.create(issue_id, fields)
         assert adapter.last_request.json() == {"fields": fields}
@@ -472,14 +472,14 @@ class TestProject(TestModels):
         issue_id = "npm:qs:20140806-1"
         adapter = requests_mock.post(
             "%s/issue/%s/jira-issue" % (project_url, issue_id), json={}
-    ***REMOVED***
+        )
         with pytest.raises(SnykError):
             out = project.jira_issues.create(issue_id, {})
 
     def test_empty_dependencies(self, project, organization_url, requests_mock):
         requests_mock.post(
             "%s/dependencies" % organization_url, json={"total": 0, "results": []}
-    ***REMOVED***
+        )
         assert [] == project.dependencies.all()
 
     def test_empty_issues(self, project, project_url, requests_mock):
@@ -491,21 +491,21 @@ class TestProject(TestModels):
                 "dependencyCount": 0,
                 "issues": {"vulnerabilities": [], "licenses": []},
             },
-    ***REMOVED***
+        )
         assert project.issueset.all().ok
 
     def test_empty_issues_aggregated(self, project, project_url, requests_mock):
         requests_mock.post(
             "%s/aggregated-issues" % project_url,
             json={"issues": []},
-    ***REMOVED***
+        )
         assert [] == project.issueset_aggregated.all().issues
 
     def test_empty_vulnerabilities(self, project, project_url, requests_mock):
         requests_mock.post(
             "%s/aggregated-issues" % project_url,
             json={"issues": []},
-    ***REMOVED***
+        )
         assert [] == project.vulnerabilities
 
     def test_vulnerabilities(self, project, project_url, requests_mock):
@@ -581,7 +581,7 @@ class TestProject(TestModels):
                     }
                 ]
             },
-    ***REMOVED***
+        )
         requests_mock.get(
             "{}/issue/{}/paths".format(project_url, issue_id),
             json={
@@ -607,7 +607,7 @@ class TestProject(TestModels):
                 ],
                 "total": 1,
             },
-    ***REMOVED***
+        )
 
         expected = [
             Vulnerability(
@@ -642,13 +642,13 @@ class TestProject(TestModels):
                 cvssScore="3.7",
                 ignored=None,
                 patched=[],
-        ***REMOVED***
+            )
         ]
         assert expected == project.vulnerabilities
 
     def test_aggregated_issues_missing_optional_fields(
         self, project, project_url, requests_mock
-***REMOVED***:
+    ):
         requests_mock.post(
             "%s/aggregated-issues" % project_url,
             json={
@@ -678,7 +678,7 @@ class TestProject(TestModels):
                     }
                 ]
             },
-    ***REMOVED***
+        )
         requests_mock.get(
             "{}/issue/test/paths".format(project_url),
             json={
@@ -704,7 +704,7 @@ class TestProject(TestModels):
                 ],
                 "total": 1,
             },
-    ***REMOVED***
+        )
 
         expected = [
             Vulnerability(
@@ -732,7 +732,7 @@ class TestProject(TestModels):
                 credit=None,
                 ignored=None,
                 patched=[],
-        ***REMOVED***
+            )
         ]
         assert expected == project.vulnerabilities
 
@@ -745,16 +745,16 @@ class TestProject(TestModels):
                 "dependencyCount": 0,
                 "issues": {"vulnerabilities": [], "licenses": []},
             },
-    ***REMOVED***
+        )
         assert project.issueset.filter(ignored=True).ok
 
     def test_filtering_empty_issues_aggregated(
         self, project, project_url, requests_mock
-***REMOVED***:
+    ):
         requests_mock.post(
             "%s/aggregated-issues" % project_url,
             json={"issues": []},
-    ***REMOVED***
+        )
 
         assert [] == project.issueset_aggregated.filter(ignored=True).issues
 
@@ -769,7 +769,7 @@ class TestProject(TestModels):
                     "graph": {"rootNodeId": "fake", "nodes": []},
                 }
             },
-    ***REMOVED***
+        )
         assert project.dependency_graph
 
     def test_empty_licenses(self, project, organization_url, requests_mock):
@@ -778,7 +778,7 @@ class TestProject(TestModels):
 
     def test_empty_license_severity(
         self, organization, organization_url, requests_mock
-***REMOVED***:
+    ):
         requests_mock.post(
             "%s/licenses" % organization_url,
             json={
@@ -802,13 +802,13 @@ class TestProject(TestModels):
                     }
                 ]
             },
-    ***REMOVED***
+        )
         licenses = next(iter(organization.licenses.all()))
         assert licenses.severity is None
 
     def test_missing_package_version_in_dep_graph(
         self, project, project_url, requests_mock
-***REMOVED***:
+    ):
         requests_mock.get(
             "%s/dep-graph" % project_url,
             json={
@@ -824,5 +824,5 @@ class TestProject(TestModels):
                     "graph": {"rootNodeId": "fake", "nodes": []},
                 }
             },
-    ***REMOVED***
+        )
         assert next(iter(project.dependency_graph.pkgs)).info.version is None

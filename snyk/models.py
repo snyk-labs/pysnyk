@@ -229,7 +229,7 @@ class Organization(DataClassJSONMixin):
             if service == "docker.io":
                 return self.integrations.filter(name=integration_name)[0].import_image(
                     name
-            ***REMOVED***
+                )
             else:
                 integration = self.integrations.filter(name=integration_name)[0]
 
@@ -288,13 +288,13 @@ class Organization(DataClassJSONMixin):
 
     def test_maven(
         self, package_group_id: str, package_artifact_id: str, version: str
-***REMOVED*** -> IssueSet:
+    ) -> IssueSet:
         path = "test/maven/%s/%s/%s?org=%s" % (
             package_group_id,
             package_artifact_id,
             version,
             self.id,
-    ***REMOVED***
+        )
 
         return self._test(path)
 
@@ -372,8 +372,8 @@ class Integration(DataClassJSONMixin):
         return bool(
             self.organization.client.post(
                 path, {"destinationOrgPublicId": target_organization_id}
-        ***REMOVED***
-    ***REMOVED***
+            )
+        )
 
     @property
     def settings(self):
@@ -394,13 +394,13 @@ class Integration(DataClassJSONMixin):
 
     def import_git(
         self, owner: str, name: str, branch: str = "master", files: List[str] = []
-***REMOVED***:
+    ):
         return self._import(
             {
                 "target": {"owner": owner, "name": name, "branch": branch},
                 "files": [{"path": x} for x in files],
             }
-    ***REMOVED***
+        )
 
     def import_image(self, name: str):
         if ":" not in name:
@@ -414,11 +414,11 @@ class Integration(DataClassJSONMixin):
                 "target": {"id": id, "branch": branch},
                 "files": [{"path": x} for x in files],
             }
-    ***REMOVED***
+        )
 
     def import_bitbucket(
         self, project_key: str, name: str, repo_slug: str, files: List[str] = []
-***REMOVED***:
+    ):
         return self._import(
             {
                 "target": {
@@ -428,7 +428,7 @@ class Integration(DataClassJSONMixin):
                 },
                 "files": [{"path": x} for x in files],
             }
-    ***REMOVED***
+        )
 
     def import_heroku(self, app_id: str, slug_id: str, files: List[str] = []):
         return self._import(
@@ -436,7 +436,7 @@ class Integration(DataClassJSONMixin):
                 "target": {"appId": app_id, "slugId": slug_id},
                 "files": [{"path": x} for x in files],
             }
-    ***REMOVED***
+        )
 
     def import_lambda(self, function_id: str, files: List[str] = []):
         return self._import(
@@ -444,12 +444,12 @@ class Integration(DataClassJSONMixin):
                 "target": {"functionId": function_id},
                 "files": [{"path": x} for x in files],
             }
-    ***REMOVED***
+        )
 
     def import_cloudfoundry(self, app_id: str, files: List[str] = []):
         return self._import(
             {"target": {"appId": app_id}, "files": [{"path": x} for x in files]}
-    ***REMOVED***
+        )
 
 
 @dataclass
@@ -631,7 +631,7 @@ class Project(DataClassJSONMixin):
         project_snapshot_result = self.organization.client.post(
             f"org/{self.organization.id}/project/{self.id}/history?perPage=1&page=1",
             {},
-    ***REMOVED***
+        )
         return project_snapshot_result.json().get("snapshots", [{}])[0]
 
     def __getattr__(self, item):
@@ -670,7 +670,7 @@ class Project(DataClassJSONMixin):
             user_response = self.organization.client.get(
                 f"orgs/{self.organization.id}/users/{selected_user}",
                 version="2023-05-29~beta",
-        ***REMOVED***
+            )
             user = user_response.json()
             user_data = user.get("data", {})
             user_attributes = user_data.get("attributes", {})
@@ -679,12 +679,12 @@ class Project(DataClassJSONMixin):
                 name=user_attributes.get("name"),
                 username=user_attributes.get("username"),
                 email=user_attributes.get("email"),
-        ***REMOVED***
+            )
         elif item == "browseUrl":
             # Ensure that our browse URL matches the tenant the user is making a request to
             tenant_matches = match = re.match(
                 r"^https://api\.(.*?)\.snyk\.io", self.organization.client.api_url
-        ***REMOVED***
+            )
             if tenant_matches:
                 # If a tenant is found, insert it into the URL
                 url_prefix = f"https://app.{match.group(1)}.snyk.io"
@@ -695,7 +695,7 @@ class Project(DataClassJSONMixin):
         else:
             raise AttributeError(
                 f"'{type(self).__name__}' object has no attribute '{item}'"
-        ***REMOVED***
+            )
 
     @property
     def settings(self) -> Manager:
@@ -754,20 +754,20 @@ class Project(DataClassJSONMixin):
 
     def _aggregated_issue_to_vulnerabily(
         self, issue: AggregatedIssue
-***REMOVED*** -> List[Vulnerability]:
+    ) -> List[Vulnerability]:
         issue_paths = Manager.factory(
             IssuePaths,
             self.organization.client,
             IssueRelations(
                 id=issue.id, organization_id=self.organization.id, project_id=self.id
-        ***REMOVED***,
-    ***REMOVED***.all()
+            ),
+        ).all()
 
         try:
             upgradable_paths = filter(
                 lambda path: path[0].fixVersion is not None,
                 issue_paths.paths,
-        ***REMOVED***
+            )
             first_path = next(upgradable_paths)
             upgrade_path = list(map(format_package, first_path))
         except StopIteration:
@@ -800,7 +800,7 @@ class Project(DataClassJSONMixin):
                 cvssScore=issue.issueData.cvssScore,
                 ignored=issue.issueData.ignoreReasons,
                 patched=issue.issueData.patches if issue.isPatched else [],
-        ***REMOVED***
+            )
             # Old endpoint returned a new issue if it appeared in multiple
             # versions, emulate that here to preserve upstream api
             for version in issue.pkgVersions

@@ -30,7 +30,7 @@ class SnykClient(object):
         backoff: int = 2,
         verify: bool = True,
         version: Optional[str] = None,
-***REMOVED***:
+    ):
         self.api_token = token
         self.api_url = url or self.API_URL
         self.api_headers = {
@@ -59,12 +59,12 @@ class SnykClient(object):
         headers: object,
         params: object = None,
         json: object = None,
-***REMOVED*** -> requests.Response:
+    ) -> requests.Response:
 
         if params and json:
             resp = method(
                 url, headers=headers, params=params, json=json, verify=self.verify
-        ***REMOVED***
+            )
         elif params and not json:
             resp = method(url, headers=headers, params=params, verify=self.verify)
         elif json and not params:
@@ -90,7 +90,7 @@ class SnykClient(object):
             backoff=self.backoff,
             exceptions=SnykHTTPError,
             logger=logger,
-    ***REMOVED***
+        )
 
         if not resp.ok:
             logger.error(resp.text)
@@ -110,7 +110,7 @@ class SnykClient(object):
             delay=self.delay,
             backoff=self.backoff,
             logger=logger,
-    ***REMOVED***
+        )
         if not resp.ok:
             logger.error(resp.text)
             raise SnykHTTPError(resp)
@@ -124,7 +124,7 @@ class SnykClient(object):
         version: str = None,
         exclude_version: bool = False,
         exclude_params: bool = False,
-***REMOVED*** -> requests.Response:
+    ) -> requests.Response:
         """
         Rest (formerly v3) Compatible Snyk Client, assumes the presence of Version, either set in the client
         or called in this method means that we're talking to a rest API endpoint and will ensure the
@@ -179,7 +179,7 @@ class SnykClient(object):
             delay=self.delay,
             backoff=self.backoff,
             logger=logger,
-    ***REMOVED***
+        )
         if not resp.ok:
             logger.error(resp.text)
             raise SnykHTTPError(resp)
@@ -198,7 +198,7 @@ class SnykClient(object):
             delay=self.delay,
             backoff=self.backoff,
             logger=logger,
-    ***REMOVED***
+        )
         if not resp.ok:
             logger.error(resp.text)
             raise SnykHTTPError(resp)
@@ -220,18 +220,18 @@ class SnykClient(object):
         while page_data.get("links", {}).get("next"):
             logger.debug(
                 f"GET_REST_PAGES: Another link exists: {page_data['links']['next']}"
-        ***REMOVED***
+            )
             next_url = page_data.get("links", {}).get("next")
 
             # The next url comes back fully formed (i.e. with all the params already set, so no need to do it here)
             next_page_response = self.get(
                 next_url, {}, exclude_version=True, exclude_params=True
-        ***REMOVED***
+            )
             page_data = next_page_response.json()
             return_data.extend(page_data["data"])
             logger.debug(
                 f"GET_REST_PAGES: Added another {len(page_data['data'])} items to the response"
-        ***REMOVED***
+            )
         return return_data
 
     # alias for backwards compatibility where V3 was the old name

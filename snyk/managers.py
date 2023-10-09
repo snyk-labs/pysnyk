@@ -126,7 +126,7 @@ class TagManager(Manager):
         path = "org/%s/project/%s/tags" % (
             self.instance.organization.id,
             self.instance.id,
-    ***REMOVED***
+        )
         return bool(self.client.post(path, tag))
 
     def delete(self, key, value) -> bool:
@@ -134,7 +134,7 @@ class TagManager(Manager):
         path = "org/%s/project/%s/tags/remove" % (
             self.instance.organization.id,
             self.instance.id,
-    ***REMOVED***
+        )
         return bool(self.client.post(path, tag))
 
 
@@ -150,7 +150,7 @@ class ProjectManager(Manager):
             .get("data", {})
             .get("attributes", {})
             .get("url")
-    ***REMOVED***
+        )
         image_cluster = (
             project.get("relationships", {})
             .get("target", {})
@@ -158,7 +158,7 @@ class ProjectManager(Manager):
             .get("meta", {})
             .get("integration_data", {})
             .get("cluster")
-    ***REMOVED***
+        )
         return {
             "name": attributes.get("name"),
             "id": project.get("id"),
@@ -191,7 +191,9 @@ class ProjectManager(Manager):
 
     def _query(self, tags: List[Dict[str, str]] = [], next_url: str = None):
         projects = []
-        params = {}
+        params: dict = {
+            "limit": 100,
+        }
         if self.instance:
             path = "/orgs/%s/projects" % self.instance.id if not next_url else next_url
 
@@ -214,7 +216,7 @@ class ProjectManager(Manager):
                 version="2023-06-19",
                 params=params,
                 exclude_version=True if next_url else False,
-        ***REMOVED***
+            )
 
             if "data" in resp.json():
                 # Process projects in current response
@@ -317,7 +319,7 @@ class DependencyManager(Manager):
             org_id,
             page,
             results_per_page,
-    ***REMOVED***
+        )
 
         resp = self.client.post(path, post_body)
         dependency_data = resp.json()
@@ -347,7 +349,7 @@ class SettingManager(DictManager):
         path = "org/%s/project/%s/settings" % (
             self.instance.organization.id,
             self.instance.id,
-    ***REMOVED***
+        )
         resp = self.client.get(path)
         return resp.json()
 
@@ -355,7 +357,7 @@ class SettingManager(DictManager):
         path = "org/%s/project/%s/settings" % (
             self.instance.organization.id,
             self.instance.id,
-    ***REMOVED***
+        )
         post_body = {}
 
         settings = [
@@ -384,7 +386,7 @@ class IgnoreManager(DictManager):
         path = "org/%s/project/%s/ignores" % (
             self.instance.organization.id,
             self.instance.id,
-    ***REMOVED***
+        )
         resp = self.client.get(path)
         return resp.json()
 
@@ -394,7 +396,7 @@ class JiraIssueManager(DictManager):
         path = "org/%s/project/%s/jira-issues" % (
             self.instance.organization.id,
             self.instance.id,
-    ***REMOVED***
+        )
         resp = self.client.get(path)
         return resp.json()
 
@@ -403,7 +405,7 @@ class JiraIssueManager(DictManager):
             self.instance.organization.id,
             self.instance.id,
             issue_id,
-    ***REMOVED***
+        )
         post_body = {"fields": fields}
         resp = self.client.post(path, post_body)
         response_data = resp.json()
@@ -413,7 +415,7 @@ class JiraIssueManager(DictManager):
             issue_id in response_data
             and len(response_data[issue_id]) > 0
             and "jiraIssue" in response_data[issue_id][0]
-    ***REMOVED***:
+        ):
             return response_data[issue_id][0]["jiraIssue"]
         raise SnykError
 
@@ -436,7 +438,7 @@ class IntegrationSettingManager(DictManager):
         path = "org/%s/integrations/%s/settings" % (
             self.instance.organization.id,
             self.instance.id,
-    ***REMOVED***
+        )
         resp = self.client.get(path)
         return resp.json()
 
@@ -446,7 +448,7 @@ class DependencyGraphManager(SingletonManager):
         path = "org/%s/project/%s/dep-graph" % (
             self.instance.organization.id,
             self.instance.id,
-    ***REMOVED***
+        )
         resp = self.client.get(path)
         dependency_data = resp.json()
         if "depGraph" in dependency_data:
@@ -473,7 +475,7 @@ class IssueSetManager(SingletonManager):
         path = "org/%s/project/%s/issues" % (
             self.instance.organization.id,
             self.instance.id,
-    ***REMOVED***
+        )
         filters = {
             "severities": ["critical", "high", "medium", "low"],
             "types": ["vuln", "license"],
@@ -496,7 +498,7 @@ class IssueSetAggregatedManager(SingletonManager):
         path = "org/%s/project/%s/aggregated-issues" % (
             self.instance.organization.id,
             self.instance.id,
-    ***REMOVED***
+        )
         default_filters = {
             "severities": ["critical", "high", "medium", "low"],
             "exploitMaturity": [
@@ -530,6 +532,6 @@ class IssuePathsManager(SingletonManager):
             self.instance.organization_id,
             self.instance.project_id,
             self.instance.id,
-    ***REMOVED***
+        )
         resp = self.client.get(path)
         return self.klass.from_dict(resp.json())

@@ -1,4 +1,4 @@
-***REMOVED***
+import argparse
 import json
 import re
 import sys
@@ -6,31 +6,31 @@ import sys
 import requests
 import urllib3
 
-***REMOVED***
-***REMOVED***
+from snyk import SnykClient
+from utils import get_default_token_path, get_token
 
 
-***REMOVED***
-***REMOVED***
-***REMOVED***"--orgId", type=str,
+def parse_command_line_args():
+    parser = argparse.ArgumentParser(description="Snyk API Examples")
+    parser.add_argument("--orgId", type=str,
                         help="The Snyk Organisation Id", required=True)
-***REMOVED***"--issueId", type=str,
+    parser.add_argument("--issueId", type=str,
                         help="The Snyk Issue Id", required=True)
-***REMOVED***"--reasonType", type=str,
+    parser.add_argument("--reasonType", type=str,
                         help="Ignore Reason Type", required=True)
-***REMOVED***"--expirationTime", type=str,
+    parser.add_argument("--expirationTime", type=str,
                         help="Optional. Expiration time of ignore. e.g. yyyy-mm-dd or yyyy-mm-ddThh:mm:ss.aaaZ",)
-***REMOVED***"--reason", type=str,
+    parser.add_argument("--reason", type=str,
                         help="Optional. Reason for ignoring e.g. \"We do not use this library.\"",)
     args = parser.parse_args()
 
     return args
 
 
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
+snyk_token_path = get_default_token_path()
+snyk_token = get_token(snyk_token_path)
+args = parse_command_line_args()
+org_id = args.orgId
 issue_id = args.issueId
 reason_type = args.reasonType
 time = args.expirationTime
@@ -61,16 +61,16 @@ else:
     else:
         confirm = 3
 
-***REMOVED***
+client = SnykClient(token=snyk_token)
 
 # API call to collect every project in all of a customers orgs
 http = urllib3.PoolManager()
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
+for proj in client.organizations.get(org_id).projects.all():
+    print("\nProject name: %s" % proj.name)
+    print("  Issues Found:")
+    print("      High  : %s" % proj.issueCountsBySeverity.high)
+    print("      Medium: %s" % proj.issueCountsBySeverity.medium)
+    print("      Low   : %s" % proj.issueCountsBySeverity.low)
 
     url = "org/" + org_id + "/project/" + proj.id + "/issues"
 

@@ -1,58 +1,58 @@
-***REMOVED***
+import argparse
 import json
 
 import xlsxwriter
 
 import ProjectDependenciesReport
-***REMOVED***
-***REMOVED***
+from snyk import SnykClient
+from utils import get_default_token_path, get_token
 
 
-***REMOVED***
-***REMOVED***
-***REMOVED***
+def parse_command_line_args():
+    parser = argparse.ArgumentParser(description="Snyk API Examples")
+    parser.add_argument(
         "--orgId", type=str, help="The Snyk Organisation Id", required=True
-***REMOVED***
-***REMOVED***
+    )
+    parser.add_argument(
         "--projectId",
         type=str,
         help="The project ID in Snyk. Use --projectId=all for all projects.",
         required=True,
-***REMOVED***
-***REMOVED***
+    )
+    parser.add_argument(
         "--outputPathExcel",
         type=str,
         help="The desired output if you want Excel output (use .xlsx).",
-***REMOVED***
-***REMOVED***
+    )
+    parser.add_argument(
         "--outputPathCSV", type=str, help="The desired output if you want CSV output."
-***REMOVED***
-***REMOVED***
+    )
+    parser.add_argument(
         "--outputPathNestedJson",
         type=str,
         help="The desired output if you want a nested JSON output.",
-***REMOVED***
-***REMOVED***
+    )
+    parser.add_argument(
         "--outputPathFlatJson",
         type=str,
         help="The desired output if you want a flattened JSON output.",
-***REMOVED***
+    )
     args = parser.parse_args()
     if (
         args.outputPathExcel is None
         and args.outputPathCSV is None
         and args.outputPathNestedJson is None
         and args.outputPathFlatJson is None
-***REMOVED***:
+    ):
         parser.error("You must specify one or more output options.")
         parser.print_help()
     return args
 
 
-***REMOVED***
-***REMOVED***
-***REMOVED***
-***REMOVED***
+snyk_token_path = get_default_token_path()
+snyk_token = get_token(snyk_token_path)
+args = parse_command_line_args()
+org_id = args.orgId
 
 output_excel_path = args.outputPathExcel
 output_csv_path = args.outputPathCSV
@@ -80,7 +80,7 @@ def get_flat_dependencies(dep_list):
                 "licenses": licenses_str,
                 "license_issues": license_issues_str,
             }
-    ***REMOVED***
+        )
         flat_child_deps_list = get_flat_dependencies(d["dependencies"])
         flat_dep_list.extend(flat_child_deps_list)
     return flat_dep_list
@@ -114,12 +114,12 @@ for next_project in all_projects_list:
     if args.projectId == "all" or next_project_id == args.projectId:
         next_project_tree = ProjectDependenciesReport.get_project_tree(
             snyk_token, org_id, next_project_id
-    ***REMOVED***
+        )
         project_trees.append(next_project_tree["project"]["dependencies"])
 
         next_project_flat_deps_list = get_flat_dependencies(
             next_project_tree["project"]["dependencies"]
-    ***REMOVED***
+        )
         flattened_project_dependencies_lists.append(next_project_flat_deps_list)
         all_flattenend_project_dependencies_list.extend(next_project_flat_deps_list)
 
@@ -130,7 +130,7 @@ for next_project in all_projects_list:
                 "project_tree": next_project_tree,
                 "flat_deps_list": next_project_flat_deps_list,
             }
-    ***REMOVED***
+        )
 
 
 def write_all_projects_nested_json(all_project_info, output_path):
@@ -171,7 +171,7 @@ def write_all_project_output_csv(all_project_info, output_path):
                 "License(s)",
                 "License Issue(s)",
                 "Application and Path",
-        ***REMOVED***
+            )
             output_csv.write("%s\n" % str_csv_line)
 
             flattened_dependencies_list = next_project["flat_deps_list"]
@@ -181,7 +181,7 @@ def write_all_project_output_csv(all_project_info, output_path):
                     next_dep["licenses"],
                     next_dep["license_issues"],
                     next_dep["path"],
-            ***REMOVED***
+                )
                 output_csv.write("%s\n" % str_csv_line)
 
             output_csv.write("\n")  # empty row to separate projects

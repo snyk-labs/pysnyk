@@ -1,11 +1,11 @@
-***REMOVED***
+import argparse
 import collections
 import json
 import operator
 from collections import OrderedDict
 
-***REMOVED***
-***REMOVED***
+from snyk import SnykClient
+from utils import get_default_token_path, get_token
 
 # ****Instructions******
 # See README on where to specify snyk-api-token to authorize this example
@@ -18,11 +18,11 @@ project_id = ""
 json_rslts_repo = ""
 
 
-***REMOVED***
-***REMOVED***
-***REMOVED***"--orgId", type=str, help="The Snyk Organisation Id")
+def parse_command_line_args():
+    parser = argparse.ArgumentParser(description="Snyk API Examples")
+    parser.add_argument("--orgId", type=str, help="The Snyk Organisation Id")
 
-***REMOVED***"--projectId", type=str, help="The project ID in Snyk")
+    parser.add_argument("--projectId", type=str, help="The project ID in Snyk")
 
     args = parser.parse_args()
 
@@ -35,8 +35,8 @@ json_rslts_repo = ""
     return args
 
 
-***REMOVED***
-***REMOVED***
+args = parse_command_line_args()
+org_id = args.orgId
 project_id = args.projectId
 
 ###START CLASS
@@ -127,7 +127,7 @@ class analysisLog:
                 + dictDescription[key]
                 + ", Count: "
                 + str(dictItems[key])
-        ***REMOVED***
+            )
         if len(dictItems) == 0:
             print("\t\tNone found")
 
@@ -149,7 +149,7 @@ class analysisLog:
     def sortDict(self, dict):
         sDictOrdered = OrderedDict(
             sorted(dict.items(), key=lambda x: x[1], reverse=True)
-    ***REMOVED***
+        )
         return sDictOrdered
 
     ##OUTPUT FUNCTIONS
@@ -159,7 +159,7 @@ class analysisLog:
             self.vulnIssueCounts[self.iHigh]
             + self.vulnIssueCounts[self.iMedium]
             + self.vulnIssueCounts[self.iLow]
-    ***REMOVED***
+        )
         print(
             "\n\t\tTotal Count (High, Medium, Low): "
             + str(totalCount)
@@ -171,7 +171,7 @@ class analysisLog:
             + str(self.vulnIssueCounts[self.iMedium])
             + ", Low Severity: "
             + str(self.vulnIssueCounts[self.iLow])
-    ***REMOVED***
+        )
 
         for iSev in range(0, 4):
             self.printTopDict(
@@ -179,7 +179,7 @@ class analysisLog:
                 self.sortDict(self.dictVulnIssues[iSev]),
                 True,
                 5,
-        ***REMOVED***
+            )
 
     def printResultLicense(self):
         print("\nLICENSE ANALYSIS")
@@ -190,44 +190,44 @@ class analysisLog:
             + str(self.licenseIssueCounts[self.iMedium])
             + ", Low Severity: "
             + str(self.licenseIssueCounts[self.iLow])
-    ***REMOVED***
+        )
         for iSev in range(1, 4):
             self.printTopDict(
                 "\n\t" + self.arrSevDescriptions[iSev] + " Severity Issues: ",
                 self.sortDict(self.dictLicenseIssues[iSev]),
                 True,
                 5,
-        ***REMOVED***
+            )
 
     def printResultDependency(self):
         print("\nDEPENDENCY ANALYSIS")
         print(
             "The following lists are identifying what dependencies are problematic by having critical vulns, the most high severity or the most overall count of issues (because even medium/low have value)"
-    ***REMOVED***
+        )
         for iDepIssueType in range(0, 3):
             self.printTopDict(
                 "\n\tDependency by " + self.sDepDescriptions[iDepIssueType] + ": ",
                 self.sortDict(self.dictDepIssues[iDepIssueType]),
                 True,
                 5,
-        ***REMOVED***
+            )
 
     def printNewsIssues(self):
         print("\n\n****CVE Watchlist***")
         print(
             "The following issues are currently critical vulnerabilities that have made the news and were found to be in your codebase"
-    ***REMOVED***
+        )
         self.printDictWithDescriptDict("", self.cveWatchlistFound, self.cveWatchlist)
 
     def printCallToAction(self):
         print("\n\n\t\t****Call To Action***")
         print(
             "\t\t\t A fix was found! The fix for the highest severity fixable issue is:"
-    ***REMOVED***
+        )
         print("\t\t\t\tPackage Manager: " + self.callToAction[3])
         print(
             "\t\t\t\tUpgrade: " + self.callToAction[4] + " to " + self.callToAction[5]
-    ***REMOVED***
+        )
         print("\t\t\t\tFixes: " + self.callToAction[1])
         print("\t\t\t\tCVSS: " + str(self.callToAction[0]))
         if self.callToAction[2]:
@@ -241,7 +241,7 @@ class analysisLog:
         if (self.vulnIssueTotal > 0) or (self.licenseIssueTotal > 0):
             print(
                 "\n\n\tThe following analysis lists top 5 items in each area of analysis. Calculation was performed without grouping of vulnerabilities, highlighting every path to each vulnerability"
-        ***REMOVED***
+            )
         if self.vulnIssueTotal > 0:
             self.printResultVulns()
             self.printResultDependency()
@@ -266,18 +266,18 @@ class analysisLog:
         curIsOnWatchlist = False
         if (
             self.fixableNewsStoryFound == False
-    ***REMOVED***:  # check if a news story has been found, if it has, exit, you have your call to action
+        ):  # check if a news story has been found, if it has, exit, you have your call to action
             if (
                 curDep.cvssScore > self.callToAction[0]
-        ***REMOVED***:  # current issue being looked at is more severe than previous found
+            ):  # current issue being looked at is more severe than previous found
                 if (curDep.isUpgradable) or (
                     curDep.isPatchable
-            ***REMOVED***:  # check if a fix is available
+                ):  # check if a fix is available
                     if curDep.isUpgradable:  # otherwise no upgrade path
 
                         if (
                             curDep.upgradePath[0] != curDep.fromPackages[0]
-                    ***REMOVED***:  # not a dependency install issue
+                        ):  # not a dependency install issue
                             tmpUpgradePath = curDep.upgradePath[0]
                         # else reinstall dependencies
                         # Bail - this shouldn't be listed
@@ -306,14 +306,14 @@ class analysisLog:
         for v in issueset.all().issues.vulnerabilities:
             self.manageDict(
                 self.dictDepIssues[self.iDepIssueCounts], v.package + ":" + v.version
-        ***REMOVED***
+            )
             self.vulnIssueTotal += 1
             self.checkCallToAction(v)
             if v.severity == "high":
                 self.manageDict(self.dictVulnIssues[self.iHigh], v.title)
                 self.manageDict(
                     self.dictDepIssues[self.iDepByHighSev], v.package + ":" + v.version
-            ***REMOVED***
+                )
                 self.vulnIssueCounts[self.iHigh] += 1
             elif v.severity == "medium":
                 self.manageDict(self.dictVulnIssues[self.iMedium], v.title)
@@ -327,7 +327,7 @@ class analysisLog:
                 self.manageDict(
                     self.dictDepIssues[self.iDepByCriticalSev],
                     v.package + ":" + v.version,
-            ***REMOVED***
+                )
                 self.vulnIssueCounts[self.iCritical] += 1
 
             curCVEList = v.identifiers["CVE"]
@@ -351,8 +351,8 @@ class analysisLog:
 
 #####ANALYSIS
 ##GET NEXT TWO VALUES FROM COMMANDLINE
-***REMOVED***
-***REMOVED***
+snyk_token_path = get_default_token_path()
+snyk_token = get_token(snyk_token_path)
 client = SnykClient(snyk_token)
 issueset = client.organizations.get(org_id).projects.get(project_id).issueset
 
