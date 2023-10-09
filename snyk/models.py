@@ -587,6 +587,7 @@ class Project(DataClassJSONMixin):
     hostname: Optional[str] = None
     remoteRepoUrl: Optional[str] = None
     branch: Optional[str] = None
+    imageCluster: Optional[str] = None
     attributes: Optional[Dict[str, List[str]]] = None
     _tags: Optional[List[Any]] = field(default_factory=list)
 
