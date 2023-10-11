@@ -191,9 +191,7 @@ class ProjectManager(Manager):
 
     def _query(self, tags: List[Dict[str, str]] = [], next_url: str = None):
         projects = []
-        params: dict = {
-            "limit": 100,
-        }
+        params: dict = {"limit": 100}
         if self.instance:
             path = "/orgs/%s/projects" % self.instance.id if not next_url else next_url
 

@@ -1,6 +1,7 @@
 import logging
 import urllib.parse
 from typing import Any, List, Optional
+from urllib.parse import parse_qs, urlparse
 
 import requests
 from retry.api import retry_call
@@ -161,6 +162,11 @@ class SnykClient(object):
             for k, v in params.items():
                 if isinstance(v, bool):
                     params[k] = str(v).lower()
+
+            # the limit is returned in the url, and if two limits are passed
+            # the API interprets as an array and throws an error
+            if "limit" in parse_qs(urlparse(path).query):
+                params.pop("limit", None)
 
             debug_url = f"{url}&{urllib.parse.urlencode(params)}"
             fkwargs = {"headers": self.api_headers, "params": params}

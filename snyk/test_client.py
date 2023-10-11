@@ -322,3 +322,10 @@ class TestSnykClient(object):
         data = rest_client.get_rest_pages(f"orgs/{V3_ORG}/targets", t_params)
 
         assert len(data) == 30
+
+    def test_rest_limit_deduplication(self, requests_mock, rest_client):
+        requests_mock.get(
+            f"{REST_URL}/orgs/{REST_ORG}/projects?limit=100&version={REST_VERSION}"
+        )
+        params = {"limit": 10}
+        rest_client.get(f"orgs/{REST_ORG}/projects?limit=100", params)
