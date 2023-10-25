@@ -1,4 +1,5 @@
 import argparse
+import os
 
 from snyk import SnykClient
 from utils import get_default_token_path, get_token
@@ -17,7 +18,7 @@ snyk_token = get_token(snyk_token_path)
 args = parse_command_line_args()
 org_id = args.orgId
 
-client = SnykClient(token=snyk_token)
+client = SnykClient(token=os.getenv('PYSNYK_TOKEN'), debug=True, tries=1, delay=2, backoff=2)
 for proj in client.organizations.get(org_id).projects.all():
     print("\nProject name: %s" % proj.name)
     print("  Issues Found:")

@@ -2,6 +2,10 @@ import json
 
 import requests
 
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 class SnykError(Exception):
     pass
@@ -9,6 +13,7 @@ class SnykError(Exception):
 
 class SnykHTTPError(SnykError):
     def __init__(self, resp: requests.Response):
+        logger.debug(resp.headers)
         if hasattr(resp, "json"):
             try:
                 data = resp.json()

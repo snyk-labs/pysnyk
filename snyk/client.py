@@ -175,6 +175,8 @@ class SnykClient(object):
             fkwargs = {"headers": self.api_headers}
 
         logger.debug(f"GET: {debug_url}")
+        headers_no_token = [value for key, value in  self.api_headers.items() if key not in ["Authorization"]]
+        logger.debug({"headers":  headers_no_token, "params": params})
 
         resp = retry_call(
             self.request,
