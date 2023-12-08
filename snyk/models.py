@@ -580,6 +580,7 @@ class Project(DataClassJSONMixin):
     type: str
     readOnly: bool
     testFrequency: str
+    lastTestedDate: str
     isMonitored: bool
     issueCountsBySeverity: IssueCounts
     importingUserId: Optional[str] = None
@@ -643,7 +644,6 @@ class Project(DataClassJSONMixin):
         # These attributes require us to get the latest snapshot
         if item in [
             "totalDependencies",
-            "lastTestedDate",
             "imageId",
             "imageTag",
             "imageBaseImage",
@@ -652,8 +652,6 @@ class Project(DataClassJSONMixin):
             snapshot = self._get_project_snapshot()
             if item == "totalDependencies":
                 return snapshot.get("totalDependencies", 0)
-            elif item == "lastTestedDate":
-                return snapshot.get("created")
             elif item == "imageId":
                 return snapshot.get("imageId")
             elif item == "imageTag":

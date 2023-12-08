@@ -167,6 +167,7 @@ class ProjectManager(Manager):
             "type": attributes.get("type"),
             "readOnly": attributes.get("read_only"),
             "testFrequency": recurring_tests.get("frequency"),
+            "lastTestedDate": issue_counts.get("updated_at"),
             "isMonitored": True if attributes.get("status") == "active" else False,
             "issueCountsBySeverity": {
                 "low": issue_counts.get("low", 0),
