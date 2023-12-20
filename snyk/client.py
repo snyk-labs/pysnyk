@@ -24,6 +24,7 @@ class SnykClient(object):
         self,
         token: str,
         url: Optional[str] = None,
+        rest_url: Optional[str] = None,
         user_agent: Optional[str] = USER_AGENT,
         debug: bool = False,
         tries: int = 1,
@@ -34,6 +35,7 @@ class SnykClient(object):
     ):
         self.api_token = token
         self.api_url = url or self.API_URL
+        self.rest_api_url = rest_url or self.REST_API_URL
         self.api_headers = {
             "Authorization": "token %s" % self.api_token,
             "User-Agent": user_agent,
@@ -141,9 +143,9 @@ class SnykClient(object):
             # When calling a "next page" link, it fails if a version parameter is appended on to the URL - this is a
             # workaround to prevent that from happening...
             if exclude_version:
-                url = f"{self.REST_API_URL}/{path}"
+                url = f"{self.rest_api_url}/{path}"
             else:
-                url = f"{self.REST_API_URL}/{path}?version={version}"
+                url = f"{self.rest_api_url}/{path}?version={version}"
         else:
             url = f"{self.api_url}/{path}"
 

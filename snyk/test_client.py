@@ -33,6 +33,14 @@ class TestSnykClient(object):
         client = SnykClient("token", url)
         assert client.api_url == url
 
+    def test_default_rest_api_url(self, client):
+        assert client.rest_api_url == "https://api.snyk.io/rest"
+
+    def test_overriding_rest_api_url(self):
+        rest_url = "https://api.notsnyk.io/rest"
+        client = SnykClient("token", rest_url=rest_url)
+        assert client.rest_api_url == rest_url
+
     def test_token_added_to_headers(self, client):
         assert client.api_headers["Authorization"] == "token token"
 
