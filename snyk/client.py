@@ -228,9 +228,9 @@ class SnykClient(object):
             )
 
             # Process links to get the next url
-            if "next" in page_data.json()["links"]:
+            if "next" in page_data["links"]:
                 # If the next url is the same as the current url, break out of the loop
-                if page_data.json()["links"]["next"] == page_data.json()["links"]["self"]:
+                if "self" in page_data["links"] and page_data["links"]["next"] == page_data["links"]["self"]:
                     break
                 else:
                     next_url = page_data.get("links", {}).get("next")
@@ -247,7 +247,7 @@ class SnykClient(object):
             # Verify that response contains data
             if "data" in page_data:
                 # If the data is empty, break out of the loop
-                if page_data["data"].len() == 0:
+                if len(page_data["data"]) == 0:
                     break
             # If response does not contain data, break out of the loop
             else:
