@@ -226,13 +226,34 @@ class SnykClient(object):
             logger.debug(
                 f"GET_REST_PAGES: Another link exists: {page_data['links']['next']}"
             )
-            next_url = page_data.get("links", {}).get("next")
+
+            # Process links to get the next url
+            if "next" in page_data.json()["links"]:
+                # If the next url is the same as the current url, break out of the loop
+                if page_data.json()["links"]["next"] == page_data.json()["links"]["self"]:
+                    break
+                else:
+                    next_url = page_data.get("links", {}).get("next")
+            else:
+                # If there is no next url, break out of the loop
+                break
 
             # The next url comes back fully formed (i.e. with all the params already set, so no need to do it here)
             next_page_response = self.get(
                 next_url, {}, exclude_version=True, exclude_params=True
             )
             page_data = next_page_response.json()
+
+            # Verify that response contains data
+            if "data" in page_data:
+                # If the data is empty, break out of the loop
+                if page_data["data"].len() == 0:
+                    break
+            # If response does not contain data, break out of the loop
+            else:
+                break
+
+            # Append the data from the next page to the return data
             return_data.extend(page_data["data"])
             logger.debug(
                 f"GET_REST_PAGES: Added another {len(page_data['data'])} items to the response"
