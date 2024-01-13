@@ -53,7 +53,7 @@ class SnykClient(object):
             self.api_url = self.api_url.rstrip("/")
         if self.rest_api_url[-1] == "/":
             self.rest_api_url = self.rest_api_url.rstrip("/")
-        
+
         if debug:
             logging.basicConfig(level=logging.DEBUG)
 
