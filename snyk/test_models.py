@@ -45,6 +45,7 @@ class TestOrganization(TestModels):
             "type": "npm",
             "readOnly": "false",
             "testFrequency": "daily",
+            "lastTestedDate": "2023-01-13T09:50:54.014Z",
             "isMonitored": "true",
             "issueCountsBySeverity": {
                 "critical": 1,
@@ -348,6 +349,7 @@ class TestProject(TestModels):
             readOnly="false",
             isMonitored="true",
             testFrequency="daily",
+            lastTestedDate="2023-01-13T09:50:54.014Z",
             issueCountsBySeverity={"critical": 1, "low": 8, "high": 13, "medium": 15},
             organization=organization,
         )
