@@ -4,7 +4,7 @@
 [![Build status](https://github.com/snyk-labs/pysnyk/actions/workflows/test.yml/badge.svg)](https://github.com/snyk-labs/pysnyk/actions/workflows/test.yml)
 
 
-A Python client for the [Snyk API](https://snyk.docs.apiary.io/#).
+An Unsupported Python client which can be used to get issues using the Snyk API v1 [Snyk API](https://snyk.docs.apiary.io/#). 
 
 ## Client
 
@@ -274,3 +274,7 @@ response = rest_client.post(f"orgs/{snyk_org}/invites", body={"email": "some.bod
 ```
 
 For backwards compatibility the get_rest_pages method has an alternative name of get_v3_pages to not break code already rewritten replatformed to the 0.9.0 pysnyk module.
+
+## Support
+
+This client is purely a community based Open source tool. Snyk Support is not responsible for handling Customer issues related to this API client. Please make use of the issues tab to get in touch with us.
