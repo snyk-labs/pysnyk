@@ -440,6 +440,41 @@ class IntegrationSettingManager(DictManager):
         )
         resp = self.client.get(path)
         return resp.json()
+    
+    def update(self, **kwargs: bool) -> bool:
+        path = "org/%s/integrations/%s/settings" % (
+            self.instance.organization.id,
+            self.instance.id,
+        )
+        post_body = {}
+
+        settings_options = {'github': [
+            'auto_dep_upgrade_enabled',
+            'auto_dep_upgrade_ignored_dependencies',
+            'auto_dep_upgrade_limit',
+            'auto_remediation_prs',
+            'is_major_upgrade_enabled',
+            'manual_remediation_prs',
+            'pull_request_assignment',
+            'pull_request_fail_on_any_code_issues',
+            'pull_request_fail_on_any_vulns',
+            'pull_request_fail_only_for_high_severity',
+            'pull_request_fail_only_for_issues_with_fix',
+            'pull_request_test_code_enabled',
+            'pull_request_test_code_severity',
+            'pull_request_test_enabled',
+            'reachable_vulns'
+            ]
+                            }
+        settings = settings_options.get(self.instance.name, [])
+
+        for setting in settings:
+            if setting in kwargs:
+                post_body[snake_to_camel(setting)] = kwargs[setting]
+
+        return bool(self.client.put(path, post_body))
+
+
 
 
 class DependencyGraphManager(SingletonManager):
