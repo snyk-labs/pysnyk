@@ -132,6 +132,7 @@ The client supports a high-level `import_project` method on organizations for ad
 ```python
 org = client.organizations.first()
 org.import_project("github.com/user/project@branch")
+org.import_project("api.github.com/user/project@branch")  # Github Enterprise
 org.import_project("docker.io/repository:tag")
 ```
 
