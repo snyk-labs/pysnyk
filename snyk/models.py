@@ -200,12 +200,12 @@ class Organization(DataClassJSONMixin):
     and files, and better errors, would be required.
     """
 
-    def import_project(self, url, files: Optional[List[str]] = None) -> bool:
+self    def import_project(self, url, files: Optional[List[str]] = []) -> bool:
         try:
             components = url.split("/")
             service = components[0]
 
-            if service == "github.com":
+            if service in ("github.com", "api.github.com"):
                 owner = components[1]
                 name = components[2]
                 parts = name.split("@")
@@ -222,7 +222,11 @@ class Organization(DataClassJSONMixin):
         except ValueError:
             raise SnykError
         try:
-            integrations = {"github.com": "github", "docker.io": "docker-hub"}
+            integrations = {
+                "github.com": "github",
+                "api.github.com": "github-enterprise",
+                "docker.io": "docker-hub"
+            }
             integration_name = integrations[service]
         except KeyError:
             raise SnykError
@@ -231,13 +235,15 @@ class Organization(DataClassJSONMixin):
                 return self.integrations.filter(name=integration_name)[0].import_image(
                     name
                 )
-            else:
+            elif service in ("github.com", "api.github.com"):
                 integration = self.integrations.filter(name=integration_name)[0]
 
                 if files:
                     return integration.import_git(owner, name, branch, files)
                 else:
                     return integration.import_git(owner, name, branch)
+            else:
+                raise SnykNotImplementedError
 
         except KeyError:
             raise SnykError
