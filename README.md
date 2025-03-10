@@ -224,7 +224,7 @@ Getting the rest information of an organization:
 # To get this value, get it from a Snyk organizations settings page
 snyk_org = "df734bed-d75c-4f11-bb47-1d119913bcc7"
 
-# to use the rest endpoint you MUST include a version value and the url of the v3 api endpoint as shown below
+# to use the rest endpoint you MUST include a version value and the url of the rest api endpoint as shown below
 rest_client = SnykClient(snyk_token, version="2022-02-16~experimental", url="https://api.snyk.io/rest")
 
 print(rest_client.get(f"/orgs/{snyk_org}").json())
@@ -252,7 +252,7 @@ v1_org = v1client.organizations.get(snyk_org)
 rest_org = rest_client.get(f"/orgs/{snyk_org}").json()
 ```
 
-The rest API introduces consistent pagination across all endpoints. The v3 client includes a helper method `.get_rest_pages` which collects the paginated responses and returns a single list combining the contents of the "data" key from all pages. It takes the same values as the get method.
+The rest API introduces consistent pagination across all endpoints. The rest client includes a helper method `.get_rest_pages` which collects the paginated responses and returns a single list combining the contents of the "data" key from all pages. It takes the same values as the get method.
 
 ```python
 rest_client = SnykClient(snyk_token, version="2022-02-16~experimental", url="https://api.snyk.io/rest")
