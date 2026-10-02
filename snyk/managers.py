@@ -242,7 +242,7 @@ class ProjectManager(Manager):
                 x.organization = self.instance
         else:
             for org in self.client.organizations.all():
-                projects.extend(org.projects.all())
+                projects.extend(org.projects.filter(tags=tags))
         return projects
 
     def all(self):
