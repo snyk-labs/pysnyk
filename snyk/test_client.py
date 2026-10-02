@@ -189,6 +189,40 @@ class TestSnykClient(object):
         assert len(client.projects.all()) == 2
         assert all(type(x) is Project for x in client.projects.all())
 
+    def test_project_tags_across_organizations(
+        self, requests_mock, client, organizations, projects
+    ):
+        requests_mock.get("https://api.snyk.io/v1/orgs", json=organizations)
+
+        def project_response(request, context):
+            if request.qs.get("tags") == ["team:platform"]:
+                return projects
+            return {"data": []}
+
+        requests_mock.get(re.compile("projects.*$"), json=project_response)
+        result = client.projects.filter(
+            tags=[{"key": "team", "value": "platform"}], name="testing-new-name"
+        )
+        assert len(result) == 2
+        assert {project.organization.id for project in result} == {
+            org["id"] for org in organizations["orgs"]
+        }
+        assert all(project.name == "testing-new-name" for project in result)
+        assert (
+            client.projects.filter(
+                tags=[{"key": "team", "value": "platform"}], name="not present"
+            )
+            == []
+        )
+
+    def test_invalid_project_tags_across_organizations(
+        self, requests_mock, client, organizations
+    ):
+        requests_mock.get("https://api.snyk.io/v1/orgs", json=organizations)
+        requests_mock.get(re.compile("projects.*$"), json={"data": []})
+        with pytest.raises(SnykError, match="Each tag must contain"):
+            client.projects.filter(tags=[{"key": "team"}])
+
     def test_project(self, requests_mock, client, organizations, projects):
         requests_mock.get("https://api.snyk.io/v1/orgs", json=organizations)
         matcher = re.compile("projects.*$")
