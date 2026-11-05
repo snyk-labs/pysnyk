@@ -68,12 +68,12 @@ class SnykClient(object):
 
         if params and json:
             resp = method(
-                url, headers=headers, params=params, json=json, verify=self.verify
+                url, headers=headers, params=params, json=json, verify=self.verify, timeout=30
             )
         elif params and not json:
-            resp = method(url, headers=headers, params=params, verify=self.verify)
+            resp = method(url, headers=headers, params=params, verify=self.verify, timeout=30)
         elif json and not params:
-            resp = method(url, headers=headers, json=json, verify=self.verify)
+            resp = method(url, headers=headers, json=json, verify=self.verify, timeout=30)
         else:
             resp = method(url, headers=headers, verify=self.verify, timeout=30)
 
