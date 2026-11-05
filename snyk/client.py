@@ -75,7 +75,7 @@ class SnykClient(object):
         elif json and not params:
             resp = method(url, headers=headers, json=json, verify=self.verify)
         else:
-            resp = method(url, headers=headers, verify=self.verify)
+            resp = method(url, headers=headers, verify=self.verify, timeout=30)
 
         if not resp or resp.status_code >= requests.codes.server_error:
             logger.warning(f"Retrying: {resp.text}")
